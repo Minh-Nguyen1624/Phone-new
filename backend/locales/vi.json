@@ -1,0 +1,59 @@
+{
+	"notification": {
+		"paymentSuccess": {
+			"title": "Thanh toán thành công",
+			"message": "Thanh toán của bạn với số tiền {amount} VND cho đơn hàng {orderId} đã thành công."
+		},
+		"paymentFailedOutOfStock": {
+			"title": "Thanh toán thất bại - Hết hàng",
+			"message": "Rất tiếc, sản phẩm \"{productName}\" đã hết hàng. Vui lòng điều chỉnh đơn hàng của bạn."
+		},
+		"newOrderForAdmin": {
+			"title": "Đơn hàng mới cần xử lý",
+			"message": "Đơn hàng {orderId} đã sẵn sàng để xử lý. Thanh toán {amount} VND đã hoàn tất."
+		}
+	},
+	"Cannot read properties of undefined (reading 'length')": "Cannot read properties of undefined (reading 'length')",
+	"Nội dung chứa ký tự đặc biệt không được phép. Vui lòng nhập lại.": "Nội dung chứa ký tự đặc biệt không được phép. Vui lòng nhập lại.",
+	"Content contains special characters. Please try again.": "Content contains special characters. Please try again.",
+	"7 PERMISSION_DENIED": " IAM permission 'dialogflow.sessions.detectIntent' on 'projects/agent-name-mbtj/agent' denied.",
+	"What would you like to do?": "What would you like to do?",
+	"Product not found. Please enter more specific details (e.g., iPhone 15 Pro Max 5G) or contact support.": "Product not found. Please enter more specific details (e.g., iPhone 15 Pro Max 5G) or contact support.",
+	"Choose action": "Choose action",
+	"Failed to save message to Firestore": " 7 PERMISSION_DENIED: Missing or insufficient permissions.",
+	"Product not found": {
+		" Here are some suggestions for you": "Product not found. Here are some suggestions for you"
+	},
+	"Select product": "Select product",
+	"product is not defined": "product is not defined",
+	"Cannot access 'products' before initialization": "Cannot access 'products' before initialization",
+	"Select a color": "Select a color",
+	"I didn't understand. Please try a more specific input (e.g., 'find iPhone 15' or 'order Samsung').": "I didn't understand. Please try a more specific input (e.g., 'find iPhone 15' or 'order Samsung').",
+	"Available colors for iPhone 14 Pro": " Space Black, Silver, Deep Purple",
+	"Invalid product or unavailable price. Please try again.": "Invalid product or unavailable price. Please try again.",
+	"Không tìm thấy chính xác iPhone 14": {
+		" Dưới đây là các màu của iPhone 14 Pro": " Space Black, Silver, Deep Purple"
+	},
+	"Chọn màu": "Chọn màu",
+	"Tôi không hiểu yêu cầu của bạn": {
+		" Vui lòng nhập cụ thể hơn (ví dụ": " 'tìm iPhone 15' hoặc 'đặt hàng Samsung')."
+	},
+	"Chọn hành động": "Chọn hành động",
+	"Cast to ObjectId failed for value \"manual\" (type string) at path \"_id\" for model \"Phone\"": "Cast to ObjectId failed for value \"manual\" (type string) at path \"_id\" for model \"Phone\"",
+	"Invalid product ID. Please try again.": "Invalid product ID. Please try again.",
+	"Tôi không hiểu yêu cầu của bạn. Vui lòng nhập cụ thể hơn.": "Tôi không hiểu yêu cầu của bạn. Vui lòng nhập cụ thể hơn.",
+	"Cannot read properties of undefined (reading 'user')": "Cannot read properties of undefined (reading 'user')",
+	"Invalid product.": "Invalid product.",
+	"Có lỗi xảy ra trong quá trình xử lý. Vui lòng thử lại.": "Có lỗi xảy ra trong quá trình xử lý. Vui lòng thử lại.",
+	"Không tìm thấy sản phẩm": {
+		" Dưới đây là tất cả sản phẩm có sẵn": "Không tìm thấy sản phẩm. Dưới đây là tất cả sản phẩm có sẵn"
+	},
+	"Chọn sản phẩm": "Chọn sản phẩm",
+	"Cannot read properties of undefined (reading 'join')": "Cannot read properties of undefined (reading 'join')",
+	"Không tìm thấy sản phẩm iphone 14 pro màu deep purple còn hàng không": {
+		" Dưới đây là tất cả sản phẩm có sẵn (Trang 1/1)": "Không tìm thấy sản phẩm iphone 14 pro màu deep purple còn hàng không. Dưới đây là tất cả sản phẩm có sẵn (Trang 1/1)"
+	},
+	"Không tìm thấy sản phẩm tìm samsung galaxy s24 màu silvery": {
+		" Dưới đây là tất cả sản phẩm có sẵn (Trang 1/1)": "Không tìm thấy sản phẩm tìm samsung galaxy s24 màu silvery. Dưới đây là tất cả sản phẩm có sẵn (Trang 1/1)"
+	}
+}

@@ -1,0 +1,17 @@
+{
+	"notification": {
+		"paymentSuccess": {
+			"title": "Payment Successful",
+			"message": "Your payment of {amount} VND for order {orderId} was successful."
+		},
+		"paymentFailedOutOfStock": {
+			"title": "Payment Failed - Out of Stock",
+			"message": "We are sorry, but the product \"{productName}\" is out of stock. Please adjust your order."
+		},
+		"newOrderForAdmin": {
+			"title": "New Order to Process",
+			"message": "Order {orderId} is ready for processing. Payment of {amount} VND completed."
+		}
+	},
+	"bot": "bot"
+}
