@@ -9,64 +9,7 @@ const asyncHandler = require("express-async-handler");
 const { fileTypeFromBuffer } = require("file-type");
 const File = require("../model/fileModel");
 const Folder = require("../model/folderModel");
-// Configure Multer storage
-// const storage = multer.diskStorage({
-//   destination: async (req, file, cb) => {
-//     let baseDir = path.join(__dirname, "../files");
-//     let finalDir = baseDir;
-//     let folderPathSegments = [];
 
-//     // Check if parentFolder is provided
-//     const parentFolder = req.body.parentFolder;
-//     if (parentFolder && mongoose.isValidObjectId(parentFolder)) {
-//       try {
-//         let currentFolder = await mongoose
-//           .model("Folder")
-//           .findById(parentFolder);
-//         if (!currentFolder) {
-//           return cb(new Error("Parent folder does not exist"), null);
-//         }
-
-//         // Build the folder path by traversing the hierarchy
-//         while (currentFolder) {
-//           folderPathSegments.unshift(currentFolder.slug || currentFolder.name);
-//           currentFolder = await mongoose
-//             .model("Folder")
-//             .findById(currentFolder.parentFolder);
-//         }
-
-//         if (folderPathSegments.length > 0) {
-//           finalDir = path.join(baseDir, ...folderPathSegments);
-//         }
-//       } catch (error) {
-//         console.error("Error building folder path:", error);
-//         return cb(error, null);
-//       }
-//     }
-
-//     console.log("Resolved files directory:", path.resolve(finalDir));
-//     try {
-//       await fs.mkdir(finalDir, { recursive: true });
-//       // Store folderPathSegments in req for reuse
-//       req.folderPathSegments = folderPathSegments;
-//       cb(null, finalDir);
-//     } catch (error) {
-//       console.error("Error creating directory:", error);
-//       return cb(
-//         new Error(`Failed to create directory: ${error.message}`),
-//         null
-//       );
-//     }
-//   },
-//   filename: (req, file, cb) => {
-//     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-//     const ext = path.extname(file.originalname);
-//     const name = path.basename(file.originalname, ext);
-//     const newFileName = `${name}-${uniqueSuffix}${ext}`;
-//     console.log(`Generated filename: ${newFileName}`);
-//     cb(null, newFileName);
-//   },
-// });
 const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
     let baseDir = path.join(__dirname, "../files");
@@ -99,7 +42,6 @@ const storage = multer.diskStorage({
       }
     }
 
-    console.log("Resolved files directory:", path.resolve(finalDir));
     try {
       // const dirExists = await fsPromises.access(finalDir).then(() => true).catch(() => false);
       // if (!dirExists) {
@@ -121,7 +63,6 @@ const storage = multer.diskStorage({
     const ext = path.extname(file.originalname);
     const name = path.basename(file.originalname, ext);
     const newFileName = `${name}-${uniqueSuffix}${ext}`;
-    console.log(`Generated filename: ${newFileName}`);
     cb(null, newFileName);
   },
 });
@@ -154,32 +95,14 @@ const upload = multer({
 async function isValidPdf(filePath) {
   try {
     const buffer = await fsPromises.readFile(filePath, { length: 262 });
-    console.log(`Read ${buffer.length} bytes from ${filePath}`);
-    console.log(`First 5 bytes: ${buffer.slice(0, 5).toString()}`); // Check PDF header
+
     const type = await fileTypeFromBuffer(buffer);
-    console.log(`File type detection result for ${filePath}:`, type);
     return type && type.mime === "application/pdf";
   } catch (error) {
     console.error("Error checking file type:", error);
     return false;
   }
 }
-
-// const upload = multer({
-//   storage: storage,
-//   // limits: { fileSize: 2 * 1024 * 1024 }, // 2MB limit
-//   limits: { fileSize: 100 * 1024 * 1024, files: 50 }, // 100MB
-//   fileFilter: (req, file, cb) => {
-//     const allowedExtensions = ["pdf", "doc", "docx", "jpg", "png", "mp4", "js"];
-//     const ext = path.extname(file.originalname).toLowerCase().replace(".", "");
-//     if (allowedExtensions.includes(ext)) {
-//       cb(null, true);
-//     } else {
-//       cb(new Error("Unsupported file extension"), false);
-//     }
-//   },
-//   // }).array("files", 20); // Allow up to 20 files
-// }).array("files", 50); // Allow up to 20 files
 
 // Hàm download file
 const uploadFile = asyncHandler(async (req, res) => {
@@ -468,175 +391,6 @@ const uploadFile = asyncHandler(async (req, res) => {
   });
 });
 
-// const downloadFile = asyncHandler(async (req, res) => {
-//   const { fileId } = req.params;
-
-//   if (!mongoose.isValidObjectId(fileId)) {
-//     return res.status(400).json({
-//       success: false,
-//       message: "Invalid file ID",
-//     });
-//   }
-
-//   const file = await File.findById(fileId).populate("user");
-//   if (!file) {
-//     return res.status(404).json({
-//       success: false,
-//       message: "File not found",
-//     });
-//   }
-
-//   const isOwner =
-//     req.user && file.user._id.toString() === req.user._id.toString();
-//   const hasReadPermission =
-//     req.user &&
-//     file.permissions.read.some(
-//       (id) => id.toString() === req.user._id.toString()
-//     );
-//   const isAdmin = req.user && req.user.role?.roleName.toLowerCase() === "admin";
-//   if (!file.isPublic && !isOwner && !hasReadPermission && !isAdmin) {
-//     return res.status(403).json({
-//       success: false,
-//       message:
-//         "Access denied: You do not have permission to download this file",
-//     });
-//   }
-
-//   if (file.expirationDate && new Date(file.expirationDate) < new Date()) {
-//     return res.status(403).json({
-//       success: false,
-//       message: "File has expired",
-//     });
-//   }
-
-//   await File.findByIdAndUpdate(fileId, {
-//     $inc: { downloadCount: 1 },
-//     $push: {
-//       auditLog: {
-//         userId: req.user._id,
-//         action: "downloaded",
-//         timestamp: new Date(),
-//       },
-//     },
-//   });
-
-//   const BASE_DIR = path.resolve(__dirname, "../files");
-//   if (file.storageProvider === "local") {
-//     const filePath = path.join(BASE_DIR, file.url.replace(/^\/files\//, ""));
-//     console.log("Download file path:", filePath);
-//     try {
-//       await fsPromises.access(filePath, fsPromises.constants.R_OK);
-//       console.log("File found, sending download...");
-//       res.setHeader(
-//         "Content-Type",
-//         file.fileType || "application/octet-stream"
-//       );
-//       res.setHeader(
-//         "Content-Disposition",
-//         `attachment; filename="${path.basename(file.fileName)}"`
-//       );
-//       return res.download(filePath, path.basename(file.fileName), (err) => {
-//         if (err) {
-//           console.error("Download error:", err);
-//           return res.status(500).json({
-//             success: false,
-//             message: "Error downloading file",
-//             error: err.message,
-//           });
-//         }
-//       });
-//     } catch (error) {
-//       console.error("File access error:", error);
-//       return res.status(404).json({
-//         success: false,
-//         message: "File not found on server",
-//         error: `File at ${filePath} does not exist`,
-//       });
-//     }
-//   }
-
-//   console.log("Redirecting to cloud URL:", file.url);
-//   res.redirect(file.url);
-// });
-
-// const deleteFile = asyncHandler(async (req, res) => {
-//   const { fileId } = req.params;
-//   const userId = req.user._id;
-
-//   if (!mongoose.isValidObjectId(fileId)) {
-//     return res.status(400).json({ success: false, message: "Invalid file ID" });
-//   }
-
-//   const file = await File.findById(fileId);
-//   if (!file) {
-//     return res.status(404).json({ success: false, message: "File not found" });
-//   }
-
-//   const isOwner = file.user.toString() === userId.toString();
-//   const hasWritePermission = file.permissions.write.some(
-//     (id) => id.toString() === userId.toString()
-//   );
-//   const isAdmin = req.user.role?.roleName.toLowerCase() === "admin";
-//   if (!isOwner && !hasWritePermission && !isAdmin) {
-//     return res.status(403).json({
-//       success: false,
-//       message: "Access denied: You do not have permission to delete this file",
-//     });
-//   }
-
-//   const BASE_DIR = path.resolve(__dirname, "../files");
-//   if (file.storageProvider === "local") {
-//     const filePath = path.join(__dirname, "../", file.url); // Use file.url directly
-//     try {
-//       await fsPromises.unlink(filePath);
-//     } catch (error) {
-//       console.error("Failed to delete file from disk:", error);
-//     }
-//   }
-
-//   await File.findByIdAndDelete(fileId);
-
-//   res.status(200).json({
-//     success: true,
-//     message: "File deleted successfully",
-//   });
-// });
-
-// const getFiles = asyncHandler(async (req, res) => {
-//   const { folderId } = req.params;
-
-//   // Validate folderId if provided
-//   if (folderId && !mongoose.isValidObjectId(folderId)) {
-//     return res.status(400).json({
-//       success: false,
-//       message: "Invalid folder ID",
-//     });
-//   }
-
-//   // Build query with permission checks
-//   const query = {
-//     status: "active",
-//     parentFolder: folderId || null,
-//     $or: [
-//       { isPublic: true },
-//       { user: req.user._id },
-//       { "permissions.read": req.user._id },
-//       { "permissions.write": req.user._id },
-//     ],
-//   };
-//   if (req.user.role?.roleName.toLowerCase() === "admin") {
-//     delete query.$or; // Admins see all files
-//   }
-
-//   const files = await File.find(query)
-//     .populate("user", "username email")
-//     .populate("parentFolder", "name")
-//     .populate("permissions.read", "username email role")
-//     .populate("permissions.write", "username email role");
-
-//   res.status(200).json({ success: true, files });
-// });
-
 // Function to upload a file and create a folder in one request
 const downloadFile = asyncHandler(async (req, res) => {
   const { fileId } = req.params;
@@ -691,19 +445,13 @@ const downloadFile = asyncHandler(async (req, res) => {
   });
 
   const BASE_DIR = path.resolve(__dirname, "../files");
-  console.log("Resolved BASE_DIR:", BASE_DIR); // Debug đường dẫn
 
   if (file.storageProvider === "local") {
     const filePath = path.join(BASE_DIR, file.url.replace(/^\/files\//, ""));
-    console.log("Download file path:", filePath); // Log đường dẫn file
 
     try {
       const stat = await fsPromises.stat(filePath); // Lấy thông tin file
       await fsPromises.access(filePath, fsPromises.constants.R_OK); // Kiểm tra quyền đọc
-      console.log("File found, sending download...", {
-        size: stat.size,
-        fileName: path.basename(file.fileName),
-      });
 
       // Đặt header để kích hoạt tải về
       res.setHeader(
@@ -726,7 +474,6 @@ const downloadFile = asyncHandler(async (req, res) => {
             error: err.message,
           });
         }
-        console.log("Download completed for:", path.basename(file.fileName));
       });
     } catch (error) {
       console.error("File access error:", error.stack);
@@ -737,7 +484,6 @@ const downloadFile = asyncHandler(async (req, res) => {
       });
     }
   } else {
-    console.log("Redirecting to cloud URL:", file.url);
     res.redirect(file.url);
   }
 });
@@ -953,9 +699,6 @@ const uploadFileAndCreateFolder = asyncHandler(async (req, res) => {
       });
     }
 
-    console.log("req.files:", req.files);
-    console.log("req.body:", req.body);
-
     const {
       fileType,
       isPublic,
@@ -1048,7 +791,6 @@ const uploadFileAndCreateFolder = asyncHandler(async (req, res) => {
         timestamp: new Date(),
       });
       await savedFolder.save();
-      console.log("Folder already exists, updated tags:", savedFolder._id);
     }
 
     // Check if the folder already has 3 files
@@ -1073,9 +815,7 @@ const uploadFileAndCreateFolder = asyncHandler(async (req, res) => {
     let savedFiles = [];
     if (hasFiles) {
       for (const file of req.files) {
-        console.log("Processing file:", file.originalname);
         const filePath = path.join(finalDir, file.filename);
-        console.log(`File saved to: ${filePath}, size: ${file.size} bytes`);
 
         let currentParentFolder = savedFolder._id;
         let fileFolderPathSegments = [...currentFolderPathSegments];

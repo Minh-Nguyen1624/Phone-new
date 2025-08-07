@@ -60,9 +60,6 @@ const createPayment = async function (req, res) {
     const paymentData = req.body;
     const userId = req.user?._id;
 
-    // Log dữ liệu đầu vào
-    console.log("Payment request data:", paymentData);
-
     // Kiểm tra payment đã tồn tại cho order này chưa
     const existingPayment = await Payment.findOne({ order: paymentData.order });
     if (existingPayment) {
@@ -87,11 +84,6 @@ const createPayment = async function (req, res) {
         .json({ success: false, message: "Order not found" });
     }
 
-    // Debug: Log dữ liệu order trước khi cập nhật
-    console.log("Order data before update:", order);
-    console.log("Total Cart Price before update:", order.totalCartPrice);
-    console.log("Total Amount before update:", order.totalAmount);
-
     // Kiểm tra quyền truy cập
     if (userId && order.user.toString() !== userId.toString()) {
       return res
@@ -99,9 +91,6 @@ const createPayment = async function (req, res) {
         .json({ success: false, message: "Unauthorized access to this order" });
     }
 
-    // Validation: Kiểm tra paymentMethod
-    console.log("Order payment method:", order.paymentMethod);
-    console.log("Payment method in request:", paymentData.paymentMethod);
     if (paymentData.paymentMethod !== order.paymentMethod) {
       return res.status(400).json({
         success: false,
@@ -172,11 +161,6 @@ const createPayment = async function (req, res) {
 
     // Tính lại loyaltyPoints (1đ = 2 điểm)
     order.loyaltyPoints = Math.floor(order.totalAmount * 2);
-
-    // Debug: Log dữ liệu sau khi cập nhật
-    console.log("Order data after update:", order);
-    console.log("Total Cart Price after update:", order.totalCartPrice);
-    console.log("Total Amount after update:", order.totalAmount);
 
     // Validation: Kiểm tra amount sau khi cập nhật
     if (paymentData.amount !== order.totalAmount) {
@@ -340,8 +324,6 @@ const createPayment = async function (req, res) {
       description: `Transaction for order ${paymentData.order}`,
       initiator: "user",
     };
-
-    console.log("Transaction data:", transactionData); // Debug
 
     const transaction = new Transaction(transactionData);
     await transaction.save();
@@ -653,19 +635,16 @@ const createPayPalOrder = asyncHandler(async (req, res) => {
       });
     }
 
-    // Kiểm tra quyền truy cập
-    const isAdmin =
-      req.user.role && req.user.role.roleName.toLowerCase() === "admin";
-    if (order.user.toString() !== userId && !isAdmin) {
-      return res.status(403).json({
-        success: false,
-        message: "Không có quyền truy cập đơn hàng này",
-      });
-    }
+    // // Kiểm tra quyền truy cập
+    // const isAdmin =
+    //   req.user.role && req.user.role.roleName.toLowerCase() === "admin";
+    // if (order.user.toString() !== userId && !isAdmin) {
+    //   return res.status(403).json({
+    //     success: false,
+    //     message: "Không có quyền truy cập đơn hàng này",
+    //   });
+    // }
 
-    // Kiểm tra phương thức thanh toán
-    console.log("Order payment method:", order.paymentMethod);
-    console.log("Payment method in request:", "PayPal");
     if (order.paymentMethod !== "PayPal") {
       return res.status(400).json({
         success: false,
@@ -701,9 +680,6 @@ const createPayPalOrder = asyncHandler(async (req, res) => {
       }
       // Đồng bộ giá sản phẩm
       if (product.price !== item.originalPrice) {
-        console.log(
-          `Cập nhật giá sản phẩm ${product.name}: ${item.originalPrice} -> ${product.price}`
-        );
         item.originalPrice = product.price;
         item.price = product.price;
       }
@@ -711,14 +687,6 @@ const createPayPalOrder = asyncHandler(async (req, res) => {
 
     let orderTotal = order.totalAmount;
     let orderCurrency = order.items[0]?.currency || "VND";
-
-    console.log("Order details:", {
-      subTotal: order.subTotal,
-      discountAmount: order.discountAmount,
-      shippingFee: order.shippingFee,
-      totalAmount: order.totalAmount,
-      currency: orderCurrency,
-    });
 
     // Kiểm tra currency của các items
     const itemCurrencies = order.items.map((item) => item.currency || "VND");
@@ -734,19 +702,11 @@ const createPayPalOrder = asyncHandler(async (req, res) => {
 
     // Kiểm tra đơn vị tiền tệ thực tế dựa trên giá trị số
     if (orderTotal > 1000000 && orderCurrency === "USD") {
-      console.log("Detected potential currency mismatch. Assuming VND...");
       orderCurrency = "VND";
     }
 
     let finalAmount = parsedAmount;
     let finalCurrency = currency || "VND";
-
-    console.log("Initial values:", {
-      finalAmount,
-      finalCurrency,
-      orderTotal,
-      orderCurrency,
-    });
 
     if (orderCurrency === "VND") {
       orderTotal = await convertVNDToUSD(orderTotal);
@@ -776,11 +736,8 @@ const createPayPalOrder = asyncHandler(async (req, res) => {
 
     // Nếu amount gửi lên là VND, chuyển đổi sang USD
     if (finalCurrency === "VND") {
-      console.log(`Converting finalAmount ${finalAmount} VND to USD...`);
       finalAmount = await convertVNDToUSD(parsedAmount);
-      console.log(`Converted ${parsedAmount} VND to ${finalAmount} USD`);
       finalCurrency = "USD";
-      console.log(`Converted finalAmount: ${finalAmount} USD`);
     } else if (finalCurrency !== "USD") {
       return res.status(400).json({
         success: false,
@@ -788,15 +745,6 @@ const createPayPalOrder = asyncHandler(async (req, res) => {
       });
     }
 
-    console.log("After conversion:", {
-      finalAmount,
-      finalCurrency,
-      orderTotal,
-      orderCurrency,
-    });
-
-    // Kiểm tra số tiền
-    console.log("Comparing amounts:", { finalAmount, orderTotal });
     if (Math.abs(orderTotal - finalAmount) > 0.01) {
       return res.status(400).json({
         success: false,
@@ -822,8 +770,6 @@ const createPayPalOrder = asyncHandler(async (req, res) => {
       `${baseUrl}/api/payment/cancel`
     );
 
-    console.log("PayPal Response:", paypalResponse);
-
     const { transactionId, approvalUrl, gatewayResponse } = paypalResponse;
     if (!transactionId || !gatewayResponse) {
       throw new Error("Thiếu transactionId hoặc gatewayResponse từ PayPal");
@@ -843,7 +789,6 @@ const createPayPalOrder = asyncHandler(async (req, res) => {
     });
 
     newPayment = await newPayment.save();
-    console.log("Payment created:", newPayment._id);
 
     const existingTransaction = await Transaction.findOne({ transactionId });
     if (existingTransaction) {
@@ -865,17 +810,14 @@ const createPayPalOrder = asyncHandler(async (req, res) => {
     });
 
     newTransaction = await newTransaction.save();
-    console.log("Transaction created:", newTransaction._id);
 
     // Cập nhật Payment với transaction
     newPayment.transactions.push(newTransaction._id);
     await newPayment.save();
-    console.log("Payment updated with transaction:", newPayment.transactions);
 
     // Cập nhật đơn hàng với payment
     order.payments.push(newPayment._id);
     await order.save();
-    console.log("Order updated with payment:", order.payments);
 
     res.status(200).json({
       success: true,
@@ -978,8 +920,6 @@ const capturePayPalOrder = asyncHandler(async (req, res) => {
         },
       }
     );
-
-    console.log("Order status:", orderDetails.data.status); // Debug trạng thái đơn hàng
 
     // Kiểm tra trạng thái VOIDED (đơn hàng hết hạn)
     if (orderDetails.data.status === "VOIDED") {
@@ -1098,7 +1038,6 @@ const createMomoOrder = async (req, res) => {
     } = req.body;
 
     if (!userId || !orderId || !amount || !orderInfo) {
-      console.log("❌ Missing required fields:", req.body);
       return res
         .status(400)
         .json({ success: false, message: "Missing required fields" });
@@ -1188,8 +1127,6 @@ const createMomoOrder = async (req, res) => {
       }
     }
 
-    console.log("✅ Request body:", req.body);
-
     let paymentResponse;
     let responsePayload = {
       success: true,
@@ -1199,9 +1136,6 @@ const createMomoOrder = async (req, res) => {
     let expiresAt;
     if (paymentMethod === "Momo") {
       const { returnUrl, notifyUrl } = momoConfig;
-
-      console.log("🔹 Using returnUrl:", returnUrl);
-      console.log("🔹 Using notifyUrl:", notifyUrl);
 
       try {
         paymentResponse = await createMomoRequest(
@@ -1214,17 +1148,12 @@ const createMomoOrder = async (req, res) => {
           orderGroupId // Pass the optional orderGroupId
         );
         if (!paymentResponse || !paymentResponse.requestId) {
-          console.log(
-            "❌ Invalid response from createMomoRequest:",
-            paymentResponse
-          );
           return res.status(500).json({
             success: false,
             message: "Failed to create MoMo request: Invalid response",
           });
         }
       } catch (error) {
-        console.error("❌ Error in createMomoRequest:", error.message);
         return res.status(500).json({
           success: false,
           message: "Failed to create MoMo request",
@@ -1234,18 +1163,8 @@ const createMomoOrder = async (req, res) => {
 
       const currentTime = Date.now();
       expiresAt = new Date(currentTime + 15 * 60 * 1000);
-      console.log("🔹 expiresAt in createMomoOrder:", expiresAt.toISOString());
-      console.log(
-        "🔹 Current server time:",
-        new Date(currentTime).toISOString()
-      );
 
       if (currentTime > expiresAt.getTime()) {
-        console.log("❌ Transaction expired before returning payment URL:", {
-          orderId,
-          currentTime: new Date(currentTime).toISOString(),
-          expiresAt: expiresAt.toISOString(),
-        });
         return res.status(400).json({
           success: false,
           message:
@@ -1256,7 +1175,6 @@ const createMomoOrder = async (req, res) => {
       responsePayload.paymentUrl =
         paymentResponse.shortLink || paymentResponse.payUrl;
       responsePayload.expiresAt = expiresAt;
-      console.log("✅ MoMo Payment URL:", responsePayload.paymentUrl);
     } else if (paymentMethod === "VietQR") {
       try {
         paymentResponse = await createVietQRRequest(orderId, amount, orderInfo);
@@ -1299,15 +1217,9 @@ const createMomoOrder = async (req, res) => {
       expiresAt: expiresAt || null,
     });
 
-    console.log(
-      "🔹 New Payment before save:",
-      JSON.stringify(newPayment, null, 2)
-    );
-
     let savedPayment;
     try {
       savedPayment = await newPayment.save();
-      console.log("🔹 Saved Payment:", JSON.stringify(savedPayment, null, 2));
     } catch (error) {
       console.error("❌ Error saving payment:", error.message);
       return res.status(500).json({
@@ -1321,7 +1233,6 @@ const createMomoOrder = async (req, res) => {
       await schedulePaymentExpiry(savedPayment);
       order.payments.push(savedPayment._id);
       await order.save();
-      console.log("🔹 Order updated with payment:", order._id);
     } catch (error) {
       console.error("❌ Error updating order:", error.message);
       return res.status(500).json({
@@ -1376,7 +1287,6 @@ const createVietQRRequest = async (orderId, amount, orderInfo) => {
   }).toString();
 
   const qrCodeUrl = `${baseUrl}?${queryParams}`;
-  console.log("🔹 VietQR Quick Link:", qrCodeUrl);
 
   // Kiểm tra URL có trả về hình ảnh hợp lệ không
   try {
@@ -1425,7 +1335,6 @@ const returnMomoOrder = async (req, res) => {
     } = req.query;
 
     if (!orderId || !requestId || !signature) {
-      console.log("❌ Missing required fields in returnMomoOrder:", req.query);
       return res
         .status(401)
         .json({ success: false, message: "Missing required fields" });
@@ -1438,14 +1347,7 @@ const returnMomoOrder = async (req, res) => {
       .update(rawSignature)
       .digest("hex");
 
-    console.log("Raw Signature: ", rawSignature);
-    console.log("Computed Signature: ", computedSignature);
-
     if (computedSignature !== signature) {
-      console.log("❌ Invalid signature in returnMomoOrder:", {
-        computedSignature,
-        signature,
-      });
       return res
         .status(400)
         .json({ success: false, message: "Invalid signature" });
@@ -1455,17 +1357,12 @@ const returnMomoOrder = async (req, res) => {
       transactionId: requestId,
     }).populate("user");
     if (!payment) {
-      console.log("❌ Payment not found in returnMomoOrder:", { requestId });
       return res
         .status(404)
         .json({ success: false, message: "Payment not found" });
     }
 
     if (payment.paymentStatus !== "Pending") {
-      console.log("❌ Payment already processed in returnMomoOrder:", {
-        paymentId: payment._id,
-        paymentStatus: payment.paymentStatus,
-      });
       return res.status(400).json({
         success: false,
         message: `Payment is already in ${payment.paymentStatus} status`,
@@ -1476,10 +1373,6 @@ const returnMomoOrder = async (req, res) => {
       payment.paymentStatus = "Expired";
       payment.failureReason = "Transaction expired or did not exist";
       await payment.save();
-      console.log("🔹 Transaction expired in returnMomoOrder:", {
-        paymentId: payment._id,
-        resultCode,
-      });
 
       const order = await Order.findById(payment.order);
       if (order && order.paymentStatus !== "Expired") {
@@ -1502,7 +1395,6 @@ const returnMomoOrder = async (req, res) => {
 
       if (payment.user && payment.user.email) {
         await sendPaymentNotification(payment.user.email, payment);
-        console.log(`Expiry notification email sent to ${payment.user.email}`);
       }
 
       return res.status(400).json({
@@ -1608,7 +1500,6 @@ const handleMomoWebhook = async (req, res) => {
     }
 
     if (!orderId || !requestId || !signature) {
-      console.log("❌ Missing required fields in handleMomoWebhook:", req.body);
       return res
         .status(400)
         .json({ success: false, message: "Missing required fields" });
@@ -1616,10 +1507,6 @@ const handleMomoWebhook = async (req, res) => {
 
     const isValidSignature = await verifyMomoSignature(req.body);
     if (!isValidSignature) {
-      console.log("❌ Invalid signature in handleMomoWebhook:", {
-        requestId,
-        signature,
-      });
       return res
         .status(400)
         .json({ success: false, message: "Invalid signature" });
@@ -1645,10 +1532,6 @@ const handleMomoWebhook = async (req, res) => {
       payment.paymentStatus = "Expired";
       payment.failureReason = "Transaction expired or did not exist";
       await payment.save();
-      console.log("🔹 Transaction expired in handleMomoWebhook:", {
-        paymentId: payment._id,
-        // await updateOrderPaymentStatus(payment.order, "Expired", requestId, amount, "Momo", req.body, payment.user._id);
-      });
 
       const order = await Order.findById(payment.order).populate("items.phone");
       if (order && order.paymentStatus !== "Expired") {
@@ -1668,7 +1551,6 @@ const handleMomoWebhook = async (req, res) => {
 
       if (payment.user && payment.user.email) {
         await sendPaymentNotification(payment.user.email, payment);
-        console.log(`Expiry notification email sent to ${payment.user.email}`);
       }
 
       // await updateOrderPaymentStatus(payment.order, "Expired", requestId, amount, "Momo", req.body, payment.user._id);
@@ -1712,10 +1594,8 @@ const handleMomoWebhook = async (req, res) => {
     const userEmail = payment.user.email;
     if (resultCode == 0) {
       await sendPaymentConfirmationEmail(userEmail, paymentDetails, true);
-      console.log("🔹 Sent confirmation email to:", userEmail);
     } else {
       await sendPaymentNotification(userEmail, payment);
-      console.log("🔹 Sent notification email to:", userEmail);
     }
 
     // await updateOrderPaymentStatus(payment.order, resultCode == 0 ? "PAID" : "FAILED", transId, amount, "Momo", req.body, payment.user._id);
@@ -1890,12 +1770,6 @@ const createZaloPayPayment = async (req, res) => {
       });
     }
 
-    // Log payment creation for debugging
-    console.log(
-      "🔹 Creating new payment with response:",
-      JSON.stringify(response, null, 2)
-    );
-
     // Save payment information to the database
     const newPayment = new Payment({
       user: userId,
@@ -1953,18 +1827,8 @@ const createZaloPayPayment = async (req, res) => {
 // Xử lý notifyUrl (ZaloPay gửi callback về đây để thông báo trạng thái giao dịch)
 const handleZaloPayNotify = async (req, res) => {
   try {
-    // Logging chi tiết để debug
-    console.log("🔹 ZaloPay Notify - Received Callback:", req.body);
-    console.log(
-      "🔹 ZaloPay Notify - Full Request Body:",
-      JSON.stringify(req.body, null, 2)
-    );
-    console.log("🔹 Request Headers:", JSON.stringify(req.headers, null, 2));
-    console.log("🔹 Request Method:", req.method);
-
     const { data, mac } = req.body;
     if (!data || !mac) {
-      console.log("❌ Error: Missing data or mac in ZaloPay callback");
       return res
         .status(400)
         .json({ return_code: -1, return_message: "Missing data or mac" });
@@ -1972,7 +1836,6 @@ const handleZaloPayNotify = async (req, res) => {
 
     // Kiểm tra định dạng của data trước khi parse
     if (typeof data !== "string") {
-      console.log("❌ Error: Data must be a string");
       return res
         .status(400)
         .json({ return_code: -1, return_message: "Data must be a string" });
@@ -1981,9 +1844,8 @@ const handleZaloPayNotify = async (req, res) => {
     // Xác minh chữ ký
     // const isValid = verifyZaloPaySignature(data, mac);
     const isValid = verifyZaloPaySignature(data, mac, zaloPayConfig.key2);
-    console.log("🔹 Signature Verification:", isValid);
+
     if (!isValid) {
-      console.log("❌ Error: Invalid signature in ZaloPay callback");
       return res
         .status(400)
         .json({ return_code: -1, return_message: "Invalid signature" });
@@ -1992,18 +1854,12 @@ const handleZaloPayNotify = async (req, res) => {
     // Parse dữ liệu từ webhook
     const parsedData = JSON.parse(data);
     const { app_trans_id, zp_trans_id, amount, status } = parsedData;
-    console.log("🔹 Parsed app_trans_id from callback:", app_trans_id);
 
     // Tìm payment trong database
     const payment = await Payment.findOne({
       transactionId: app_trans_id,
     }).populate("user order");
-    console.log("🔹 Payment found in DB:", payment);
     if (!payment) {
-      console.log(
-        "❌ Error: Payment not found for app_trans_id:",
-        app_trans_id
-      );
       return res
         .status(404)
         .json({ return_code: -1, return_message: "Payment not found" });
@@ -2027,7 +1883,6 @@ const handleZaloPayNotify = async (req, res) => {
       initiator: "system",
     });
     await transaction.save();
-    console.log("🔹 Saved transaction to DB:", transaction);
 
     // Cập nhật Payment
     await Payment.updateOne(
@@ -2042,9 +1897,6 @@ const handleZaloPayNotify = async (req, res) => {
           transactions: transaction._id,
         },
       }
-    );
-    console.log(
-      `✅ Updated payment status for app_trans_id ${app_trans_id}: ${newStatus}`
     );
 
     // Gửi email xác nhận nếu thanh toán thành công
@@ -2063,7 +1915,6 @@ const handleZaloPayNotify = async (req, res) => {
         true
       );
       await sendPaymentNotification(payment.user.email, payment);
-      console.log("🔹 Sent confirmation email to:", payment.user.email);
     }
 
     // Trả về phản hồi cho ZaloPay
@@ -2150,7 +2001,6 @@ const handleZaloPayReturn = async (req, res) => {
           true
         );
         await sendPaymentNotification(payment.user.email, payment);
-        console.log("🔹 Sent confirmation email to:", payment.user.email);
       }
     }
 
@@ -2496,17 +2346,6 @@ const createVnPayOrder = asyncHandler(async (req, res) => {
 
     const isValid = verifySignature(params, vnpayConfig.secretKey);
 
-    console.log(
-      "🔹 Kiểm tra lại chữ ký (verifySignature):",
-      isValid ? "✅ ĐÚNG" : "❌ SAI"
-    );
-    console.log("🔹 Sign Data (create):", signData);
-    console.log("🔹 Generated vnp_SecureHash:", vnp_SecureHash);
-    console.log(
-      "🔹 Params sent to verifySignature:",
-      JSON.stringify(params, null, 2)
-    );
-
     return res.status(200).json({
       success: true,
       message: "Payment URL created successfully",
@@ -2524,15 +2363,8 @@ const createVnPayOrder = asyncHandler(async (req, res) => {
 
 const vnpayIpn = asyncHandler(async (req, res) => {
   try {
-    console.log("🔹 Received IPN from VNPAY:", {
-      query: req.query,
-      headers: req.headers,
-      body: req.body,
-    });
-
     const params = req.query;
     if (!params || Object.keys(params).length === 0) {
-      console.log("❌ Error: No query parameters received from VNPay");
       return res.status(200).json({
         RspCode: "97",
         Message: "Invalid request: No query parameters",
@@ -2541,7 +2373,6 @@ const vnpayIpn = asyncHandler(async (req, res) => {
 
     const isValid = verifySignature(params, vnpayConfig.secretKey);
     if (!isValid) {
-      console.log("❌ Error: Invalid signature");
       return res.status(200).json({
         RspCode: "97",
         Message: "Invalid signature",
@@ -2562,9 +2393,6 @@ const vnpayIpn = asyncHandler(async (req, res) => {
     }
 
     if (vnp_ResponseCode === "00") {
-      console.log(
-        `✅ IPN Success: Transaction ${vnp_TxnRef} completed successfully`
-      );
       await updateOrderPaymentStatus(
         orderId,
         "PAID",
@@ -2575,9 +2403,6 @@ const vnpayIpn = asyncHandler(async (req, res) => {
         order.user
       );
     } else {
-      console.log(
-        `❌ IPN Failed: Transaction ${vnp_TxnRef} failed with code ${vnp_ResponseCode}`
-      );
       await updateOrderPaymentStatus(
         orderId,
         "FAILED",
@@ -2604,15 +2429,8 @@ const vnpayIpn = asyncHandler(async (req, res) => {
 
 const vnpayReturn = asyncHandler(async (req, res) => {
   try {
-    console.log("🔹 Received Return URL from VNPAY:", {
-      query: req.query,
-      headers: req.headers,
-      body: req.body,
-    });
-
     const params = req.query;
     if (!params || Object.keys(params).length === 0) {
-      console.log("❌ Error: No query parameters received from VNPay");
       return res.status(400).json({
         success: false,
         message: "No query parameters received from VNPay",
@@ -2621,7 +2439,6 @@ const vnpayReturn = asyncHandler(async (req, res) => {
 
     const isValid = verifySignature(params, vnpayConfig.secretKey);
     if (!isValid) {
-      console.log("❌ Error: Invalid signature");
       return res.status(400).json({
         success: false,
         message: "Invalid signature",
@@ -2642,9 +2459,6 @@ const vnpayReturn = asyncHandler(async (req, res) => {
     }
 
     if (vnp_ResponseCode === "00") {
-      console.log(
-        `✅ Payment Success: Transaction ${vnp_TxnRef} completed successfully`
-      );
       await updateOrderPaymentStatus(
         orderId,
         "PAID",
@@ -2660,9 +2474,6 @@ const vnpayReturn = asyncHandler(async (req, res) => {
         }`
       );
     } else {
-      console.log(
-        `❌ Payment Failed: Transaction ${vnp_TxnRef} failed with code ${vnp_ResponseCode}`
-      );
       await updateOrderPaymentStatus(
         orderId,
         "FAILED",
@@ -2714,7 +2525,6 @@ const checkTransactionStatus = asyncHandler(async (req, res) => {
       status.vnp_ResponseCode === "00" &&
       status.vnp_TransactionStatus === "00"
     ) {
-      console.log(`✅ Transaction ${txnRef} is successful`);
       await updateOrderPaymentStatus(
         orderId,
         "PAID",
@@ -2734,9 +2544,6 @@ const checkTransactionStatus = asyncHandler(async (req, res) => {
         });
       }
     } else {
-      console.log(
-        `❌ Transaction ${txnRef} failed with code ${status.vnp_ResponseCode}`
-      );
       await updateOrderPaymentStatus(
         orderId,
         "FAILED",
@@ -2826,13 +2633,11 @@ const confirmPayment = async function (req, res) {
       paymentId: payment._id,
       status: "Pending",
     });
-    console.log("Pending transaction:", transaction);
 
     if (!transaction) {
       const existingTransaction = await Transaction.findOne({
         paymentId: payment._id,
       });
-      console.log("Existing transaction:", existingTransaction);
 
       if (existingTransaction) {
         return res.status(400).json({
@@ -2841,7 +2646,6 @@ const confirmPayment = async function (req, res) {
         });
       }
 
-      console.log("Creating new transaction...");
       try {
         transaction = await Transaction.create({
           paymentId: payment._id,
@@ -2853,7 +2657,6 @@ const confirmPayment = async function (req, res) {
           user: payment.user,
           currency: "VND",
         });
-        console.log("New transaction created:", transaction);
       } catch (createError) {
         console.error("Error creating transaction:", createError);
         return res.status(500).json({
@@ -2868,7 +2671,6 @@ const confirmPayment = async function (req, res) {
           { _id: payment._id },
           { $push: { transactions: transaction._id } }
         );
-        console.log("Updated Payment with new transaction");
       } catch (updateError) {
         console.error("Error updating Payment:", updateError);
         return res.status(500).json({
@@ -3008,9 +2810,7 @@ const confirmPayment = async function (req, res) {
       },
     };
 
-    console.log("Creating user notification with data:", userNotification);
     const userNotificationResponse = await createNotification(userNotification);
-    console.log("User notification response:", userNotificationResponse);
     if (
       !userNotificationResponse.success ||
       !userNotificationResponse.data?._id

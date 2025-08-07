@@ -24,11 +24,107 @@ const HomePage = () => {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalPhones, setTotalPhones] = useState(0);
   const [displayLimit, setDisplayLimit] = useState(InitialDisplayLimit);
   const [user, setUserProfile] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchMode, setSearchMode] = useState(false); // Thêm state để theo dõi chế độ tìm kiếm
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null); // Theo dõi categoryId
+  const [categories, setCategories] = useState([]);
+  const [categoryMap, setCategoryMap] = useState({});
   const navigate = useNavigate();
+
+  const filterCategories = async (category = null) => {
+    console.log("filterCategories - category:", category); // Debug category
+    try {
+      setLoading(true);
+      const categoryResponse = await axios.get(
+        `${API_URL}/categories/all?isActive=true`
+      );
+      console.log("Fetched categories:", categoryResponse.data); // Debug fetched categories
+      if (categoryResponse.data.success) {
+        const categoryData = categoryResponse.data.data || [];
+        setCategories(categoryData);
+        const map = {};
+        categoryData.forEach((cat) => {
+          if (cat._id) {
+            map[cat._id] = cat.name;
+          }
+        });
+        console.log("Category map:", map); // Debug category map
+        setCategoryMap(map);
+
+        const phoneResponse = await axios.get(`${API_URL}/phones/search`, {
+          params: {
+            page: 1,
+            limit: Limit * 10, // Lấy nhiều hơn để đảm bảo đủ dữ liệu
+            isActive: "true",
+          },
+        });
+        console.log("Fetched phones:", phoneResponse.data); // Debug fetched phones
+        if (phoneResponse.data.success) {
+          const allPhoneData = phoneResponse.data.data || [];
+          setPhones(allPhoneData);
+          setTotalPhones(phoneResponse.data.pagination?.total || 0);
+
+          const phoneIds = allPhoneData.map((phone) => phone._id);
+          const quantities = {};
+          await Promise.all(
+            phoneIds.map(async (id) => {
+              try {
+                const soldResponse = await axios.get(
+                  `${API_URL}/phones/${id}/sold`
+                );
+                quantities[id] = soldResponse.data.soldQuantity || 0;
+              } catch (error) {
+                console.error(
+                  `Error fetching sold quantity for phone ${id}:`,
+                  error
+                );
+                quantities[id] = 0;
+              }
+            })
+          );
+          setSoldQuantities(quantities);
+          // Lọc sản phẩm theo category (client-side) với populate
+          let filteredPhones = allPhoneData;
+          if (category) {
+            filteredPhones = allPhoneData.filter((phone) => {
+              const phoneCategoryId = phone.category?._id?.toString() || null; // Sử dụng _id từ populate
+              console.log(
+                `Filtering phone ${
+                  phone.name || "Unnamed"
+                }: category=${category}, phoneCategoryId=${phoneCategoryId}`
+              );
+              return phoneCategoryId === category;
+            });
+            if (filteredPhones.length === 0) {
+              console.warn(
+                `No phones found for category: ${category}. Falling back to all phones.`
+              );
+              filteredPhones = allPhoneData; // Fallback
+            }
+          }
+          setPhones(filteredPhones);
+        } else {
+          console.error("Failed to fetch phones:", phoneResponse.data.message);
+        }
+      } else {
+        console.error(
+          "Failed to fetch categories:",
+          categoryResponse.data.message
+        );
+      }
+    } catch (error) {
+      console.error(
+        "Error fetching categories and phones:",
+        error.response ? error.response.data : error.message
+      );
+      setError("Lỗi kết nối đến server. Vui lòng kiểm tra API.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -54,17 +150,23 @@ const HomePage = () => {
       setUserProfile(null);
     }
     fetchData();
-  }, [currentPage, searchQuery]); // Thêm searchQuery vào dependency
+  }, [currentPage, searchQuery, selectedCategoryId]); // Thêm searchQuery vào dependency
 
   const fetchData = async () => {
     try {
       setLoading(true);
       console.log("fetchData - currentPage:", currentPage); // Debug page
       console.log("fetchData - searchQuery:", searchQuery); // Debug search query
+      console.log("fetchData - selectedCategoryId:", selectedCategoryId);
 
       // Gọi fetchPhones và dựa vào log URL từ api.js
       const { phones: phoneData, totalPages: newTotalPages } =
-        await fetchPhones(currentPage, null, searchQuery);
+        await fetchPhones(
+          currentPage,
+          //  null,
+          selectedCategoryId || null, //
+          searchQuery
+        );
       console.log("Fetched phones:", phoneData); // Debug fetched data
       console.log("Total pages:", newTotalPages); // Debug total pages
       if (!phoneData || (Array.isArray(phoneData) && phoneData.length === 0)) {
@@ -106,8 +208,10 @@ const HomePage = () => {
     try {
       setLoading(true);
       setCurrentPage(1);
+      setDisplayLimit(InitialDisplayLimit); // Reset display limit khi tìm kiếm
       setSearchQuery(query); // Cập nhật state searchQuery
       setSearchMode(true); // Bật chế độ tìm kiếm
+      setSelectedCategoryId(null); // Reset selectedCategoryId khi tìm kiếm
       console.log("handleSearch - query received:", query); // Debug query received
       console.log("handleSearch - searchQuery state:", searchQuery); // Debug state trước khi fetch
       await fetchData();
@@ -151,7 +255,10 @@ const HomePage = () => {
     try {
       setLoading(true);
       setCurrentPage(1);
+      setDisplayLimit(InitialDisplayLimit); // Reset display limit khi lọc danh mục
       setSearchMode(false);
+      setSearchQuery(""); // Reset search query khi lọc danh mục
+      setSelectedCategoryId(categoryId); // Cập nhật selectedCategoryId
       console.log("filterByCategory - categoryId:", categoryId); // Debug categoryId
       const { phones: phoneData, totalPages: newTotalPages } =
         await fetchPhones(currentPage, categoryId, "");
@@ -232,6 +339,9 @@ const HomePage = () => {
             <h2 className="text-xl font-bold text-gray-800">
               Kết quả tìm kiếm cho: {searchQuery}
             </h2>
+            <p className="text-gray-500">
+              Đã tìm thấy {matchedProducts.length} sản phẩm
+            </p>
           </div>
         )}
 
@@ -245,18 +355,120 @@ const HomePage = () => {
           </div>
         </div>
 
+        <h3 className="title">{searchMode ? "" : "Khuyến mãi Online"}</h3>
+        <div className="header_main">
+          <div>
+            <ul className="main-menu">
+              <li className="item">
+                <a
+                  href="#"
+                  // onClick={(e) => {
+                  //   e.preventDefault();
+                  //   // if (onFilterByCategory) onFilterByCategory("smartphones");
+                  //   navigate("/category/smartphones");
+                  // }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    filterByCategory("smartphones");
+                  }}
+                >
+                  <i>
+                    <img
+                      src="https://cdn.tgdd.vn/content/phonne-24x24.png"
+                      alt="Điện Thoại"
+                    />
+                  </i>
+                  <span>Điện Thoại</span>
+                </a>
+              </li>
+              <li className="item">
+                <a
+                  href="#"
+                  // onClick={(e) => {
+                  //   e.preventDefault();
+                  //   if (onFilterByCategory)
+                  //     onFilterByCategory("categoryId2");
+                  // }}
+                >
+                  <i>
+                    <img
+                      src="https://cdn.tgdd.vn/content/laptop-24x24.png"
+                      alt="LapTop"
+                    />
+                  </i>
+                  <span>LapTop</span>
+                </a>
+              </li>
+              <li className="item">
+                <a
+                  href="#"
+                  // onClick={(e) => {
+                  //   e.preventDefault();
+                  //   if (onFilterByCategory)
+                  //     onFilterByCategory("categoryId3");
+                  // }}
+                >
+                  <i>
+                    <img
+                      src="https://cdn.tgdd.vn/content/PC-24x24.png"
+                      alt="Máy tính"
+                    />
+                  </i>
+                  <span>Máy tính</span>
+                </a>
+              </li>
+              <li className="item">
+                <a
+                  href="#"
+                  // onClick={(e) => {
+                  //   e.preventDefault();
+                  //   if (onFilterByCategory)
+                  //     onFilterByCategory("categoryId4");
+                  // }}
+                >
+                  <i>
+                    <img
+                      src="https://cdn.tgdd.vn/content/tablet-24x24.png"
+                      alt="Tablet"
+                    />
+                  </i>
+                  <span>Tablet</span>
+                </a>
+              </li>
+              <li className="item">
+                <a
+                  href="#"
+                  // onClick={(e) => {
+                  //   e.preventDefault();
+                  //   if (onFilterByCategory)
+                  //     onFilterByCategory("categoryId4");
+                  // }}
+                >
+                  <i>
+                    <img
+                      src="https://cdn.tgdd.vn/content/phu-kien-24x24.png"
+                      alt="Phụ kiện"
+                    />
+                  </i>
+                  <span>Phụ kiện</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
         <div className="container">
           <div
-            className="container mx-auto px-4"
+            className="container mx-auto"
             style={{
               backgroundColor: "#fff",
               boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-              borderRadius: "0.5rem",
+              paddingLeft: "2.5rem",
+              paddingRight: "2.5rem",
             }}
           >
             <div
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-              style={{ paddingTop: "20px" }}
+              style={{ paddingTop: "40px", paddingBottom: "40px" }}
             >
               {searchMode
                 ? matchedProducts
@@ -300,7 +512,7 @@ const HomePage = () => {
             )}
 
             {totalPages > 1 && !searchMode && (
-              <div className="pagination flex justify-center items-center mt-8 space-x-2">
+              <div className="pagination flex justify-center items-center mt-8 space-x-2 p-4">
                 <button
                   className="pagination-button"
                   onClick={() => handlePageChange(currentPage - 1)}

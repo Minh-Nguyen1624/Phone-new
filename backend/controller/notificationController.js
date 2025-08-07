@@ -6,74 +6,6 @@ const i18n = require("i18n");
 const mongoose = require("mongoose");
 
 // Create a new notification
-// const createNotification = async (req, res) => {
-//   try {
-//     const {
-//       user,
-//       title,
-//       message,
-//       type,
-//       priority,
-//       expiresAt,
-//       isGlobal,
-//       meta,
-//       scheduledAt,
-//     } = req.body;
-
-//     // Kiểm tra các trường yêu cầu
-//     if (!title || !message || !scheduledAt) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Title, message, and scheduledAt are required",
-//       });
-//     }
-
-//     // Kiểm tra user nếu không phải thông báo toàn hệ thống
-//     if (!isGlobal) {
-//       const existingUser = await User.findById(user);
-//       if (!existingUser) {
-//         return res.status(404).json({ message: "User not found" });
-//       }
-//     }
-
-//     // Tạo thông báo
-//     const notification = new Notification({
-//       user: isGlobal ? null : user, // Nếu là thông báo toàn hệ thống, không cần liên kết user
-//       title,
-//       message,
-//       type: type || "info", // Mặc định là "info"
-//       priority: priority || "medium", // Mặc định là "medium"
-//       expiresAt: expiresAt || null,
-//       isGlobal: isGlobal || false,
-//       meta: meta || {},
-//       scheduledAt: new Date(scheduledAt), // Đảm bảo giá trị là kiểu Date
-//     });
-
-//     // Lưu thông báo vào cơ sở dữ liệu
-//     const savedNotification = await notification.save();
-
-//     // Gửi thông báo real-time qua Socket.IO (nếu có sử dụng)
-//     // if (isGlobal) {
-//     //   io.emit("notification", savedNotification); // Broadcast đến tất cả client
-//     // } else {
-//     //   io.to(user.toString()).emit("notification", savedNotification); // Gửi đến một client cụ thể
-//     // }
-
-//     // Phản hồi thành công
-//     res.status(201).json({
-//       success: true,
-//       message: "Notification created successfully",
-//       data: savedNotification,
-//     });
-//   } catch (error) {
-//     // Xử lý lỗi
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to create notification",
-//       error: error.message,
-//     });
-//   }
-// };
 const createNotification = async (notificationData) => {
   try {
     // Kiểm tra các trường bắt buộc trước khi tạo
@@ -323,36 +255,6 @@ const deleteNotification = async (req, res) => {
   }
 };
 
-// const getGlobalNotifications = async (req, res) => {
-//   try {
-//     const { page = 1, limit = 10, sort = "-createdAt" } = req.params;
-
-//     const notifications = await Notification.find({ isGlobal: true })
-//       .sort(sort) // Sắp xếp, mặc định là mới nhất trước
-//       .skip((page - 1) * limit) // Skip số thông báo trước trang hiện tại
-//       .limit(parseInt(limit)); // Giới hạn số lượng thông báo mỗi trang
-
-//     const total = await Notification.countDocuments({ isGlobal: true });
-//     console.log(notifications);
-//     res.status(200).json({
-//       success: true,
-//       message: "Global notifications retrieved successfully",
-//       data: notifications,
-//       pagination: {
-//         total,
-//         page: parseInt(limit),
-//         limit: parseInt(limit),
-//         totalPages: Math.ceil(total / limit),
-//       },
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to fetch global notifications",
-//       error: error.message,
-//     });
-//   }
-// };
 const getGlobalNotifications = async (req, res) => {
   try {
     // Lấy tham số phân trang từ query
@@ -392,10 +294,6 @@ const getGlobalNotifications = async (req, res) => {
 
 const getUserNotificationsWithPagination = async (req, res) => {
   try {
-    // const userId = req.user._id;
-    // const userId = req.params.id;
-    // const { userId } = req.params;
-    // Lấy userId từ các nguồn khác nhau
     const userId =
       req.user?._id || req.params.userId || req.query.userId || req.body.user;
     if (!userId) {
@@ -445,61 +343,6 @@ const getUserNotificationsWithPagination = async (req, res) => {
   }
 };
 
-// const createBulkNotifications = async (req, res) => {
-//   try {
-//     const {
-//       userIds,
-//       title,
-//       message,
-//       type,
-//       priority,
-//       expiresAt,
-//       meta,
-//       scheduledAt,
-//     } = req.body || req.params.userId || req.body.user;
-
-//     // Kiểm tra xem userIds có phải là mảng không
-//     if (!Array.isArray(userIds) || userIds.length === 0) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "User IDs are required and must be an array",
-//       });
-//     }
-
-//     // Kiểm tra xem scheduledAt có được cung cấp không
-//     if (!scheduledAt) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "ScheduledAt is required",
-//       });
-//     }
-
-//     const notifications = userIds.map((userId) => ({
-//       user: userId,
-//       title,
-//       message,
-//       type,
-//       priority,
-//       expiresAt,
-//       meta,
-//       scheduledAt, // Thêm trường scheduledAt
-//     }));
-
-//     const savedNotifications = await Notification.insertMany(notifications);
-
-//     res.status(201).json({
-//       success: true,
-//       message: "Notifications created for multiple users successfully",
-//       data: savedNotifications,
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to create notifications for multiple users",
-//       error: error.message,
-//     });
-//   }
-// };
 const createBulkNotifications = async (notificationData) => {
   try {
     const { userIds, title, message, scheduledAt, ...rest } = notificationData;

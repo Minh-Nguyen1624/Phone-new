@@ -69,7 +69,7 @@ const Profiler = () => {
             <strong>Ngày sinh:</strong>
             {""}
             {user.dateOfBirth
-              ? new Date(user.dateOfBorth).toLocaleDateString()
+              ? new Date(user.dateOfBirth).toLocaleDateString()
               : "Chưa cập nhật"}
           </p>
           <button

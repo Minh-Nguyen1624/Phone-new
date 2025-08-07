@@ -90,13 +90,13 @@ const createMomoRequest = async (
       }
     }
 
-    console.log("🔹 Using Endpoint:", endpoint);
-    console.log("🔹 Using returnUrl:", returnUrl);
-    console.log("🔹 Using notifyUrl:", notifyUrl);
-    console.log(
-      `🔹 Attempt ${attempt + 1}/${maxRetries} - Transaction created at:`,
-      new Date().toISOString()
-    );
+    // console.log("🔹 Using Endpoint:", endpoint);
+    // console.log("🔹 Using returnUrl:", returnUrl);
+    // console.log("🔹 Using notifyUrl:", notifyUrl);
+    // console.log(
+    //   `🔹 Attempt ${attempt + 1}/${maxRetries} - Transaction created at:`,
+    //   new Date().toISOString()
+    // );
 
     const params = {
       accessKey,
@@ -119,13 +119,13 @@ const createMomoRequest = async (
       .sort()
       .map((key) => `${key}=${params[key]}`)
       .join("&");
-    console.log("🔹 Raw Signature:", rawSignature);
+    // console.log("🔹 Raw Signature:", rawSignature);
 
     const signature = crypto
       .createHmac("sha256", secretKey)
       .update(rawSignature)
       .digest("hex");
-    console.log("🔹 Generated Signature:", signature);
+    // console.log("🔹 Generated Signature:", signature);
 
     const request = {
       partnerCode,
@@ -147,17 +147,17 @@ const createMomoRequest = async (
       request.paymentCode = paymentCode;
     }
 
-    console.log("🔹 Full Request Payload:", JSON.stringify(request, null, 2));
+    // console.log("🔹 Full Request Payload:", JSON.stringify(request, null, 2));
 
     try {
       const response = await axios.post(endpoint, request, {
         headers: { "Content-Type": momoConfig.contentType },
         timeout: timeoutGeneral,
       });
-      console.log(
-        "✅ Full MoMo Response:",
-        JSON.stringify(response.data, null, 2)
-      );
+      // console.log(
+      //   "✅ Full MoMo Response:",
+      //   JSON.stringify(response.data, null, 2)
+      // );
       if (response.data.resultCode !== 0) {
         console.error(
           "MoMo API Error:",
@@ -189,7 +189,7 @@ const queryMomoTransaction = async (orderId, requestId) => {
     momoConfig;
   const baseEndpoint = endpoint.substring(0, endpoint.lastIndexOf("/create"));
   const queryEndpoint = `${baseEndpoint}/query`;
-  console.log("🔹 Query Endpoint:", queryEndpoint);
+  // console.log("🔹 Query Endpoint:", queryEndpoint);
 
   const rawSignature = `accessKey=${accessKey}&orderId=${orderId}&partnerCode=${partnerCode}&requestId=${requestId}`;
   const signature = crypto
@@ -197,8 +197,8 @@ const queryMomoTransaction = async (orderId, requestId) => {
     .update(rawSignature)
     .digest("hex");
 
-  console.log("🔹 Query Raw Signature:", rawSignature);
-  console.log("🔹 Query Signature:", signature);
+  // console.log("🔹 Query Raw Signature:", rawSignature);
+  // console.log("🔹 Query Signature:", signature);
 
   const request = {
     partnerCode,
@@ -209,12 +209,12 @@ const queryMomoTransaction = async (orderId, requestId) => {
   };
 
   try {
-    console.log("🔹 Querying MoMo transaction at:", new Date().toISOString());
+    // console.log("🔹 Querying MoMo transaction at:", new Date().toISOString());
     const response = await axios.post(queryEndpoint, request, {
       headers: { "Content-Type": momoConfig.contentType },
       timeout: timeoutGeneral, // Sử dụng timeout từ cấu hình (30 giây)
     });
-    console.log("✅ MoMo Query Response:", response.data);
+    // console.log("✅ MoMo Query Response:", response.data);
 
     if (response.data.resultCode === 0 || response.data.resultCode === 1000) {
       return response.data;

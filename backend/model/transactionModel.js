@@ -41,18 +41,6 @@ const transactionSchema = new mongoose.Schema(
       ],
       required: true,
     },
-    // paymentMethod: {
-    //   type: String,
-    //   enum: [
-    //     "credit_card",
-    //     "paypal",
-    //     "bank_transfer",
-    //     "cash",
-    //     "wallet",
-    //     "crypto",
-    //   ],
-    //   required: true,
-    // },
     paymentMethod: {
       type: String,
       required: true,
@@ -154,22 +142,6 @@ transactionSchema.pre("save", async function (next) {
     // console.log("Payment payment method:", payment.paymentMethod);
 
     // So sánh paymentMethod
-    // if (this.paymentMethod !== order.paymentMethod) {
-    //   return next(
-    //     new Error("Payment method does not match the order payment method")
-    //   );
-    // }
-
-    // // Kiểm tra transactionId cho các phương thức không phải COD
-    // if (this.paymentMethod !== "Cash on Delivery") {
-    //   if (!this.transactionId || this.transactionId.trim() === "") {
-    //     return next(
-    //       new Error(
-    //         "Transaction ID is required for non-Cash on Delivery payments"
-    //       )
-    //     );
-    //   }
-    // }
     if (
       this.paymentMethod !== order.paymentMethod ||
       this.paymentMethod !== payment.paymentMethod

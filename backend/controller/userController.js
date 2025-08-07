@@ -314,307 +314,6 @@ const registerUser = async (req, res) => {
   }
 };
 
-// const loginUser = async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
-
-//     const jwtSecret = process.env.JWT_SECRET;
-//     if (!jwtSecret) {
-//       return res.status(500).json({
-//         message:
-//           "JWT_SECRET chưa được cấu hình trong biến môi trường. Vui lòng kiểm tra file .env.",
-//       });
-//     }
-
-//     const user = await User.findOne({ email }).select("+password");
-//     if (!user) {
-//       return res.status(404).json({ message: "Không tìm thấy người dùng." });
-//     }
-
-//     if (!user.password) {
-//       return res
-//         .status(500)
-//         .json({ message: "Mật khẩu người dùng bị thiếu trong cơ sở dữ liệu." });
-//     }
-
-//     if (user.isLocked) {
-//       return res
-//         .status(403)
-//         .json({ message: "Tài khoản đã bị khóa. Vui lòng liên hệ hỗ trợ." });
-//     }
-
-//     if (!user.isActive) {
-//       return res.status(403).json({
-//         message: "Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ hỗ trợ.",
-//       });
-//     }
-
-//     const isPasswordValid = await user.comparePassword(password.trim());
-//     if (!isPasswordValid) {
-//       return res
-//         .status(401)
-//         .json({ success: false, message: "Mật khẩu không đúng." });
-//     }
-
-//     user.lastLogin = new Date();
-//     await user.save();
-
-//     const token = jwt.sign(
-//       { userId: user._id, name: user.username, role: user.role }, // Không populate, chỉ dùng _id
-//       jwtSecret,
-//       { expiresIn: "24h" }
-//     );
-
-//     const clientType = req.headers["x-client-type"] || "api";
-//     if (clientType === "frontend") {
-//       return res.status(200).json({
-//         message: "Đăng nhập thành công.",
-//         token,
-//         // redirect: "/profile",
-//         redirect: "/",
-//         user: {
-//           id: user._id,
-//           username: user.username,
-//           email: user.email,
-//           phone: user.phone,
-//           role: user.role, // Trả về _id của Role
-//           emailNotifications: user.emailNotifications,
-//           smsNotifications: user.smsNotifications,
-//           lastLogin: user.lastLogin,
-//         },
-//       });
-//     } else {
-//       return res.status(200).json({
-//         message: "Đăng nhập thành công.",
-//         token,
-//         user: {
-//           id: user._id,
-//           username: user.username,
-//           email: user.email,
-//           phone: user.phone,
-//           role: user.role, // Trả về _id của Role
-//           emailNotifications: user.emailNotifications,
-//           smsNotifications: user.smsNotifications,
-//           lastLogin: user.lastLogin,
-//         },
-//       });
-//     }
-//   } catch (error) {
-//     console.error("Lỗi đăng nhập:", error);
-//     res.status(500).json({
-//       message: "Lỗi khi đăng nhập",
-//       error: error.message,
-//     });
-//   }
-// };
-// const loginUser = async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
-
-//     const jwtSecret = process.env.JWT_SECRET;
-//     if (!jwtSecret) {
-//       return res.status(500).json({
-//         message:
-//           "JWT_SECRET chưa được cấu hình trong biến môi trường. Vui lòng kiểm tra file .env.",
-//       });
-//     }
-
-//     // Populate role để lấy thông tin vai trò
-//     const user = await User.findOne({ email })
-//       .select("+password")
-//       .populate("role", "name");
-//     if (!user) {
-//       return res.status(404).json({ message: "Không tìm thấy người dùng." });
-//     }
-
-//     if (!user.password) {
-//       return res
-//         .status(500)
-//         .json({ message: "Mật khẩu người dùng bị thiếu trong cơ sở dữ liệu." });
-//     }
-
-//     if (user.isLocked) {
-//       return res
-//         .status(403)
-//         .json({ message: "Tài khoản đã bị khóa. Vui lòng liên hệ hỗ trợ." });
-//     }
-
-//     if (!user.isActive) {
-//       return res.status(403).json({
-//         message: "Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ hỗ trợ.",
-//       });
-//     }
-
-//     const isPasswordValid = await user.comparePassword(password.trim());
-//     if (!isPasswordValid) {
-//       return res
-//         .status(401)
-//         .json({ success: false, message: "Mật khẩu không đúng." });
-//     }
-
-//     user.lastLogin = new Date();
-//     await user.save();
-
-//     const token = jwt.sign(
-//       { userId: user._id, name: user.username, role: user.role._id }, // Lưu _id của role
-//       jwtSecret,
-//       { expiresIn: "24h" }
-//     );
-
-//     const clientType = req.headers["x-client-type"] || "api";
-//     let redirectPath = "/"; // Mặc định là trang chủ
-//     if (user.role.name === "admin") {
-//       redirectPath = "/admin"; // Điều hướng đến trang admin nếu là admin
-//     }
-
-//     if (clientType === "frontend") {
-//       return res.status(200).json({
-//         message: "Đăng nhập thành công.",
-//         token,
-//         redirect: redirectPath,
-//         user: {
-//           id: user._id,
-//           username: user.username,
-//           email: user.email,
-//           phone: user.phone,
-//           role: user.role._id, // Trả về _id của Role
-//           isAdmin: user.role.name === "admin", // Thêm cờ để frontend kiểm tra
-//           emailNotifications: user.emailNotifications,
-//           smsNotifications: user.smsNotifications,
-//           lastLogin: user.lastLogin,
-//         },
-//       });
-//     } else {
-//       return res.status(200).json({
-//         message: "Đăng nhập thành công.",
-//         token,
-//         user: {
-//           id: user._id,
-//           username: user.username,
-//           email: user.email,
-//           phone: user.phone,
-//           role: user.role._id,
-//           isAdmin: user.role.name === "admin",
-//           emailNotifications: user.emailNotifications,
-//           smsNotifications: user.smsNotifications,
-//           lastLogin: user.lastLogin,
-//         },
-//       });
-//     }
-//   } catch (error) {
-//     console.error("Lỗi đăng nhập:", error);
-//     res.status(500).json({
-//       message: "Lỗi khi đăng nhập",
-//       error: error.message,
-//     });
-//   }
-// };
-// const loginUser = async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
-
-//     const jwtSecret = process.env.JWT_SECRET;
-//     if (!jwtSecret) {
-//       return res.status(500).json({
-//         message:
-//           "JWT_SECRET chưa được cấu hình trong biến môi trường. Vui lòng kiểm tra file .env.",
-//       });
-//     }
-
-//     // Populate role để lấy thông tin tên vai trò
-//     const user = await User.findOne({ email })
-//       .select("+password")
-//       .populate("role", "name");
-//     if (!user) {
-//       return res.status(404).json({ message: "Không tìm thấy người dùng." });
-//     }
-
-//     if (!user.password) {
-//       return res
-//         .status(500)
-//         .json({ message: "Mật khẩu người dùng bị thiếu trong cơ sở dữ liệu." });
-//     }
-
-//     if (user.isLocked) {
-//       return res
-//         .status(403)
-//         .json({ message: "Tài khoản đã bị khóa. Vui lòng liên hệ hỗ trợ." });
-//     }
-
-//     if (!user.isActive) {
-//       return res.status(403).json({
-//         message: "Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ hỗ trợ.",
-//       });
-//     }
-
-//     const isPasswordValid = await user.comparePassword(password.trim());
-//     if (!isPasswordValid) {
-//       return res
-//         .status(401)
-//         .json({ success: false, message: "Mật khẩu không đúng." });
-//     }
-
-//     user.lastLogin = new Date();
-//     await user.save();
-
-//     const token = jwt.sign(
-//       {
-//         userId: user._id,
-//         name: user.username,
-//         // role: user.role._id
-//         role: user.role.roleName,
-//       }, // Lưu _id của role
-//       jwtSecret,
-//       { expiresIn: "24h" }
-//     );
-
-//     const clientType = req.headers["x-client-type"] || "api";
-//     let redirectPath = "/"; // Mặc định là trang chủ
-//     // if (user.role && user.role.name === "admin") {
-//     if (user.role && user.role.roleName === "admin") {
-//       redirectPath = "/admin"; // Điều hướng đến trang admin nếu là admin
-//     }
-
-//     if (clientType === "frontend") {
-//       return res.status(200).json({
-//         message: "Đăng nhập thành công.",
-//         token,
-//         redirect: redirectPath,
-//         user: {
-//           id: user._id,
-//           username: user.username,
-//           email: user.email,
-//           phone: user.phone,
-//           role: user.role._id, // Trả về _id của Role
-//           emailNotifications: user.emailNotifications,
-//           smsNotifications: user.smsNotifications,
-//           lastLogin: user.lastLogin,
-//         },
-//       });
-//     } else {
-//       return res.status(200).json({
-//         message: "Đăng nhập thành công.",
-//         token,
-//         user: {
-//           id: user._id,
-//           username: user.username,
-//           email: user.email,
-//           phone: user.phone,
-//           role: user.role._id,
-//           emailNotifications: user.emailNotifications,
-//           smsNotifications: user.smsNotifications,
-//           lastLogin: user.lastLogin,
-//         },
-//       });
-//     }
-//   } catch (error) {
-//     console.error("Lỗi đăng nhập:", error);
-//     res.status(500).json({
-//       message: "Lỗi khi đăng nhập",
-//       error: error.message,
-//     });
-//   }
-// };
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -652,6 +351,13 @@ const loginUser = async (req, res) => {
         message: "Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ hỗ trợ.",
       });
     }
+
+    // if (!user.isVerified) {
+    //   return res.status(403).json({
+    //     message:
+    //       "Tài khoản chưa được xác minh. Vui lòng kiểm tra email để xác minh tài khoản.",
+    //   });
+    // }
 
     const isPasswordValid = await user.comparePassword(password.trim());
     if (!isPasswordValid) {
@@ -889,54 +595,6 @@ const deleteUser = async (req, res) => {
   }
 };
 
-// const forgotPassword = async (req, res) => {
-//   try {
-//     const { email } = req.body;
-
-//     // Kiểm tra xem email có được gửi lên không
-//     if (!email) {
-//       return res.status(400).json({ message: "Email is required" });
-//     }
-
-//     // Tìm user dựa vào email
-//     const user = await User.findOne({ email });
-//     if (!user) {
-//       return res.status(404).json({ message: "User not found" });
-//     }
-
-//     // Kiểm tra nếu tài khoản đã bị khóa
-//     if (user.isLocked) {
-//       return res
-//         .status(403)
-//         .json({ message: "Account is locked. Please contact support." });
-//     }
-
-//     // Tạo token reset mật khẩu
-//     const resetToken = crypto.randomBytes(32).toString("hex"); // Generate random token
-//     user.resetToken = crypto
-//       .createHash("sha256")
-//       .update(resetToken)
-//       .digest("hex");
-//     user.resetTokenExpires = Date.now() + 3600000; // 1 hour
-//     await user.save();
-
-//     // Tạo link reset mật khẩu
-//     const resetUrl = `http://localhost:3000/reset-password?token=${resetToken}`;
-//     const message = `Click vào link sau để đặt lại mật khẩu: ${resetUrl}`;
-
-//     // Gửi email
-//     await sendEmail(user.email, "Reset Password", message);
-
-//     res
-//       .status(200)
-//       .json({ message: "Password reset link sent to email", resetToken, user });
-//   } catch (error) {
-//     res.status(500).json({
-//       message: "Error sending password reset link",
-//       error: error.message,
-//     });
-//   }
-// };
 const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -1054,42 +712,6 @@ const resetPassword = async (req, res) => {
   }
 };
 
-// const verifyEmail = async (req, res) => {
-//   const { token } = req.params;
-//   try {
-//     if (!token || token.split(" ")[0] !== "Bearer") {
-//       return res.status(400).json({ message: "Invalid token format" });
-//     }
-//     // const decoded = jwt.verify(
-//     //   token,
-//     //   process.env.JWT_SECRET || "your_hardcoded_secret_key"
-//     // );
-//     const decoded = jwt.verify(
-//       token.split(" ")[1],
-//       process.env.JWT_SECRET || "your_hardcoded_secret_key"
-//     );
-//     const user = await User.findById(decoded.userId);
-//     if (!user) {
-//       return res.status(404).json({ message: "User not found" });
-//     }
-
-//     if (user.emailVerified) {
-//       res.status(400).json({ message: "Email already verified" });
-//     }
-
-//     user.emailVerified = true;
-//     await user.save();
-
-//     res.status(200).json({ message: "Email verified successfully" });
-//   } catch (error) {
-//     if (error.name === "TokenExpiredError") {
-//       return res.status(400).json({ message: "Token expired" });
-//     }
-//     res
-//       .status(500)
-//       .json({ message: "Error verifying email", error: error.message });
-//   }
-// };
 const verifyEmail = async (req, res) => {
   try {
     const { token } = req.query;
@@ -1119,15 +741,55 @@ const verifyEmail = async (req, res) => {
 
 const getUserProfile = async (req, res) => {
   try {
+    // kiểm tra người dùng đã được xác thực chưa
+    if (!req.user || !req.user._id) {
+      return res.status(401).join({
+        success: false,
+        message: "Bạn chưa đăng nhập",
+      });
+    }
     const user = await User.findById(req.user._id)
       .select("-password")
-      .populate("role", "roleName description");
+      .populate("role", "roleName description") // Populate trường role
+      .populate("address", "street district ward city country province") // Populate địa chỉ
+      .populate("order", "orderNumber orderDate orderStatus") // Populate đơn hàng
+      .populate("cart", "items") // Populate giỏ hàng
+      .populate("review", "reviewTitle reviewContent rating") // Populate đánh giá
+      .populate(
+        "transaction",
+        "paymentMethod transactionDate description currency transactionFee"
+      ) // Populate giao dịch
+      .populate("notifications", "title message meta"); // Populate thông báo
+
     if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found",
       });
     }
+
+    if (user.isLocked) {
+      return res.status(401).json({
+        success: false,
+        message: "Tài khoản của bạn đã bị khóa",
+      });
+    }
+
+    if (!user.isActive) {
+      return res.status(401).json({
+        success: false,
+        message: "Tài khoản của bạn đã bị vô hiệu hóa",
+      });
+    }
+
+    // // kiểm tra xác minh email
+    // if (!user.isVerified) {
+    //   return res.status(401).json({
+    //     success: false,
+    //     message: "Bạn cần xác minh email",
+    //   });
+    // }
+
     res.status(200).json({
       success: true,
       data: user,
@@ -1360,6 +1022,22 @@ const logoutAllDevices = asyncHandler(async (req, res) => {
 
 const updateNotifications = async (req, res) => {
   try {
+    // Kiểm tra xem người dùng đã được xác thực chưa
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({
+        success: false,
+        message: "Không được phép truy cập. Vui lòng đăng nhập.",
+      });
+    }
+
+    // Kiểm tra quyền: Chỉ cho phép cập nhật thông báo của chính người dùng
+    if (req.user._id.toString() !== req.params.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Bạn chỉ có thể cập nhật thông báo của chính mình.",
+      });
+    }
+
     const { emailNotifications, smsNotifications } = req.body;
 
     // Tìm user theo ID từ token (được gán từ middleware auth)
@@ -1370,6 +1048,35 @@ const updateNotifications = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // // Kiểm tra xác minh email
+    // if (!user.isVerified) {
+    //   return res.status(403).json({
+    //     success: false,
+    //     message:
+    //       "Tài khoản chưa được xác minh. Vui lòng kiểm tra email để xác minh tài khoản.",
+    //   });
+    // }
+
+    // Cập nhật cài đặt thông báo
+    if (emailNotifications !== undefined) {
+      if (typeof emailNotifications !== "boolean") {
+        return res.status(400).json({
+          success: false,
+          message: "emailNotifications phải là giá trị boolean.",
+        });
+      }
+      user.emailNotifications = emailNotifications;
+    }
+    if (smsNotifications !== undefined) {
+      if (typeof smsNotifications !== "boolean") {
+        return res.status(400).json({
+          success: false,
+          message: "smsNotifications phải là giá trị boolean.",
+        });
+      }
+      user.smsNotifications = smsNotifications;
+    }
+
     // Cập nhật thông báo nếu có giá trị mới
     if (emailNotifications !== undefined) {
       user.emailNotifications = emailNotifications;
@@ -1377,6 +1084,7 @@ const updateNotifications = async (req, res) => {
     if (smsNotifications !== undefined) {
       user.smsNotifications = smsNotifications;
     }
+
     // user.emailNotifications =
     //   emailNotifications !== undefined
     //     ? emailNotifications

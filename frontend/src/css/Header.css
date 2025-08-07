@@ -110,6 +110,13 @@ body {
   padding: 8px 0;
 }
 
+.header__map {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+  height: 43px;
+}
+
 .main-menu {
   display: flex;
   gap: 32px;

@@ -10,13 +10,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@geoapify/leaflet-address-search-plugin": "^1.0.2",
     "axios": "^1.10.0",
     "bootstrap": "^5.3.7",
     "create-react-app": "^5.1.0",
+    "leaflet": "^1.9.4",
     "qrcode": "^1.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
+    "react-leaflet": "^5.0.0",
     "react-router-dom": "^7.6.2"
   },
   "devDependencies": {

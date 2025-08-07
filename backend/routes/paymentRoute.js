@@ -95,19 +95,6 @@ router.put(
 // router.delete("/delete/:id", deletePayment);
 router.delete("/delete/:id", protect, adminMiddleware, deletePayment);
 
-// router.post(
-//   "/refund/:id",
-//   [
-//     body("refundAmount")
-//       .isFloat({ gt: 0 })
-//       .withMessage("Refund amount must be greater than 0"),
-//     body("refundAt")
-//       .optional()
-//       .isISO8601()
-//       .withMessage("Refund date must be a valid ISO8601 date"),
-//   ],
-//   refundPayment
-// );
 // Hoàn tiền payment (chỉ admin)
 router.post(
   "/refund/:id",

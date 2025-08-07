@@ -97,14 +97,14 @@ const createVnPayWalletRequest = async (
     })
     .join("&");
 
-  console.log("🔹 Sign Data (create):", signData);
+  // console.log("🔹 Sign Data (create):", signData);
 
   const vnp_SecureHash = crypto
     .createHmac("sha512", vnpayConfig.secretKey)
     .update(signData)
     .digest("hex");
 
-  console.log("🔹 Generated vnp_SecureHash (create):", vnp_SecureHash);
+  // console.log("🔹 Generated vnp_SecureHash (create):", vnp_SecureHash);
 
   // Create paymentUrl with properly encoded parameters
   const urlParams = {};
@@ -119,7 +119,7 @@ const createVnPayWalletRequest = async (
     .map((key) => `${key}=${urlParams[key]}`)
     .join("&");
   const paymentUrl = `${vnpayConfig.endpoint}?${queryString}&vnp_SecureHash=${vnp_SecureHash}`;
-  console.log("🔹 Payment URL:", paymentUrl);
+  // console.log("🔹 Payment URL:", paymentUrl);
 
   const paramsForVerification = { ...vnp_Params, vnp_SecureHash };
 
@@ -138,7 +138,7 @@ const createVnPayWalletRequest = async (
 
 const verifySignature = (params, secretKey) => {
   if (!params || !params.vnp_SecureHash) {
-    console.log("🔹 Error: Missing vnp_SecureHash in parameters");
+    // console.log("🔹 Error: Missing vnp_SecureHash in parameters");
     return false;
   }
 
@@ -158,15 +158,15 @@ const verifySignature = (params, secretKey) => {
     })
     .join("&");
 
-  console.log("🔹 Verify Sign Data:", signData);
+  // console.log("🔹 Verify Sign Data:", signData);
 
   const computedHash = crypto
     .createHmac("sha512", secretKey)
     .update(signData)
     .digest("hex");
 
-  console.log("🔹 Computed Hash:", computedHash);
-  console.log("🔹 Received vnp_SecureHash:", vnp_SecureHash);
+  // console.log("🔹 Computed Hash:", computedHash);
+  // console.log("🔹 Received vnp_SecureHash:", vnp_SecureHash);
 
   return computedHash === vnp_SecureHash;
 };
@@ -205,7 +205,7 @@ const queryTransaction = async (orderId, txnRef, createDate) => {
         },
       }
     );
-    console.log("🔹 Transaction Status:", response.data);
+    // console.log("🔹 Transaction Status:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error checking transaction status:", error.message);

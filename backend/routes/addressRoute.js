@@ -18,9 +18,9 @@ const {
   adminMiddleware,
 } = require("../middleware/authMiddleware");
 
-// router.post("/add", createAddress);
+router.post("/add", createAddress);
 // Route để thêm địa chỉ mới (yêu cầu đăng nhập)
-router.post("/add", authMiddleware, createAddress);
+// router.post("/add", authMiddleware, createAddress);
 
 // Route để lấy danh sách địa chỉ của một người dùng (yêu cầu đăng nhập)
 // router.get("/:userId", getAddressByUser);
@@ -35,12 +35,13 @@ router.get("/", authMiddleware, adminMiddleware, getAddresses);
 router.get("/:id", authMiddleware, getAddressById);
 
 // Route để lấy địa chỉ mặc định của người dùng (yêu cầu đăng nhập)
-router.get("/default/:userId", authMiddleware, getDefaultAddress);
+// router.get("/default/:userId", authMiddleware, getDefaultAddress);
+router.get("/default/:userId", getDefaultAddress);
 // router.get("/default", getDefaultAddress);
 
 // Route để cập nhật địa chỉ (yêu cầu đăng nhập)
-router.put("/update/:id", authMiddleware, updateAddress);
-// router.put("/update/:id", updateAddress);
+// router.put("/update/:id", authMiddleware, updateAddress);
+router.put("/update/:id", updateAddress);
 
 // Route để đặt địa chỉ làm mặc định (yêu cầu đăng nhập)
 // router.put("/:id/default", setDefaultAddress);
@@ -52,7 +53,8 @@ router.delete("/delete/:id", authMiddleware, deleteAddress);
 
 // Route để tìm kiếm địa chỉ của một người dùng (yêu cầu đăng nhập)
 // router.get("/search", searchAddresses);
-router.get("/search/:userId", authMiddleware, searchAddresses);
+// router.get("/search/:userId", authMiddleware, searchAddresses);
+router.get("/search/:userId", searchAddresses);
 
 // Route để xóa tất cả địa chỉ của một người dùng (yêu cầu đăng nhập)
 // router.delete("/user/:userId", deleteAllAddressesByUser);

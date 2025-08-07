@@ -26,13 +26,13 @@ const vnpayConfig = {
   bankCode: process.env.vnp_BankCode || "VNPAY",
 };
 
-console.log("🔹 Loaded VNPAY Config:", {
-  tmnCode: vnpayConfig.tmnCode,
-  secretKey: vnpayConfig.secretKey,
-  endpoint: vnpayConfig.endpoint,
-  returnUrl: vnpayConfig.returnUrl,
-  ipnUrl: vnpayConfig.ipnUrl,
-  version: vnpayConfig.version,
-});
+// console.log("🔹 Loaded VNPAY Config:", {
+//   tmnCode: vnpayConfig.tmnCode,
+//   secretKey: vnpayConfig.secretKey,
+//   endpoint: vnpayConfig.endpoint,
+//   returnUrl: vnpayConfig.returnUrl,
+//   ipnUrl: vnpayConfig.ipnUrl,
+//   version: vnpayConfig.version,
+// });
 
 module.exports = vnpayConfig;

@@ -1,0 +1,325 @@
+.quickfilter {
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  width: 100%;
+  height: 100%;
+}
+
+.quickfilter_desktop-computer {
+  cursor: pointer;
+  /* margin: 0 6px 10px; */
+  width: auto;
+  max-width: fit-content;
+  display: flex;
+  align-items: center;
+  padding: 4px 8px 4px 8px;
+  border-radius: 8px;
+  border: 2px solid rgba(234, 236, 240, 1);
+}
+
+.quickfilter_desktop-computer img {
+  align-items: center;
+  background-color: #f4f4f4;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  height: 40px;
+  margin: 0 auto;
+  width: 40px;
+}
+
+.quickfilter_desktop-computer span {
+  text-align: left;
+  font-size: 13px;
+  line-height: 17px;
+  color: #333;
+  display: flex;
+  margin-left: 5px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  width: auto;
+  max-width: 125px;
+}
+
+.quickfilter_monitor {
+  cursor: pointer;
+  /* margin: 0 6px 10px; */
+  margin-left: 10px;
+  width: auto;
+  max-width: fit-content;
+  display: flex;
+  align-items: center;
+  padding: 4px 8px 4px 8px;
+  border-radius: 8px;
+  border: 2px solid rgba(234, 236, 240, 1);
+}
+
+.quickfilter_monitor img {
+  align-items: center;
+  background-color: #f4f4f4;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  height: 40px;
+  margin: 0 auto;
+  width: 40px;
+}
+
+.quickfilter_monitor span {
+  text-align: left;
+  font-size: 13px;
+  line-height: 17px;
+  color: #333;
+  display: flex;
+  margin-left: 5px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  width: auto;
+  max-width: 125px;
+}
+
+.quickfilter_desktop-computer:hover,
+.quickfilter_monitor:hover,
+.printer:hover,
+.screen-mount:hover,
+.printing-ink:hover,
+.printing-paper:hover,
+.handheld-gaming-device:hover {
+  /* background-color: rgba(234, 236, 240, 0.5); */
+  border: 2px solid rgb(91, 132, 214);
+  transition: border 0.3s ease;
+}
+
+.cate-main-filter-1 {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+  /* margin-bottom: 20px; */
+  margin-top: 32px;
+}
+
+.selected-filter {
+  border: 2px solid #939ee8;
+  border-radius: 8px;
+  /* padding: 2px; */
+  padding: 4px 8px 4px 8px;
+}
+
+.brand-filters {
+  display: flex;
+  /* flex-wrap: wrap; */
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.filter_brand {
+  width: 65px;
+}
+
+.screen-mount {
+  cursor: pointer;
+  /* margin: 0 6px 10px; */
+  margin-left: 10px;
+  width: auto;
+  max-width: fit-content;
+  display: flex;
+  align-items: center;
+  padding: 4px 8px 4px 8px;
+  border-radius: 8px;
+  border: 2px solid rgba(234, 236, 240, 1);
+}
+
+.screen-mount img {
+  align-items: center;
+  background-color: #f4f4f4;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  height: 40px;
+  margin: 0 auto;
+  width: 40px;
+}
+
+.screen-mount span {
+  text-align: left;
+  font-size: 13px;
+  line-height: 17px;
+  color: #333;
+  display: flex;
+  margin-left: 5px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  width: auto;
+  max-width: 125px;
+}
+
+.printer {
+  cursor: pointer;
+  /* margin: 0 6px 10px; */
+  margin-left: 10px;
+  width: auto;
+  max-width: fit-content;
+  display: flex;
+  align-items: center;
+  padding: 4px 8px 4px 8px;
+  border-radius: 8px;
+  border: 2px solid rgba(234, 236, 240, 1);
+}
+
+.printer img {
+  align-items: center;
+  background-color: #f4f4f4;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  height: 40px;
+  margin: 0 auto;
+  width: 40px;
+}
+
+.printer span {
+  text-align: left;
+  font-size: 13px;
+  line-height: 17px;
+  color: #333;
+  display: flex;
+  margin-left: 5px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  width: auto;
+  max-width: 125px;
+}
+
+.printing-ink {
+  cursor: pointer;
+  /* margin: 0 6px 10px; */
+  margin-left: 10px;
+  width: auto;
+  max-width: fit-content;
+  display: flex;
+  align-items: center;
+  padding: 4px 8px 4px 8px;
+  border-radius: 8px;
+  border: 2px solid rgba(234, 236, 240, 1);
+}
+
+.printing-ink img {
+  align-items: center;
+  background-color: #f4f4f4;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  height: 40px;
+  margin: 0 auto;
+  width: 40px;
+}
+
+.printing-ink span {
+  text-align: left;
+  font-size: 13px;
+  line-height: 17px;
+  color: #333;
+  display: flex;
+  margin-left: 5px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  width: auto;
+  max-width: 125px;
+}
+
+.printing-paper {
+  cursor: pointer;
+  /* margin: 0 6px 10px; */
+  margin-left: 10px;
+  width: auto;
+  max-width: fit-content;
+  display: flex;
+  align-items: center;
+  padding: 4px 8px 4px 8px;
+  border-radius: 8px;
+  border: 2px solid rgba(234, 236, 240, 1);
+}
+
+.printing-paper img {
+  align-items: center;
+  background-color: #f4f4f4;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  height: 40px;
+  margin: 0 auto;
+  width: 40px;
+}
+
+.printing-paper span {
+  text-align: left;
+  font-size: 13px;
+  line-height: 17px;
+  color: #333;
+  display: flex;
+  margin-left: 5px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  width: auto;
+  max-width: 125px;
+}
+
+.handheld-gaming-device {
+  cursor: pointer;
+  /* margin: 0 6px 10px; */
+  margin-left: 10px;
+  width: auto;
+  max-width: fit-content;
+  display: flex;
+  align-items: center;
+  padding: 4px 8px 4px 8px;
+  border-radius: 8px;
+  border: 2px solid rgba(234, 236, 240, 1);
+}
+
+.handheld-gaming-device img {
+  align-items: center;
+  background-color: #f4f4f4;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  height: 40px;
+  margin: 0 auto;
+  width: 40px;
+}
+
+.handheld-gaming-device span {
+  text-align: left;
+  font-size: 13px;
+  line-height: 17px;
+  color: #333;
+  display: flex;
+  margin-left: 5px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  width: auto;
+  max-width: 125px;
+}

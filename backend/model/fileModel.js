@@ -158,35 +158,6 @@ const fileSchema = new mongoose.Schema(
   }
 );
 
-// fileSchema.pre("save", function (next) {
-//   const extension = this.fileName.split(".").pop().toLowerCase();
-//   const allowedExtensions = ["pdf", "doc", "docx", "jpg", "png", "mp4"];
-//   if (!allowedExtensions.includes(extension)) {
-//     return next(new Error("Unsupported file extension"));
-//   }
-//   next();
-// });
-
-// Middleware để ánh xạ file type dựa vào extension
-// fileSchema.pre("save", function (next) {
-//   const fileExtension = this.fileName.split(".").pop().toLowerCase();
-//   const categoryMapping = {
-//     doc: "Word",
-//     docx: "Word",
-//     pdf: "PDF",
-//     jpg: "Image",
-//     png: "Image",
-//     gif: "Image",
-//     xls: "Spreadsheet",
-//     xlsx: "Spreadsheet",
-//     mp4: "Video",
-//     avi: "Video",
-//   };
-
-//   this.fileCategory = categoryMapping[fileExtension] || "Other";
-//   next();
-// });
-
 // Middleware kiểm tra file extension
 fileSchema.pre("save", function (next) {
   if (!this.fileName || !this.fileName.includes(".")) {

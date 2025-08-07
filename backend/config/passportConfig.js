@@ -14,12 +14,12 @@ const { default: mongoose } = require("mongoose");
 const { sendEmail } = require("../utils/email");
 require("dotenv").config();
 
-console.log("Passport config loaded"); // Debug
-console.log("GOOGLE_CLIENT_ID:", process.env.GOOGLE_CLIENT_ID);
-console.log("FACEBOOK_CLIENT_ID:", process.env.FACEBOOK_CLIENT_ID);
-console.log("GITHUB_CLIENT_ID:", process.env.GITHUB_CLIENT_ID);
-console.log("TWITTER_CONSUMER_KEY:", process.env.TWITTER_CONSUMER_KEY);
-console.log("TIKTOK_CLIENT_ID:", process.env.TIKTOK_CLIENT_ID);
+// console.log("Passport config loaded"); // Debug
+// console.log("GOOGLE_CLIENT_ID:", process.env.GOOGLE_CLIENT_ID);
+// console.log("FACEBOOK_CLIENT_ID:", process.env.FACEBOOK_CLIENT_ID);
+// console.log("GITHUB_CLIENT_ID:", process.env.GITHUB_CLIENT_ID);
+// console.log("TWITTER_CONSUMER_KEY:", process.env.TWITTER_CONSUMER_KEY);
+// console.log("TIKTOK_CLIENT_ID:", process.env.TIKTOK_CLIENT_ID);
 
 const hashPassword = async (password) => {
   try {
@@ -31,154 +31,8 @@ const hashPassword = async (password) => {
     console.error("Error in hashing password:", error);
   }
 };
+
 // Google Strategy
-// if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-//   console.error("Missing Google OAuth credentials");
-// } else {
-//   passport.use(
-//     new GoogleStrategy(
-//       {
-//         clientID: process.env.GOOGLE_CLIENT_ID,
-//         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-//         callbackURL: "http://localhost:8080/api/users/auth/google/callback",
-//         scope: ["profile", "email"],
-//       },
-//       async (accessToken, refreshToken, profile, done) => {
-//         try {
-//           console.log("Google Profile:", profile);
-//           const email =
-//             profile.emails && profile.emails[0]
-//               ? profile.emails[0].value
-//               : null;
-//           if (!email) {
-//             return done(new Error("No email provided by Google"), null);
-//           }
-
-//           let user = await User.findOne({ email });
-//           if (!user) {
-//             let defaultRole = await Role.findOne({
-//               roleName: { $regex: "^user$", $options: "i" },
-//             });
-//             if (!defaultRole) {
-//               defaultRole = await Role.create({
-//                 roleName: "user",
-//                 description: "Default user role",
-//               });
-//               console.log("Created default role 'user':", defaultRole);
-//             }
-//             const hashedPassword = await bcrypt.hash("temp_password", 10);
-
-//             user = new User({
-//               username: profile.displayName || "Unknown User",
-//               email: email,
-//               password: hashedPassword,
-//               role: defaultRole._id,
-//               gender: "other",
-//               dateOfBirth: new Date(),
-//               phone: "0368800168",
-//               isProfileComplete: false,
-//               isVerified: false,
-//             });
-//             await user.save();
-//             console.log("New user created:", user);
-
-//             const verificationToken = crypto.randomBytes(20).toString("hex");
-//             user.verificationToken = verificationToken;
-//             user.verificationTokenExpires = Date.now() + 86400000; // 24 giờ
-//             await user.save();
-
-//             const verificationUrl = `http://localhost:5173/verify-email?token=${verificationToken}`;
-//             try {
-//               await sendEmail(
-//                 email,
-//                 "Xác minh email",
-//                 `Vui lòng nhấp vào liên kết để xác minh email: ${verificationUrl}`,
-//                 `<p>Vui lòng <a href="${verificationUrl}">nhấp vào đây</a> để xác minh email. Liên kết sẽ hết hạn sau 24 giờ.</p>`
-//               );
-//               console.log("Verification email sent successfully");
-//             } catch (emailError) {
-//               console.error("Failed to send verification email:", emailError);
-//               return done(
-//                 new Error(
-//                   "Tài khoản đã được tạo nhưng không thể gửi email xác minh. Vui lòng thử lại sau hoặc liên hệ hỗ trợ."
-//                 ),
-//                 null
-//               );
-//             }
-
-//             return done(
-//               new Error(
-//                 "Tài khoản mới đã được tạo. Vui lòng kiểm tra email để xác nhận danh tính trước khi đăng nhập qua Google."
-//               ),
-//               null
-//             );
-//           } else {
-//             if (!user.isVerified) {
-//               const verificationToken = crypto.randomBytes(20).toString("hex");
-//               user.verificationToken = verificationToken;
-//               user.verificationTokenExpires = Date.now() + 86400000; // 24 giờ
-//               await user.save();
-
-//               // const verificationUrl = `http://localhost:3000/verify-email?token=${verificationToken}`;
-//               const verificationUrl = `http://localhost:5173/verify-email?token=${verificationToken}`;
-//               try {
-//                 await sendEmail(
-//                   email,
-//                   "Xác minh email",
-//                   `Vui lòng nhấp vào liên kết để xác minh email: ${verificationUrl}`,
-//                   `<p>Vui lòng <a href="${verificationUrl}">nhấp vào đây</a> để xác minh email. Liên kết sẽ hết hạn sau 24 giờ.</p>`
-//                 );
-//                 console.log("Verification email sent successfully");
-//               } catch (emailError) {
-//                 console.error("Failed to send verification email:", emailError);
-//                 return done(
-//                   new Error(
-//                     "Không thể gửi email xác minh. Vui lòng thử lại sau hoặc liên hệ hỗ trợ."
-//                   ),
-//                   null
-//                 );
-//               }
-
-//               return done(
-//                 new Error(
-//                   "Email này đã được sử dụng. Vui lòng kiểm tra email để xác nhận danh tính trước khi đăng nhập qua Google."
-//                 ),
-//                 null
-//               );
-//             }
-
-//             user.lastLogin = new Date();
-//             await user.save();
-
-//             const jwtSecret = process.env.JWT_SECRET;
-//             if (!jwtSecret) {
-//               return done(
-//                 new Error("JWT_SECRET is not defined in environment variables"),
-//                 null
-//               );
-//             }
-
-//             const token = jwt.sign(
-//               {
-//                 userId: user._id,
-//                 name: user.username,
-//                 role: user.role?.roleName,
-//               },
-//               jwtSecret,
-//               { expiresIn: "24h" }
-//             );
-
-//             user.token = token;
-//             return done(null, user);
-//           }
-//         } catch (error) {
-//           console.error("Error in GoogleStrategy:", error);
-//           return done(error, null);
-//         }
-//       }
-//     )
-//   );
-// }
 passport.use(
   new GoogleStrategy(
     {
@@ -201,8 +55,6 @@ passport.use(
           return done(new Error("Google không cung cấp email."), null);
         }
 
-        console.log("Google Profile:", profile); // In profile để kiểm tra dữ liệu
-
         let user = await User.findOne({ email });
         if (!user) {
           let defaultRole = await Role.findOne({
@@ -213,7 +65,6 @@ passport.use(
               roleName: "user", // Sửa từ name thành roleName
               description: "Default user role",
             });
-            console.log("Created default role 'user':", defaultRole);
           }
           const hashedPassword = await bcrypt.hash("temp_password", 10);
 
@@ -257,7 +108,6 @@ passport.use(
               `Vui lòng nhấp vào liên kết để xác minh email: ${verificationUrl}`,
               `<p>Vui lòng <a href="${verificationUrl}">nhấp vào đây</a> để xác minh email. Liên kết sẽ hết hạn sau 24 giờ.</p>`
             );
-            console.log("Verification email sent successfully");
           } catch (emailError) {
             console.error("Failed to send verification email:", emailError);
             return done(
@@ -291,7 +141,6 @@ passport.use(
               `Vui lòng nhấp vào liên kết để xác minh email: ${verificationUrl}`,
               `<p>Vui lòng <a href="${verificationUrl}">nhấp vào đây</a> để xác minh email. Liên kết sẽ hết hạn sau 24 giờ.</p>`
             );
-            console.log("Verification email sent successfully");
           } catch (emailError) {
             console.error("Failed to send verification email:", emailError);
             return done(
@@ -352,7 +201,6 @@ if (!process.env.FACEBOOK_APP_ID || !process.env.FACEBOOK_CLIENT_SECRET) {
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
-          console.log("Google Profile:", profile); // Debug profile
           const email =
             profile.emails && profile.emails[0]
               ? profile.emails[0].value
@@ -386,7 +234,6 @@ if (!process.env.FACEBOOK_APP_ID || !process.env.FACEBOOK_CLIENT_SECRET) {
               isProfileComplete: false, // Chưa hoàn thiện
             });
             await user.save();
-            console.log("New user created:", user);
           }
           done(null, user);
         } catch (error) {
@@ -413,7 +260,6 @@ if (!process.env.GITHUB_CLIENT_ID || !process.env.GITHUB_CLIENT_SECRET) {
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
-          console.log("GitHub Profile:", profile); // Debug để xem profile
           const email =
             profile.emails && profile.emails[0]
               ? profile.emails[0].value
@@ -443,7 +289,6 @@ if (!process.env.GITHUB_CLIENT_ID || !process.env.GITHUB_CLIENT_SECRET) {
                 isProfileComplete: false,
               });
               await user.save();
-              console.log("New user created with temp email:", user);
             }
             return done(null, user);
           }
@@ -466,7 +311,6 @@ if (!process.env.GITHUB_CLIENT_ID || !process.env.GITHUB_CLIENT_SECRET) {
               isProfileComplete: false,
             });
             await user.save();
-            console.log("New user created:", user);
           }
           return done(null, user);
         } catch (error) {
@@ -493,7 +337,6 @@ if (!process.env.TWITTER_CONSUMER_KEY || !process.env.TWITTER_CONSUMER_SECRET) {
       },
       async (token, tokenSecret, profile, done) => {
         try {
-          console.log("Twitter Profile:", profile); // Debug profile
           const email =
             profile.emails && profile.emails[0]
               ? profile.emails[0].value
@@ -529,7 +372,6 @@ if (!process.env.TWITTER_CONSUMER_KEY || !process.env.TWITTER_CONSUMER_SECRET) {
               isProfileComplete: false, // Chưa hoàn thiện
             });
             await user.save();
-            console.log("New user created:", user);
           }
           return done(null, user);
         } catch (error) {
@@ -565,9 +407,9 @@ passport.use(
     },
     async (req, accessToken, refreshToken, profile, done) => {
       try {
-        console.log("Access Token:", accessToken);
-        console.log("Refresh Token:", refreshToken);
-        console.log("Profile:", profile);
+        // console.log("Access Token:", accessToken);
+        // console.log("Refresh Token:", refreshToken);
+        // console.log("Profile:", profile);
 
         if (!profile || !profile.open_id) {
           console.error("Invalid TikTok profile data:", profile);
@@ -595,7 +437,6 @@ passport.use(
             gender: null,
           });
           await user.save();
-          console.log("New TikTok user created:", user);
         }
 
         return done(null, user);
@@ -606,181 +447,6 @@ passport.use(
     }
   )
 );
-
-// // Hàm lấy thông tin profile từ TikTok API
-// passport._strategies['tiktok'].userProfile = async (accessToken, done) => {
-//   try {
-//     const fetch = (await import('node-fetch')).default;
-//     const url = 'https://open.tiktokapis.com/v2/user/info/?fields=open_id,union_id,avatar_url,display_name';
-//     console.log('Fetching TikTok user profile with URL:', url);
-
-//     const response = await fetch(url, {
-//       method: 'GET',
-//       headers: {
-//         Authorization: `Bearer ${accessToken}`,
-//       },
-//     });
-
-//     const text = await response.text();
-//     console.log('Raw TikTok API Response:', text);
-
-//     if (!response.ok) {
-//       throw new Error(`TikTok API error: ${response.status} - ${text}`);
-//     }
-
-//     const userData = JSON.parse(text);
-//     console.log('Parsed TikTok User Data:', userData);
-
-//     if (!userData.data || !userData.data.user) {
-//       return done(new Error('Invalid TikTok user data: ' + JSON.stringify(userData)));
-//     }
-
-//     done(null, userData.data.user);
-//   } catch (error) {
-//     console.error('Error fetching TikTok user profile:', error);
-//     done(error);
-//   }
-// };
-
-// // Kiểm tra biến môi trường
-// if (!process.env.TIKTOK_CLIENT_ID || !process.env.TIKTOK_CLIENT_SECRET) {
-//   console.error('Missing TikTok OAuth credentials');
-//   process.exit(1);
-// }
-
-// // Hàm tạo code_verifier và code_challenge
-// function generateCodeVerifier() {
-//   return crypto.randomBytes(32).toString('base64url');
-// }
-
-// function generateCodeChallenge(verifier) {
-//   return crypto.createHash('sha256').update(verifier).digest('base64url');
-// }
-
-// // Lưu code_verifier và state
-// const codeVerifiers = new Map();
-// const states = new Map();
-
-// // Cấu hình TikTok Strategy
-// passport.use(
-//   'tiktok', // Tên chiến lược
-//   new OAuth2Strategy(
-//     {
-//       authorizationURL: 'https://www.tiktok.com/v2/auth/authorize/',
-//       tokenURL: 'https://open.tiktokapis.com/v2/oauth/token/',
-//       clientID: process.env.TIKTOK_CLIENT_ID,
-//       clientSecret: process.env.TIKTOK_CLIENT_SECRET,
-//       callbackURL: 'http://localhost:8080/auth/tiktok/callback',
-//       scope: 'user.info.basic',
-//       passReqToCallback: true,
-//       pkce: true,
-//       state: true,
-//     },
-//     async (req, accessToken, refreshToken, profile, done) => {
-//       try {
-//         console.log('Access Token:', accessToken);
-//         console.log('Refresh Token:', refreshToken);
-//         console.log('Profile:', profile);
-
-//         if (!profile || !profile.open_id) {
-//           console.error('Invalid TikTok profile data:', profile);
-//           return done(new Error('Invalid TikTok profile data'));
-//         }
-
-//         const tiktokId = profile.open_id;
-//         let user = await User.findOne({ tiktokId });
-
-//         if (!user) {
-//           const defaultRole = await Role.findOne({ roleName: 'user' });
-//           if (!defaultRole) {
-//             console.error('Default role "user" not found');
-//             return done(new Error('Default role "user" not found'));
-//           }
-
-//           user = new User({
-//             tiktokId,
-//             username: profile.display_name || 'TikTok User',
-//             isProfileComplete: false,
-//             role: defaultRole._id,
-//             email: null,
-//             phone: null,
-//             dateOfBirth: null,
-//             gender: null,
-//           });
-//           await user.save();
-//           console.log('New TikTok user created:', user);
-//         }
-
-//         return done(null, user);
-//       } catch (error) {
-//         console.error('Error in TikTok OAuth:', error);
-//         return done(error);
-//       }
-//     }
-//   )
-// );
-
-// // Tùy chỉnh authorizationParams
-// passport.use('tiktok').authorizationParams = function (options) {
-//   const codeVerifier = generateCodeVerifier();
-//   const codeChallenge = generateCodeChallenge(codeVerifier);
-//   const state = crypto.randomBytes(16).toString('hex');
-
-//   codeVerifiers.set(this._callbackURL, codeVerifier);
-//   states.set(this._callbackURL, state);
-
-//   return {
-//     code_challenge: codeChallenge,
-//     code_challenge_method: 'S256',
-//     state: state,
-//   };
-// };
-
-// // Tùy chỉnh tokenParams
-// passport.use('tiktok').tokenParams = function (options) {
-//   const codeVerifier = codeVerifiers.get(this._callbackURL);
-//   if (!codeVerifier) {
-//     throw new Error('No code verifier found for this session');
-//   }
-
-//   codeVerifiers.delete(this._callbackURL);
-//   states.delete(this._callbackURL);
-
-//   return { code_verifier: codeVerifier };
-// };
-
-// // Hàm userProfile
-// passport._strategies['tiktok'].userProfile = async (accessToken, done) => {
-//   try {
-//     const fetch = (await import('node-fetch')).default;
-//     const url = 'https://open.tiktokapis.com/v2/user/info/?fields=open_id,union_id,avatar_url,display_name';
-//     console.log('Fetching TikTok user profile with URL:', url);
-
-//     const response = await fetch(url, {
-//       method: 'GET',
-//       headers: { Authorization: `Bearer ${accessToken}` },
-//     });
-
-//     const text = await response.text();
-//     console.log('Raw TikTok API Response:', text);
-
-//     if (!response.ok) {
-//       throw new Error(`TikTok API error: ${response.status} - ${text}`);
-//     }
-
-//     const userData = JSON.parse(text);
-//     console.log('Parsed TikTok User Data:', userData);
-
-//     if (!userData.data || !userData.data.user) {
-//       return done(new Error('Invalid TikTok user data: ' + JSON.stringify(userData)));
-//     }
-
-//     done(null, userData.data.user);
-//   } catch (error) {
-//     console.error('Error fetching TikTok user profile:', error);
-//     done(error);
-//   }
-// };
 
 // Kiểm tra biến môi trường
 console.log("Checking environment variables...");
@@ -808,7 +474,7 @@ const codeVerifiers = new Map();
 const states = new Map();
 
 // Cấu hình TikTok Strategy
-console.log("Configuring TikTok strategy...");
+// console.log("Configuring TikTok strategy...");
 passport.use(
   "tiktok",
   new OAuth2Strategy(
@@ -824,10 +490,10 @@ passport.use(
       state: true,
     },
     async (req, accessToken, refreshToken, profile, done) => {
-      console.log("Inside OAuth2Strategy callback...");
-      console.log("Access Token:", accessToken);
-      console.log("Refresh Token:", refreshToken);
-      console.log("Profile:", profile);
+      // console.log("Inside OAuth2Strategy callback...");
+      // console.log("Access Token:", accessToken);
+      // console.log("Refresh Token:", refreshToken);
+      // console.log("Profile:", profile);
 
       if (!profile || !profile.open_id) {
         return done(new Error("Invalid TikTok profile data"));
@@ -851,7 +517,7 @@ passport.use(
       return done(null, user);
     },
     function authorizationParams(options) {
-      console.log("Generating authorization params...");
+      // console.log("Generating authorization params...");
       const codeVerifier = generateCodeVerifier();
       const codeChallenge = generateCodeChallenge(codeVerifier);
       const state = crypto.randomBytes(16).toString("hex");
@@ -865,7 +531,7 @@ passport.use(
       };
     },
     function tokenParams(options) {
-      console.log("Generating token params...");
+      // console.log("Generating token params...");
       const codeVerifier = codeVerifiers.get(this._callbackURL);
       if (!codeVerifier) throw new Error("No code verifier found");
       codeVerifiers.delete(this._callbackURL);
@@ -879,7 +545,7 @@ passport.use(
 );
 
 passport._strategies["tiktok"].userProfile = async (accessToken, done) => {
-  console.log("Fetching user profile...");
+  // console.log("Fetching user profile...");
   if (!accessToken) {
     return done(new Error("Access token is missing"));
   }
@@ -887,8 +553,8 @@ passport._strategies["tiktok"].userProfile = async (accessToken, done) => {
   const fetch = (await import("node-fetch")).default;
   const url =
     "https://open.tiktokapis.com/v2/user/info/?fields=open_id,union_id,avatar_url,display_name";
-  console.log("Fetching TikTok user profile with URL:", url);
-  console.log("Access Token:", accessToken);
+  // console.log("Fetching TikTok user profile with URL:", url);
+  // console.log("Access Token:", accessToken);
 
   const response = await fetch(url, {
     method: "GET",
@@ -899,14 +565,14 @@ passport._strategies["tiktok"].userProfile = async (accessToken, done) => {
   });
 
   const text = await response.text();
-  console.log("Raw TikTok API Response:", text);
+  // console.log("Raw TikTok API Response:", text);
 
   if (!response.ok) {
     throw new Error(`TikTok API error: ${response.status} - ${text}`);
   }
 
   const userData = JSON.parse(text);
-  console.log("Parsed TikTok User Data:", userData);
+  // console.log("Parsed TikTok User Data:", userData);
 
   if (!userData.data || !userData.data.user) {
     return done(
@@ -919,14 +585,14 @@ passport._strategies["tiktok"].userProfile = async (accessToken, done) => {
 
 // Lưu user vào session
 passport.serializeUser((user, done) => {
-  console.log("Serializing user:", user.id);
+  // console.log("Serializing user:", user.id);
   done(null, user.id);
 });
 
 // Lấy user từ session
 passport.deserializeUser(async (id, done) => {
   try {
-    console.log("Deserializing user with id:", id);
+    // console.log("Deserializing user with id:", id);
     const user = await User.findById(id);
     done(null, user);
   } catch (error) {

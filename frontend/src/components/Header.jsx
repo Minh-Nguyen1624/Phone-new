@@ -1,22 +1,31 @@
 import React, { useState, useEffect } from "react";
-import { FaGoogle, FaSearch, FaUser } from "react-icons/fa";
+import {
+  FaGoogle,
+  FaSearch,
+  FaUser,
+  FaHeadphones,
+  FaCartPlus,
+  FaCaretDown,
+} from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Logout from "./Logout";
+import AdminDashboard from "../components/AdminDashboard";
+import AddressTag from "../components/AddressTag";
 import "../css/Header.css";
 
 const API_URL = "http://localhost:8080/api";
 
-const Header = ({ onSearch, onFilterByCategory }) => {
-  const [user, setUser] = useState(null);
+const Header = ({ onSearch, onFilterByCategory, user: propUser }) => {
+  const [user, setUser] = useState(propUser);
   const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState([]);
+  const [totalPhones, setTotalPhones] = useState(0); // Tổng số điện thoại
 
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    console.log("Token:", token); // Kiểm tra token
     if (token) {
       const fetchUserProfile = async () => {
         try {
@@ -26,7 +35,6 @@ const Header = ({ onSearch, onFilterByCategory }) => {
               headers: { Authorization: `Bearer ${token}` },
             }
           );
-          console.log("User data:", response.data); // Log dữ liệu trả về
           if (response.data.success && response.data.data) {
             setUser(response.data.data);
           } else {
@@ -43,7 +51,29 @@ const Header = ({ onSearch, onFilterByCategory }) => {
       };
       fetchUserProfile();
     }
+
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/categorys/all`, {
+          params: { isActive: "true" }, // Chỉ lấy danh mục active
+        });
+        if (response.data.success) {
+          setCategory(response.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching categories: ", error.message);
+      }
+    };
+    fetchCategories();
   }, []);
+
+  const handleClickReload = () => {
+    window.location.reload();
+  };
+
+  const handleViewInfoAdmin = () => {
+    navigate("/admin");
+  };
 
   const handleViewProfile = () => {
     navigate("/profile");
@@ -52,7 +82,6 @@ const Header = ({ onSearch, onFilterByCategory }) => {
   const handleSearch = (e) => {
     e.preventDefault();
     const trimmedQuery = searchQuery.trim();
-    console.log("Header search - query:", trimmedQuery); // Debug
     if (onSearch && trimmedQuery) {
       onSearch(trimmedQuery); // Gửi query trực tiếp
     }
@@ -63,7 +92,7 @@ const Header = ({ onSearch, onFilterByCategory }) => {
       <div className="header__top">
         <a href="/" className="header-logo">
           <FaGoogle />
-          <span>Điện thoại tốt</span>
+          <span>NamPhương-Store</span>
         </a>
         <form onSubmit={handleSearch} className="header__search">
           <button type="submit" aria-label="Search">
@@ -83,19 +112,23 @@ const Header = ({ onSearch, onFilterByCategory }) => {
         <div className="profile">
           {user ? (
             <>
-              <span className="name-order mr-4">
-                <FaUser />
-                <span>Chào, {user.username || "Người dùng"}</span>
-              </span>
               <a
                 href="#"
                 className="header__cart mr-4"
                 onClick={handleViewProfile}
               >
                 <FaUser />
-                <span>Xem Profile</span>
+                <span>Chào, {user.username || "Người dùng"}</span>
               </a>
-              <Logout setUser={setUser} />
+              {user.role.roleName === "admin" && (
+                <a
+                  href="#"
+                  className="header-cart"
+                  onClick={handleViewInfoAdmin}
+                >
+                  Thông tin quản trị
+                </a>
+              )}
             </>
           ) : (
             <a href="/login" className="name-order">
@@ -104,11 +137,17 @@ const Header = ({ onSearch, onFilterByCategory }) => {
             </a>
           )}
           <a href="#" className="header__cart">
-            <FaGoogle />
+            <FaCartPlus />
             <span>Giỏ Hàng</span>
           </a>
+          {/* <a href="#" className="header__map">
+            <AddressTag />
+          </a> */}
         </div>
       </div>
+      <a href="#" className="header__map">
+        <AddressTag />
+      </a>
       <div className="header__main">
         <div>
           <ul className="main-menu">
@@ -118,7 +157,8 @@ const Header = ({ onSearch, onFilterByCategory }) => {
                 onClick={(e) => {
                   e.preventDefault();
                   // if (onFilterByCategory) onFilterByCategory("smartphones");
-                  navigate("/category/smartphones");
+                  navigate("/smartphones");
+                  handleClickReload();
                 }}
               >
                 <i>
@@ -135,7 +175,9 @@ const Header = ({ onSearch, onFilterByCategory }) => {
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  if (onFilterByCategory) onFilterByCategory("categoryId2");
+                  // if (onFilterByCategory) onFilterByCategory("categoryId2");
+                  navigate("/laptops");
+                  handleClickReload();
                 }}
               >
                 <i>
@@ -152,16 +194,19 @@ const Header = ({ onSearch, onFilterByCategory }) => {
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  if (onFilterByCategory) onFilterByCategory("categoryId3");
+                  // if (onFilterByCategory) onFilterByCategory("categoryId3");
+                  navigate("/monitors");
+                  handleClickReload();
                 }}
               >
                 <i>
                   <img
                     src="https://cdn.tgdd.vn/content/PC-24x24.png"
-                    alt="Máy tính"
+                    alt="Màn hình"
                   />
                 </i>
-                <span>Máy tính</span>
+                <span>Màn hình</span>
+                <FaCaretDown style={{ marginLeft: "5px" }} />
               </a>
             </li>
             <li className="item">
@@ -179,6 +224,24 @@ const Header = ({ onSearch, onFilterByCategory }) => {
                   />
                 </i>
                 <span>Tablet</span>
+              </a>
+            </li>
+            <li className="item">
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (onFilterByCategory) onFilterByCategory("categoryId4");
+                }}
+              >
+                <i>
+                  <img
+                    src="https://cdn.tgdd.vn/content/phu-kien-24x24.png"
+                    alt="Phụ kiện"
+                  />
+                </i>
+                <span>Phụ kiện</span>
+                <FaCaretDown style={{ marginLeft: "5px" }} />
               </a>
             </li>
           </ul>

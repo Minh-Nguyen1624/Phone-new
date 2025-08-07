@@ -117,58 +117,7 @@ const cancelFolder = asyncHandler(async (req, res) => {
 });
 
 // Function to create a folder
-// const createdFolder = async (req, res) => {
-//   try {
-//     const { name, parentFolder, user, tags, description } = req.body;
 
-//     // Ensure that the user exists (optional validation)
-//     const existingUser = await User.findById(user);
-//     if (!existingUser) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "User not found",
-//       });
-//     }
-
-//     // Ensure that the parent folder exists (optional validation)
-//     if (parentFolder) {
-//       const existingParentFolder = await Folder.findById(parentFolder);
-//       if (!existingParentFolder) {
-//         return res.status(400).json({
-//           success: false,
-//           message: "Parent folder not found",
-//         });
-//       }
-//     }
-//     const newFolder = new Folder({
-//       name,
-//       parentFolder,
-//       user,
-//       tags,
-//       // auditLogs: [
-//       //   {
-//       //     timestamp: new Date(),
-//       //     action: "Folder created",
-//       //   },
-//       // ],
-//       description,
-//     });
-
-//     const savedFolder = await newFolder.save();
-
-//     res.status(201).json({
-//       success: true,
-//       message: "Folder created successfully",
-//       data: savedFolder,
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Error creating folder",
-//       error: error.message,
-//     });
-//   }
-// };
 const createdFolder = asyncHandler(async (req, res) => {
   const { name, parentFolder, tags } = req.body;
   const userId = req.user._id;
@@ -240,28 +189,7 @@ const createdFolder = asyncHandler(async (req, res) => {
 });
 
 // Function to list files in a folder
-// const listFilesInFolder = async (req, res) => {
-//   try {
-//     const { folderId } = req.params;
 
-//     const files = await File.find({ parentFolder: folderId }).populate(
-//       "user",
-//       "username email"
-//     );
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Files in folder retrieved successfully",
-//       data: files,
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Error listing files in folder",
-//       error: error.message,
-//     });
-//   }
-// };
 const listFilesInFolder = asyncHandler(async (req, res) => {
   const { folderId } = req.params;
 
@@ -302,77 +230,6 @@ const listFilesInFolder = asyncHandler(async (req, res) => {
   });
 });
 
-// const getAllFolders = async (req, res) => {
-//   try {
-//     // const { userId } = req.params;
-//     const { userId } = req.body.user;
-//     const { page = 1, limit = 100 } = req.query;
-//     // const folders = await Folder.find({ user: userId })
-//     if (
-//       isNaN(parseInt(page)) ||
-//       isNaN(parseInt(limit)) ||
-//       parseInt(page) <= 0 ||
-//       parseInt(limit) <= 0
-//     ) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Invalid pagination parameters",
-//       });
-//     }
-//     const folders = await Folder.find()
-//       .populate("parentFolder", "name") // Populate parent folder name
-//       .sort({ createdAt: -1 })
-//       .skip((page - 1) * limit)
-//       .limit(parseInt(limit));
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Folders retrieved successfully",
-//       folders: folders,
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to fetch folders",
-//       error: error.message,
-//     });
-//   }
-// };
-
-// Function to delete a folder
-// const deleteFolder = async (req, res) => {
-//   try {
-//     const { folderId } = req.params;
-
-//     // if (!isValidObjectId(folderId)) {
-//     //   return res.status(400).json({
-//     //     success: false,
-//     //     message: "Invalid folder ID",
-//     //   });
-//     // }
-
-//     const folder = await Folder.findByIdAndDelete(folderId, { delete: true });
-
-//     if (!folder) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Folder not found",
-//       });
-//     }
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Folder deleted successfully",
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Error deleting folder",
-//       error: error.message,
-//     });
-//   }
-// };
 const getAllFolders = asyncHandler(async (req, res) => {
   const {
     page = 1,
@@ -468,41 +325,6 @@ const deleteFolder = asyncHandler(async (req, res) => {
   });
 });
 
-// const getFolderById = async (req, res) => {
-//   try {
-//     const { folderId } = req.params;
-//     // if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-//     if (!mongoose.Types.ObjectId.isValid(folderId)) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Invalid folder ID",
-//       });
-//     }
-//     // const folder = await Folder.findById(req.params.id)
-//     const folder = await Folder.findById(folderId)
-//       .populate("parentFolder", "name") // Populate parent folder name
-//       .populate("user", "name email"); // Populate user details
-
-//     if (!folder) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Folder not found",
-//       });
-//     }
-
-//     res.status(200).json({
-//       success: true,
-//       folder,
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to fetch folder",
-//       error: error.message,
-//     });
-//   }
-// };
 const getFolderById = asyncHandler(async (req, res) => {
   const { folderId } = req.params;
 
@@ -539,54 +361,6 @@ const getFolderById = asyncHandler(async (req, res) => {
   });
 });
 
-// const updateFolder = async (req, res) => {
-//   try {
-//     const { folderId } = req.params;
-//     // if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-//     //   return res.status(400).json({
-//     //     success: false,
-//     //     message: "Invalid folder ID",
-//     //   });
-//     // }
-//     if (!mongoose.Types.ObjectId.isValid(folderId)) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Invalid folder ID",
-//       });
-//     }
-//     const { name, parentFolder, description, tags } = req.body;
-//     const folder = await Folder.findById(folderId);
-
-//     if (!folder) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Folder not found",
-//       });
-//     }
-
-//     // Update the folder fields
-//     folder.name = name || folder.name;
-//     folder.parentFolder = parentFolder || folder.parentFolder;
-//     folder.description = description || folder.description;
-//     folder.tags = tags || folder.tags;
-
-//     // Save the updated folder
-//     await folder.save();
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Folder updated successfully",
-//       folder,
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to update folder",
-//       error: error.message,
-//     });
-//   }
-// };
 const updateFolder = asyncHandler(async (req, res) => {
   const { folderId } = req.params;
   const { name, tags } = req.body;
@@ -689,7 +463,6 @@ const downloadFolder = asyncHandler(async (req, res) => {
   }
 
   const folderPath = path.join(BASE_DIR, folder.name || "NewFolder");
-  console.log("Zipping folder path:", folderPath);
 
   // Kiểm tra và thử lại nếu file bị khóa
   const checkAndWait = async (path, maxAttempts = 5, delay = 1000) => {
@@ -699,7 +472,6 @@ const downloadFolder = asyncHandler(async (req, res) => {
         return true;
       } catch (error) {
         if (error.code === "EACCES" && attempt < maxAttempts) {
-          console.log(`File locked, retrying (${attempt}/${maxAttempts})...`);
           await new Promise((resolve) => setTimeout(resolve, delay));
         } else {
           throw error;
@@ -751,7 +523,6 @@ const downloadFolder = asyncHandler(async (req, res) => {
   });
 
   output.on("error", (err) => {
-    console.error("Output stream error:", err);
     res.status(500).json({
       success: false,
       message: "Error writing ZIP file",
@@ -771,7 +542,6 @@ const downloadFolder = asyncHandler(async (req, res) => {
 
   archive.pipe(output);
   archive.directory(folderPath, false);
-  console.log("Directory added to ZIP:", folderPath);
   await archive.finalize();
 
   const zipBuffer = await fsPromises.readFile(tempZipPath);

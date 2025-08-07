@@ -8,7 +8,7 @@ const convertVNDToUSD = async (amountInVND) => {
   const amountInUSD = Number(
     (amountInVND * EXCHANGE_RATE_VND_TO_USD).toFixed(2)
   );
-  console.log(`Converted ${amountInVND} VND to ${amountInUSD} USD`);
+  // console.log(`Converted ${amountInVND} VND to ${amountInUSD} USD`);
   return amountInUSD;
 };
 

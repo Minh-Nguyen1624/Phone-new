@@ -3,79 +3,6 @@ const User = require("../model/userModel");
 const mongoose = require("mongoose");
 
 // Thêm địa chỉ mới
-// const createAddress = async (req, res) => {
-//   try {
-//     const {
-//       user,
-//       recipientName,
-//       phoneNumber,
-//       street,
-//       city,
-//       state,
-//       postalCode,
-//       country,
-//     } = req.body;
-
-//     if (
-//       !user ||
-//       !recipientName ||
-//       !phoneNumber ||
-//       !street ||
-//       !city ||
-//       !country
-//     ) {
-//       return res.status(400).json({
-//         message:
-//           "User, recipientName, phoneNumber, street, city, and country are required.",
-//       });
-//     }
-
-//     const userExists = await User.findById(user);
-//     if (!userExists) {
-//       return res.status(404).json({ message: "User not found." });
-//     }
-
-//     const newAddress = new Address({
-//       user,
-//       recipientName,
-//       phoneNumber,
-//       street,
-//       city,
-//       state,
-//       postalCode,
-//       country,
-//     });
-
-//     await newAddress.save();
-
-//     // Kiểm tra và khởi tạo addresses nếu không tồn tại
-//     if (!userExists.address) {
-//       // Nếu có trường address cũ, xóa nó và khởi tạo addresses
-//       if (userExists.address !== undefined) {
-//         userExists.address = undefined; // Xóa trường address cũ
-//       }
-//       userExists.address = [];
-//       await userExists.save();
-//     }
-
-//     // Thêm address ID vào mảng addresses
-//     await User.findByIdAndUpdate(user, {
-//       $push: { address: newAddress._id },
-//     });
-
-//     res.status(201).json({
-//       success: true,
-//       message: "Address created successfully",
-//       data: newAddress,
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Error creating address",
-//       error: error.message,
-//     });
-//   }
-// };
 const createAddress = async (req, res) => {
   try {
     const {
@@ -346,13 +273,13 @@ const updateAddress = async (req, res) => {
     //     .status(403)
     //     .json({ message: "You are not authorized to update this address." });
     // }
-    const isAdmin =
-      req.user.role && req.user.role.roleName.toLowerCase() === "admin";
-    if (!isAdmin && address.user.toString() !== userId) {
-      return res.status(403).json({
-        message: "You are not authorized to update this address.",
-      });
-    }
+    // const isAdmin =
+    //   req.user.role && req.user.role.roleName.toLowerCase() === "admin";
+    // if (!isAdmin && address.user.toString() !== userId) {
+    //   return res.status(403).json({
+    //     message: "You are not authorized to update this address.",
+    //   });
+    // }
 
     const updatedData = req.body;
     Object.assign(address, updatedData);
@@ -425,33 +352,74 @@ const deleteAddress = async (req, res) => {
   }
 };
 
+// const getDefaultAddress = async (req, res) => {
+//   try {
+//     const { userId } = req.params;
+//     let { type } = req.query;
+
+//     if (!mongoose.Types.ObjectId.isValid(userId)) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Invalid user ID.",
+//       });
+//     }
+
+//     // const isAdmin =
+//     //   req.user.role && req.user.role.roleName.toLowerCase() === "admin";
+//     // if (!isAdmin && userId !== req.user._id.toString()) {
+//     //   return res.status(403).json({
+//     //     success: false,
+//     //     message:
+//     //       "You are not authorized to access this user's default address.",
+//     //   });
+//     // }
+
+//     type = type && ["shipping", "billing"].includes(type) ? type : "shipping";
+
+//     const query = { user: userId };
+//     if (type === "shipping") query.isDefaultShipping = true;
+//     else if (type === "billing") query.isDefaultBilling = true;
+//     else if (type === "billing") query.isDefaultOther = true;
+
+//     const defaultAddress = await Address.findOne(query);
+//     if (!defaultAddress) {
+//       return res.status(404).json({
+//         success: false,
+//         message: `Default ${type} address not found.`,
+//       });
+//     }
+
+//     res.status(200).json({
+//       success: true,
+//       message: `Default ${type} address retrieved successfully.`,
+//       data: defaultAddress,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: "Failed to get default address.",
+//       error: error.message,
+//     });
+//   }
+// };
 const getDefaultAddress = async (req, res) => {
   try {
     const { userId } = req.params;
     let { type } = req.query;
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid user ID.",
-      });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid user ID." });
     }
 
-    const isAdmin =
-      req.user.role && req.user.role.roleName.toLowerCase() === "admin";
-    if (!isAdmin && userId !== req.user._id.toString()) {
-      return res.status(403).json({
-        success: false,
-        message:
-          "You are not authorized to access this user's default address.",
-      });
-    }
-
-    type = type && ["shipping", "billing"].includes(type) ? type : "shipping";
+    const validTypes = ["shipping", "billing", "other"];
+    type = type && validTypes.includes(type) ? type : "shipping";
 
     const query = { user: userId };
     if (type === "shipping") query.isDefaultShipping = true;
     else if (type === "billing") query.isDefaultBilling = true;
+    else if (type === "other") query.type = "other";
 
     const defaultAddress = await Address.findOne(query);
     if (!defaultAddress) {
@@ -461,10 +429,20 @@ const getDefaultAddress = async (req, res) => {
       });
     }
 
+    const publicAddress = {
+      street: defaultAddress.street,
+      city: defaultAddress.city,
+      district: defaultAddress.district,
+      ward: defaultAddress.ward,
+      province: defaultAddress.province,
+      postalCode: defaultAddress.postalCode,
+      country: defaultAddress.country,
+    };
+
     res.status(200).json({
       success: true,
       message: `Default ${type} address retrieved successfully.`,
-      data: defaultAddress,
+      data: publicAddress,
     });
   } catch (error) {
     res.status(500).json({
@@ -487,14 +465,14 @@ const searchAddresses = async (req, res) => {
       });
     }
 
-    const isAdmin =
-      req.user.role && req.user.role.roleName.toLowerCase() === "admin";
-    if (!isAdmin && userId !== req.user._id.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: "You are not authorized to search this user's addresses.",
-      });
-    }
+    // const isAdmin =
+    //   req.user.role && req.user.role.roleName.toLowerCase() === "admin";
+    // if (!isAdmin && userId !== req.user._id.toString()) {
+    //   return res.status(403).json({
+    //     success: false,
+    //     message: "You are not authorized to search this user's addresses.",
+    //   });
+    // }
 
     const pageNum = parseInt(page, 10);
     const limitNum = parseInt(limit, 10);

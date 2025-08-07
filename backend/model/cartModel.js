@@ -162,13 +162,6 @@ const cartSchema = new mongoose.Schema(
       default: false,
     },
     shippingInfo: {
-      // address: {
-      //   street: { type: String, required: true, trim: true },
-      //   city: { type: String, required: true, trim: true },
-      //   district: { type: String, required: true, trim: true },
-      //   country: { type: String, required: true, trim: true },
-      //   postalCode: { type: String, required: true, trim: true },
-      // },
       address: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Address",
@@ -190,87 +183,6 @@ cartSchema.pre("validate", function (next) {
   }
   next();
 });
-
-// cartSchema.pre("save", function (next) {
-//   this.totalCartPrice = this.items.reduce((total, item) => {
-//     if (!item.price || !item.quantity) {
-//       throw new Error("Invalid price or quantity in items");
-//     }
-//     return total + item.price * item.quantity;
-//   }, 0);
-//   next();
-// });
-
-// cartSchema.pre("save", async function (next) {
-//   // Populate giá và hình ảnh từ Phone
-//   const phones = await mongoose.model("Phone").find({
-//     _id: { $in: this.items.map((item) => item.phone) },
-//   });
-
-//   this.items.forEach((item) => {
-//     const phone = phones.find(
-//       (p) => p._id.toString() === item.phone.toString()
-//     );
-//     if (phone) {
-//       item.price = phone.finalPrice || phone.price; // Lấy giá từ Phone
-//       item.originalPrice = phone.price; // Lấy giá gốc từ Phone
-//       item.imageUrl = phone.imageUrl || item.imageUrl; // Lấy imageUrl từ Phone nếu có
-//     }
-//   });
-
-//   this.subTotal = this.items.reduce((total, item) => {
-//     if (!item.originalPrice || !item.quantity) {
-//       throw new Error("Invalid original price or quantity in items");
-//     }
-//     return total + item.originalPrice * item.quantity;
-//   }, 0);
-
-//   // Tính tổng giá
-//   this.totalCartPrice = this.items.reduce((total, item) => {
-//     if (!item.price || !item.quantity) {
-//       throw new Error("Invalid price or quantity in items");
-//     }
-//     return total + item.price * item.quantity;
-//   }, 0);
-
-//   // Áp dụng mã giảm giá
-//   if (this.discount) {
-//     const discount = await mongoose.model("Discount").findById(this.discount);
-//     if (discount && discount.isCurrentlyActive) {
-//       if (discount.discountType === "percentage") {
-//         this.discountAmount =
-//           (this.totalCartPrice * discount.discountValue) / 100;
-//       } else {
-//         this.discountAmount = discount.discountValue;
-//       }
-//       this.totalCartPrice -= this.discountAmount;
-
-//       // Cập nhật usedCount của Discount
-//       discount.usedCount += 1;
-//       await discount.save();
-//     } else {
-//       this.discount = null;
-//       this.discountAmount = 0;
-//     }
-//   } else {
-//     this.discountAmount = 0;
-//   }
-
-//   if (this.useLoyaltyPoints) {
-//     const user = await mongoose.model("User").findById(this.user);
-//     const pointsToUse = Math.min(user.loyaltyPoints || 0, this.totalCartPrice);
-//     this.totalCartPrice -= pointsToUse;
-//   }
-//   // // Tính phí giao hàng (giả định miễn phí)
-//   // this.shippingFee = 0;
-//   // Calculate shipping fee (placeholder logic, adjust as needed)
-//   this.shippingFee = this.shippingInfo.address ? 30000 : 0; // Example: 30,000 VND if address is set
-
-//   // Tính điểm tích lũy Quà Tặng VIP (giả định: 1đ = 2 điểm)
-//   this.loyaltyPoints = Math.floor(this.totalCartPrice * 2);
-
-//   next();
-// });
 
 cartSchema.pre("save", async function (next) {
   // Populate giá và hình ảnh từ Phone

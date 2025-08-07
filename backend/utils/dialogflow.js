@@ -1,157 +1,3 @@
-// const dialogflow = require("dialogflow");
-// const { v4: uuidv4 } = require("uuid");
-// require("dotenv").config();
-
-// const credentials = {
-//   client_email: process.env.DIALOGFLOW_CLIENT_EMAIL,
-//   private_key: process.env.DIALOGFLOW_PRIVATE_KEY,
-// };
-
-// const sessionClient = new dialogflow.SessionsClient({
-//   projectId: process.env.DIALOGFLOW_PROJECT_ID,
-//   credentials,
-// });
-
-// const detectIntent = async (text, sessionId, languageCode = "vi") => {
-//   const sessionPath = sessionClient.sessionPath(
-//     process.env.DIALOGFLOW_PROJECT_ID,
-//     sessionId
-//   );
-
-//   const request = {
-//     session: sessionPath,
-//     queryInput: {
-//       text: {
-//         text,
-//         languageCode,
-//       },
-//     },
-//   };
-
-//   try {
-//     const responses = await sessionClient.detectIntent(request);
-//     const result = responses[0].queryResult;
-//     return {
-//       intent: result.intent.displayName,
-//       response: result.fulfillmentText,
-//       parameters: result.parameters,
-//     };
-//   } catch (error) {
-//     console.error("Dialogflow Error:", error);
-//     return {
-//       intent: "default",
-//       response:
-//         "Tôi chưa hiểu câu hỏi của bạn. Bạn có muốn nói chuyện với nhân viên hỗ trợ không?",
-//     };
-//   }
-// };
-
-// module.exports = { detectIntent };
-
-// utils/dialogflow.js
-// const dialogflow = require("@google-cloud/dialogflow");
-// const { v4: uuidv4 } = require("uuid");
-// const fs = require("fs");
-// require("dotenv").config();
-
-// // Validate environment variables
-// if (
-//   !process.env.GOOGLE_APPLICATION_CREDENTIALS &&
-//   !process.env.DIALOGFLOW_PRIVATE_KEY
-// ) {
-//   throw new Error(
-//     "Either GOOGLE_APPLICATION_CREDENTIALS or DIALOGFLOW_PRIVATE_KEY must be set"
-//   );
-// }
-
-// if (!process.env.DIALOGFLOW_PROJECT_ID) {
-//   throw new Error("DIALOGFLOW_PROJECT_ID environment variable not set");
-// }
-
-// let credentials;
-// if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-//   // Use the service account key file if GOOGLE_APPLICATION_CREDENTIALS is set
-//   credentials = JSON.parse(
-//     fs.readFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS)
-//   );
-// } else {
-//   // Construct credentials manually from individual fields
-//   credentials = {
-//     client_email: process.env.DIALOGFLOW_CLIENT_EMAIL,
-//     private_key: process.env.DIALOGFLOW_PRIVATE_KEY,
-//     private_key_id: process.env.DIALOGFLOW_PRIVATE_KEY_ID,
-//   };
-// }
-
-// const projectId = process.env.DIALOGFLOW_PROJECT_ID;
-// console.log("Dialogflow Project ID:", projectId); // Debug log
-
-// // Initialize the SessionsClient with explicit credentials
-// const sessionClient = new dialogflow.SessionsClient({
-//   credentials: credentials,
-//   projectId: projectId,
-// });
-
-// const detectIntent = async (text, sessionId, languageCode = "vi") => {
-//   // Validate inputs
-//   if (!text || typeof text !== "string") {
-//     throw new Error("Text must be a non-empty string");
-//   }
-
-//   // Ensure sessionId is unique; if not provided, generate one
-//   const uniqueSessionId = sessionId || uuidv4();
-//   const sessionPath = sessionClient.projectAgentSessionPath(
-//     projectId,
-//     uniqueSessionId
-//   );
-
-//   const request = {
-//     session: sessionPath,
-//     queryInput: {
-//       text: {
-//         text: text,
-//         languageCode: languageCode,
-//       },
-//     },
-//   };
-
-//   try {
-//     const [response] = await sessionClient.detectIntent(request);
-//     const result = response.queryResult;
-
-//     // Extract parameters as a plain object
-//     const parameters =
-//       result.parameters && result.parameters.fields
-//         ? Object.keys(result.parameters.fields).reduce((acc, key) => {
-//             const value = result.parameters.fields[key];
-//             if (value.stringValue) acc[key] = value.stringValue;
-//             else if (value.numberValue) acc[key] = value.numberValue;
-//             else if (value.boolValue) acc[key] = value.boolValue;
-//             else acc[key] = null;
-//             return acc;
-//           }, {})
-//         : {};
-
-//     return {
-//       intent: result.intent ? result.intent.displayName : null,
-//       response: result.fulfillmentText || "Sorry, I didn’t understand that.",
-//       parameters: parameters,
-//       confidence: result.intentDetectionConfidence || 0,
-//     };
-//   } catch (error) {
-//     console.error("Dialogflow Error:", error);
-//     return {
-//       intent: null,
-//       response:
-//         "Tôi chưa hiểu câu hỏi của bạn. Bạn có muốn nói chuyện với nhân viên hỗ trợ không...",
-//       parameters: {},
-//       confidence: 0,
-//     };
-//   }
-// };
-
-// module.exports = { detectIntent };
-
 const { SessionsClient } = require("@google-cloud/dialogflow");
 const { v4: uuidv4 } = require("uuid");
 const fs = require("fs");
@@ -208,138 +54,6 @@ const projectId = process.env.DIALOGFLOW_PROJECT_ID;
 console.log("Dialogflow Project ID:", projectId);
 
 const sessionClient = new SessionsClient({ credentials, projectId });
-// const detectIntent = async (
-//   text,
-//   sessionId,
-//   languageCode = "vi",
-//   deepSearch = false
-// ) => {
-//   if (!text || typeof text !== "string")
-//     throw new Error("Text must be a non-empty string");
-
-//   const uniqueSessionId = sessionId || uuidv4();
-//   const sessionPath = sessionClient.projectAgentSessionPath(
-//     projectId,
-//     uniqueSessionId
-//   );
-//   console.log("Session Path:", sessionPath);
-
-//   const request = {
-//     session: sessionPath,
-//     queryInput: { text: { text, languageCode } },
-//   };
-
-//   const MAX_RETRIES = deepSearch ? 5 : 3;
-//   let attempt = 1;
-//   while (attempt <= MAX_RETRIES) {
-//     try {
-//       console.log(`Sending request to Dialogflow (Attempt ${attempt})`);
-//       const [response] = await sessionClient.detectIntent(request);
-//       console.log(
-//         "Raw Dialogflow response:",
-//         JSON.stringify(response, null, 2)
-//       );
-
-//       const result = response.queryResult;
-//       const parameters = result.parameters?.fields
-//         ? Object.keys(result.parameters.fields).reduce((acc, key) => {
-//             const value = result.parameters.fields[key];
-//             acc[key] =
-//               value.stringValue ||
-//               value.numberValue ||
-//               value.boolValue ||
-//               value.listValue?.values[0]?.stringValue ||
-//               null;
-//             return acc;
-//           }, {})
-//         : {};
-
-//       // if (
-//       //   deepSearch &&
-//       //   result.intent?.displayName === "search_product" &&
-//       //   result.confidence < 0.7
-//       // ) {
-//       //   console.log("Low confidence, initiating DeepSearch...");
-//       //   const webResults = await performDeepSearch(text);
-//       //   return {
-//       //     intent: "deep_search",
-//       //     response: `Kết quả từ web: ${webResults.join(", ")}`,
-//       //     parameters,
-//       //     confidence: 0.9,
-//       //   };
-//       // }
-//       if (
-//         deepSearch &&
-//         result.intent?.displayName === "search_product" &&
-//         result.intentDetectionConfidence < 0.7
-//       ) {
-//         console.log("Low confidence, initiating DeepSearch...");
-//         const webResults = await performDeepSearch(text);
-//         const responseText = `Kết quả từ web: ${webResults.join(", ")}`;
-//         const deepSearchMessage = {
-//           _id: uuidv4(),
-//           conversation: sessionId,
-//           sender: null,
-//           content: responseText,
-//           type: "text",
-//           isBot: true,
-//           botName: "ShopeeBot",
-//           readBy: [],
-//           createdAt: new Date(),
-//           updatedAt: new Date(),
-//         };
-//         await saveMessageToFirestore(deepSearchMessage);
-//         return {
-//           intent: "deep_search",
-//           response: responseText,
-//           parameters,
-//           confidence: 0.9,
-//         };
-//       }
-
-//       const responseText =
-//         result.fulfillmentText ||
-//         "Tôi chưa hiểu câu hỏi của bạn. Bạn có muốn nói chuyện với nhân viên hỗ trợ không...";
-//       const intentMessage = {
-//         _id: uuidv4(),
-//         conversation: sessionId,
-//         sender: null,
-//         content: responseText,
-//         type: "text",
-//         isBot: true,
-//         botName: "ShopeeBot",
-//         readBy: [],
-//         createdAt: new Date(),
-//         updatedAt: new Date(),
-//       };
-//       await saveMessageToFirestore(intentMessage);
-
-//       return {
-//         intent: result.intent?.displayName || null,
-//         response:
-//           result.fulfillmentText ||
-//           "Tôi chưa hiểu câu hỏi của bạn. Bạn có muốn nói chuyện với nhân viên hỗ trợ không...",
-//         parameters,
-//         confidence: result.intentDetectionConfidence || 0,
-//       };
-//     } catch (error) {
-//       console.error(`Attempt ${attempt} failed:`, error.message);
-//       if (attempt === MAX_RETRIES) throw error;
-//       await new Promise((resolve) =>
-//         setTimeout(resolve, 1000 * Math.pow(2, attempt - 1))
-//       ); // Exponential backoff
-//       attempt++;
-//     }
-//   }
-
-//   return {
-//     intent: null,
-//     response:
-//       "Tôi chưa hiểu câu hỏi của bạn. Bạn có muốn nói chuyện với nhân viên hỗ trợ không...",
-//     parameters: {},
-//     confidence: 0,
-//   };
-// };
 
 // Hàm phát hiện intent với retry và DeepSearch
 const detectIntent = async (
@@ -358,7 +72,7 @@ const detectIntent = async (
     projectId,
     uniqueSessionId
   );
-  console.log("Session Path:", sessionPath);
+  // console.log("Session Path:", sessionPath);
 
   const request = {
     session: sessionPath,
@@ -369,12 +83,12 @@ const detectIntent = async (
   let attempt = 1;
   while (attempt <= MAX_RETRIES) {
     try {
-      console.log(`Sending request to Dialogflow (Attempt ${attempt})`);
-      const [response] = await sessionClient.detectIntent(request);
-      console.log(
-        "Raw Dialogflow response:",
-        JSON.stringify(response, null, 2)
-      );
+      // console.log(`Sending request to Dialogflow (Attempt ${attempt})`);
+      // const [response] = await sessionClient.detectIntent(request);
+      // console.log(
+      //   "Raw Dialogflow response:",
+      //   JSON.stringify(response, null, 2)
+      // );
 
       const result = response.queryResult;
       const parameters = result.parameters?.fields
@@ -395,7 +109,7 @@ const detectIntent = async (
         result.intent?.displayName === "search_product" &&
         result.intentDetectionConfidence < 0.7
       ) {
-        console.log("Low confidence, initiating DeepSearch...");
+        // console.log("Low confidence, initiating DeepSearch...");
         const webResults = await performDeepSearch(text);
         const responseText = `Kết quả từ web: ${webResults.join(", ")}`;
         const deepSearchMessage = {

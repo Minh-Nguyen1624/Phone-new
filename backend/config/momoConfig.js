@@ -41,13 +41,13 @@ if (missingEnvVars.length > 0) {
   );
 }
 
-console.log("🔹 Momo Config Loaded:", {
-  partnerCode: momoConfig.partnerCode,
-  accessKey: momoConfig.accessKey,
-  endpoint: momoConfig.endpoint,
-  mode: process.env.MOMO_MODE || "sandbox",
-  returnUrl: momoConfig.returnUrl,
-  notifyUrl: momoConfig.notifyUrl,
-});
+// console.log("🔹 Momo Config Loaded:", {
+//   partnerCode: momoConfig.partnerCode,
+//   accessKey: momoConfig.accessKey,
+//   endpoint: momoConfig.endpoint,
+//   mode: process.env.MOMO_MODE || "sandbox",
+//   returnUrl: momoConfig.returnUrl,
+//   notifyUrl: momoConfig.notifyUrl,
+// });
 
 module.exports = momoConfig;

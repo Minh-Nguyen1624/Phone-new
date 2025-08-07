@@ -21,9 +21,15 @@ const MainProduct = ({ phone, soldQuantities, toggleLike, purchasePhone }) => {
   );
   const rating = phone.rating || 0;
   const isOutOfStock = availableStock <= 0;
-  const soldQuantity = soldQuantities[phone._id] || 0; // Default to 0 if undefined
+  const soldQuantity = soldQuantities?.[phone._id] || 0; // Default to 0 if undefined
 
-  console.log("MainProduct props:", { phone, soldQuantities, soldQuantity }); // Debug
+  console.log("MainProduct props:", {
+    phone,
+    soldQuantities,
+    soldQuantity,
+    availableStock,
+    isOutOfStock,
+  }); // Debug chi tiết
 
   const stockPercentage =
     stock > 0 ? Math.min((availableStock / stock) * 100, 100) : 0;
@@ -66,7 +72,7 @@ const MainProduct = ({ phone, soldQuantities, toggleLike, purchasePhone }) => {
               className={`bg-yellow-400 h-2.5 rounded-full ${
                 isOutOfStock ? "bg-red-500" : ""
               }`}
-              style={{ width: `${stockPercentage}px` }}
+              style={{ width: `${stockPercentage}%` }} // Đảm bảo dùng %
             >
               <span
                 className={`text-sm ml-2 ${

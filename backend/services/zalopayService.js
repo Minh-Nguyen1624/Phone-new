@@ -92,18 +92,18 @@ const createZaloPayRequest = async (
     const description = `Thanh toán đơn hàng #${orderId} - ${orderInfo}`;
     const appTransId = generateAppTransId();
 
-    console.log("ZaloPay Config:", zaloPayConfig);
-    console.log(
-      "Tạo thanh toán cho đơn hàng:",
-      orderId,
-      "với số tiền:",
-      parsedAmount
-    );
-    console.log("App Trans ID:", appTransId);
-    console.log(
-      "Phương thức thanh toán:",
-      isQR ? "QR tự động" : "Thanh toán qua ứng dụng"
-    );
+    // console.log("ZaloPay Config:", zaloPayConfig);
+    // console.log(
+    //   "Tạo thanh toán cho đơn hàng:",
+    //   orderId,
+    //   "với số tiền:",
+    //   parsedAmount
+    // );
+    // console.log("App Trans ID:", appTransId);
+    // console.log(
+    //   "Phương thức thanh toán:",
+    //   isQR ? "QR tự động" : "Thanh toán qua ứng dụng"
+    // );
 
     // Tạo chuỗi dữ liệu để tính mac
     const data = [
@@ -117,14 +117,14 @@ const createZaloPayRequest = async (
     ]
       .map((item) => String(item).trim())
       .join("|");
-    console.log("Chuỗi dữ liệu để tạo mac:", data);
+    // console.log("Chuỗi dữ liệu để tạo mac:", data);
 
     // Tạo chữ ký (mac) bằng HMAC-SHA256
     const mac = crypto
       .createHmac("sha256", zaloPayConfig.key1)
       .update(data)
       .digest("hex");
-    console.log("Mac tạo ra:", mac);
+    // console.log("Mac tạo ra:", mac);
 
     // Tạo yêu cầu gửi đến ZaloPay
     const request = {
@@ -142,13 +142,13 @@ const createZaloPayRequest = async (
       mac,
     };
 
-    console.log("Yêu cầu gửi đến ZaloPay:", request);
+    // console.log("Yêu cầu gửi đến ZaloPay:", request);
 
     // Gửi yêu cầu đến ZaloPay
     const response = await axios.post(zaloPayConfig.endpoint, null, {
       params: request,
     });
-    console.log("Phản hồi từ ZaloPay:", response.data);
+    // console.log("Phản hồi từ ZaloPay:", response.data);
 
     return { ...response.data, appTransId };
   } catch (error) {
@@ -180,16 +180,10 @@ const verifyZaloPaySignature = (data, receivedMac, key2) => {
     !parsedData.amount ||
     !parsedData.status
   ) {
-    console.log("🔹 Missing required fields in data");
+    // console.log("🔹 Missing required fields in data");
     return false;
   }
 
-  // const signatureData = [
-  //   parsedData.app_id,
-  //   parsedData.app_trans_id,
-  //   parsedData.amount,
-  //   parsedData.status,
-  // ].join("|");
   const signatureData = [
     parsedData.app_id,
     parsedData.app_trans_id,
@@ -199,13 +193,13 @@ const verifyZaloPaySignature = (data, receivedMac, key2) => {
     .map((item) => String(item).trim())
     .join("|");
 
-  console.log("🔹 Chuỗi dữ liệu để tạo mac:", signatureData);
+  // console.log("🔹 Chuỗi dữ liệu để tạo mac:", signatureData);
   const computedMac = crypto
     .createHmac("sha256", key2)
     .update(signatureData)
     .digest("hex");
-  console.log("🔹 Computed Mac:", computedMac);
-  console.log("🔹 Received Mac:", receivedMac);
+  // console.log("🔹 Computed Mac:", computedMac);
+  // console.log("🔹 Received Mac:", receivedMac);
 
   return computedMac === receivedMac;
 };

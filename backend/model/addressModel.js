@@ -51,25 +51,15 @@ const addressSchema = new mongoose.Schema(
       enum: ["shipping", "billing", "other"],
       default: "shipping",
     },
+    isPublic: { type: Boolean, default: false },
     isDefaultShipping: { type: Boolean, default: false },
     isDefaultBilling: { type: Boolean, default: false },
+    isDefaultOther: { type: Boolean, default: false }, // Thêm cho "other"
   },
   {
     timestamps: true,
   }
 );
-
-// addressSchema.pre("save", async function (next) {
-//   if (this.isDefault) {
-//     await mongoose
-//       .model("Address")
-//       .updateMany(
-//         { user: this.user, _id: { $ne: this._id } },
-//         { isDefault: false }
-//       );
-//   }
-//   next();
-// });
 
 // Middleware để cập nhật `isDefault` cho địa chỉ
 addressSchema.pre("save", async function (next) {
@@ -92,69 +82,8 @@ addressSchema.pre("save", async function (next) {
   next();
 });
 
-// Middleware để tự động thêm tọa độ từ Google Maps API
-// const axios = require("axios");
-
-// addressSchema.pre("save", async function (next) {
-//   if ((!this.latitude || !this.longitude) && this.street && this.city) {
-//     try {
-//       const response = await axios.get(
-//         `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-//           `${this.street}, ${this.city}, ${this.country}`
-//         )}&key=${process.env.GOOGLE_API_KEY}`
-//       );
-//       const location = response.data.results[0]?.geometry?.location;
-//       if (location) {
-//         this.latitude = location.lat;
-//         this.longitude = location.lng;
-//       }
-//     } catch (error) {
-//       console.error("Error fetching coordinates:", error.message);
-//     }
-//   }
-//   next();
-// });
-
 // Index để tối ưu hóa tìm kiếm
 addressSchema.index({ user: 1, isDefault: 1 });
-
-// addressSchema.pre("save", async function (next) {
-//   if (this.street && this.city && this.country) {
-//     try {
-//       const response = await axios.get(
-//         `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-//           `${this.street}, ${this.city}, ${this.country}`
-//         )}&key=YOUR_GOOGLE_API_KEY`
-//       );
-
-//       const result = response.data.results[0];
-//       if (result) {
-//         const location = result.geometry.location;
-//         const addressComponents = result.address_components;
-
-//         // Gắn tọa độ
-//         this.latitude = location.lat;
-//         this.longitude = location.lng;
-
-//         // Gắn thêm thông tin từ API
-//         addressComponents.forEach((component) => {
-//           if (component.types.includes("administrative_area_level_1")) {
-//             this.province = component.long_name; // Tỉnh/thành phố
-//           }
-//           if (component.types.includes("administrative_area_level_2")) {
-//             this.district = component.long_name; // Quận/huyện
-//           }
-//           if (component.types.includes("locality")) {
-//             this.city = component.long_name; // Thành phố
-//           }
-//         });
-//       }
-//     } catch (error) {
-//       console.error("Error fetching address details:", error.message);
-//     }
-//   }
-//   next();
-// });
 
 // Chuẩn hóa trước khi lưu
 const capitalizeWords = (str) => {

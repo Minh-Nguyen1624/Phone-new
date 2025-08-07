@@ -42,9 +42,9 @@ paymentExpiryQueue.process(async (job) => {
           if (product) {
             product.stock += item.quantity;
             await product.save();
-            console.log(
-              `Restored stock for product ${product._id}: +${item.quantity}`
-            );
+            // console.log(
+            //   `Restored stock for product ${product._id}: +${item.quantity}`
+            // );
           }
         }
       }
@@ -62,10 +62,10 @@ paymentExpiryQueue.process(async (job) => {
          <p>Thanh toán của bạn (${payment.transactionId}) đã hết hạn.</p>
          <p>Vui lòng tạo lại thanh toán hoặc liên hệ hỗ trợ.</p>`
       );
-      console.log(`Expiry notification email sent to ${user.email}`);
+      // console.log(`Expiry notification email sent to ${user.email}`);
     }
 
-    console.log(`Payment expired: ${paymentId}`);
+    // console.log(`Payment expired: ${paymentId}`);
   }
 });
 
@@ -79,9 +79,9 @@ const schedulePaymentExpiry = async (payment) => {
       { paymentId: payment._id },
       { delay: expiryTime }
     );
-    console.log(
-      `Scheduled expiry for payment ${payment._id} after ${expiryDuration} minutes`
-    );
+    // console.log(
+    //   `Scheduled expiry for payment ${payment._id} after ${expiryDuration} minutes`
+    // );
   }
 };
 

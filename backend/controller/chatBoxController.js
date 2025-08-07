@@ -37,7 +37,7 @@ const getConversations = asyncHandler(async (req, res) => {
 
   const cachedConversations = await redisClient.get(cacheKey);
   if (cachedConversations) {
-    console.log("Cache hit for conversations:", cachedConversations);
+    // console.log("Cache hit for conversations:", cachedConversations);
     return res.status(200).json({
       success: true,
       conversations: JSON.parse(cachedConversations),
@@ -87,7 +87,7 @@ const getMessages = asyncHandler(async (req, res) => {
   // Check Redis cache
   const cachedMessages = await redisClient.get(cacheKey);
   if (cachedMessages) {
-    console.log("Cache hit for messages:", cachedMessages);
+    // console.log("Cache hit for messages:", cachedMessages);
     return res.status(200).json({
       success: true,
       messages: JSON.parse(cachedMessages),
@@ -142,15 +142,11 @@ const getMessages = asyncHandler(async (req, res) => {
 
 // Tạo cuộc hội thoại mới
 // Debug: Verify io import
-console.log("Imported io:", io);
+// console.log("Imported io:", io);
 
 const createConversation = asyncHandler(async (req, res) => {
   const { participantIds, name, type, isBotConversation } = req.body;
   const userId = req.user?._id;
-
-  console.log("Request Body:", req.body);
-  console.log("User ID from token:", userId);
-  console.log("io status in createConversation:", io);
 
   // Validate userId
   if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
@@ -239,7 +235,6 @@ const createConversation = asyncHandler(async (req, res) => {
   // Handle bot conversation
   if (isBotConversation && participantIds.length === 0) {
     allParticipants = [userId];
-    console.log("Bot conversation: allParticipants set to:", allParticipants);
   } else {
     const participants = await User.find({ _id: { $in: participantIds } });
     if (participants.length !== participantIds.length) {
@@ -259,10 +254,6 @@ const createConversation = asyncHandler(async (req, res) => {
       { id: userId, username: creator.username },
       ...participants.map((p) => ({ id: p._id, username: p.username })),
     ];
-    console.log(
-      "Non-bot conversation: allParticipants set to:",
-      allParticipants
-    );
   }
 
   // Validate participant count
@@ -313,7 +304,6 @@ const createConversation = asyncHandler(async (req, res) => {
       type: "one-to-one",
     });
     if (conversation) {
-      console.log("Existing Conversation:", conversation);
       return res.status(200).json({ success: true, conversation });
     }
   }
@@ -331,7 +321,6 @@ const createConversation = asyncHandler(async (req, res) => {
     type: type || "one-to-one",
   });
   await conversation.save();
-  console.log("Saved Conversation:", conversation);
 
   // Create initial message for all conversations
   let initialMessage;
@@ -475,12 +464,6 @@ const checkConversationAccess = asyncHandler(
 const processAttachment = asyncHandler(async (file) => {
   if (!file) return { attachmentBinary: null, attachmentType: null };
 
-  console.log("Processing file:", {
-    originalname: file.originalname,
-    mimetype: file.mimetype,
-    size: file.size,
-  });
-
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
   if (file.size > MAX_FILE_SIZE) {
     throw new Error("File size exceeds limit of 10MB");
@@ -493,7 +476,6 @@ const processAttachment = asyncHandler(async (file) => {
       file.originalname,
       file.mimetype
     );
-    console.log("File stored as Base64 in Firestore");
 
     const ext = file.originalname.split(".").pop().toLowerCase();
     const supportedTypes = {
@@ -513,12 +495,10 @@ const processAttachment = asyncHandler(async (file) => {
       throw new Error("Unsupported file type");
     }
 
-    console.log("Determined attachment type:", attachmentType);
     return { attachmentBinary, attachmentType };
   } finally {
     try {
       unlinkSync(file.path);
-      console.log("Temporary file deleted:", file.path);
     } catch (deleteError) {
       console.warn("Failed to delete temporary file:", deleteError);
     }
@@ -550,9 +530,7 @@ const sendNotification = async (
       const notificationMessage = isGroupChat
         ? `New message in group chat ${conversationId}: ${messageContent}`
         : `New message in private chat ${conversationId}: ${messageContent}`;
-      console.log(
-        `Sending push notification to user ${recipientId}: ${notificationMessage}`
-      );
+
       // Ví dụ: Gọi API push notification
       // await pushNotificationService.send(recipientId, notificationMessage);
     }
@@ -578,7 +556,6 @@ const logAction = async (action, userId, conversationId, details) => {
       timestamp: new Date(),
     });
     await auditLog.save();
-    console.log(`Audit log recorded for action: ${action}`);
   } catch (error) {
     console.error("Error saving audit log:", error.message);
   }
@@ -587,7 +564,6 @@ const logAction = async (action, userId, conversationId, details) => {
 // Hàm gọi webhook
 const triggerWebhook = async (webhookUrl, data) => {
   await axios.post(webhookUrl, data);
-  console.log(`Webhook triggered successfully: ${webhookUrl}`);
 };
 
 // Hàm tạo và lưu tin nhắn
@@ -656,10 +632,6 @@ const updateConversation = async (conversation, message) => {
 
   conversation.lastMessage = message ? message._id : null;
   await conversation.save();
-  console.log(
-    "Conversation updated with lastMessage:",
-    message ? message._id.toString() : "null"
-  );
 };
 
 // Hàm xóa cache Redis với tối ưu hóa
@@ -670,7 +642,6 @@ const clearRedisCache = async (conversationId, participants) => {
       ...participants.map((p) => `conversations:${p.toString()}`),
     ];
     await redisClient.del(keysToDelete);
-    console.log("Redis cache cleared for conversation:", conversationId);
   } catch (error) {
     console.error("Error clearing Redis cache:", {
       error: error.message,
@@ -691,8 +662,6 @@ const handleBotConversation = asyncHandler(
     io,
     req,
   }) => {
-    console.log("Starting handleBotConversation with content:", content);
-
     // Overall timeout for the function (45 seconds, increased for stability)
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(
@@ -703,18 +672,12 @@ const handleBotConversation = asyncHandler(
 
     const mainPromise = (async () => {
       const sessionId = `${conversationId}-${senderId}`;
-      console.log("Fetching conversation state for sessionId:", sessionId);
       let state = await ConversationState.findOne({
         conversation: conversationId,
         user: senderId,
       }).catch((err) => {
-        console.error("Error fetching conversation state:", err.message);
         throw new Error("Không thể truy vấn trạng thái cuộc hội thoại.");
       });
-      console.log(
-        "Fetched conversation state:",
-        state ? state.state : "No state found"
-      );
 
       if (!state) {
         state = new ConversationState({
@@ -727,7 +690,6 @@ const handleBotConversation = asyncHandler(
           console.error("Error saving new conversation state:", err.message);
           throw new Error("Không thể tạo trạng thái cuộc hội thoại mới.");
         });
-        console.log("Created new conversation state for session:", sessionId);
       } else {
         state.data = state.data || {};
       }
@@ -738,7 +700,6 @@ const handleBotConversation = asyncHandler(
       // Check for special characters
       const specialCharRegex = /[@#$%&*()!^={\}\[\]\\;:"'<>~`]/;
       if (content && specialCharRegex.test(content)) {
-        console.log("Content contains special characters:", content);
         throw new Error(
           "Nội dung chứa ký tự đặc biệt không được phép. Vui lòng nhập lại."
         );
@@ -759,7 +720,6 @@ const handleBotConversation = asyncHandler(
       // Handle action
       const handleAction = async (actionToHandle) => {
         let simulatedMessage;
-        console.log("Handling action:", actionToHandle);
 
         if (actionToHandle.startsWith("view_product_")) {
           const parts = actionToHandle.split("_");
@@ -767,7 +727,6 @@ const handleBotConversation = asyncHandler(
           if (parts.length === 5 && parts[3] === "color") {
             const selectedColor = parts[4];
             if (productId && mongoose.Types.ObjectId.isValid(productId)) {
-              console.log("Fetching product with ID:", productId);
               const product = await Promise.race([
                 Phone.findById(productId)
                   .select("name price finalPrice stock colors specifications")
@@ -783,10 +742,6 @@ const handleBotConversation = asyncHandler(
                   )
                 ),
               ]);
-              console.log(
-                "Fetched product for view_product with color:",
-                product
-              );
 
               let content = i18n.__({
                 phrase:
@@ -868,7 +823,6 @@ const handleBotConversation = asyncHandler(
               });
             }
           } else if (productId && mongoose.Types.ObjectId.isValid(productId)) {
-            console.log("Fetching product with ID:", productId);
             const product = await Promise.race([
               Phone.findById(productId)
                 .select("name price finalPrice stock colors specifications")
@@ -884,7 +838,6 @@ const handleBotConversation = asyncHandler(
                 )
               ),
             ]);
-            console.log("Fetched product for view_product:", product);
 
             if (product) {
               const availableColors = product.colors;
@@ -988,7 +941,6 @@ const handleBotConversation = asyncHandler(
               readBy: [],
             });
           } else {
-            console.log("Fetching product for add_to_cart with ID:", productId);
             const product = await Promise.race([
               Phone.findById(productId)
                 .select(
@@ -1009,11 +961,9 @@ const handleBotConversation = asyncHandler(
                 )
               ),
             ]);
-            console.log("Fetched product for add_to_cart:", product);
 
             let content = i18n.__({ phrase: "Invalid product.", locale: "vi" });
             if (product && product.stock >= defaultConfig.defaultQuantity) {
-              console.log("Fetching cart for user:", senderId);
               const cart =
                 (await Promise.race([
                   Cart.findOne({ user: senderId }).catch((err) => {
@@ -1145,7 +1095,6 @@ const handleBotConversation = asyncHandler(
           state.state = "initial";
           state.data = {};
         } else if (actionToHandle === "view_product") {
-          console.log("Fetching suggested products...");
           const suggestedProducts = await Promise.race([
             Phone.aggregate([
               {
@@ -1171,7 +1120,6 @@ const handleBotConversation = asyncHandler(
               )
             ),
           ]);
-          console.log("Suggested products:", suggestedProducts);
 
           const buttons = suggestedProducts.map((product) => ({
             text: `${product.name} (Giá: ${
@@ -1226,12 +1174,10 @@ const handleBotConversation = asyncHandler(
             console.error("Error saving state after action:", err.message);
             throw new Error("Không thể lưu trạng thái sau hành động.");
           });
-          console.log("Saved conversation state after action:", state.state);
           await simulatedMessage.save().catch((err) => {
             console.error("Error saving simulated message:", err.message);
             throw new Error("Không thể lưu tin nhắn mô phỏng.");
           });
-          console.log("Saved simulated message:", simulatedMessage.content);
           await saveMessageToFirestore(simulatedMessage.toObject()).catch(
             (err) => {
               console.error("Error saving to Firestore:", err.message);
@@ -1239,7 +1185,6 @@ const handleBotConversation = asyncHandler(
             }
           );
           io.to(conversationId).emit("newMessage", simulatedMessage);
-          console.log("Emitted newMessage to conversationId:", conversationId);
           if (!io.sockets.adapter.rooms.has(conversationId)) {
             console.warn("No clients in room:", conversationId);
           }
@@ -1255,7 +1200,6 @@ const handleBotConversation = asyncHandler(
         currentProductId
       ) => {
         if (simulationCount >= simulationLimit) {
-          console.log("Simulation limit reached:", simulationLimit);
           return null;
         }
         if (buttons?.length > 0) {
@@ -1272,10 +1216,7 @@ const handleBotConversation = asyncHandler(
           );
           if (selectedButton) {
             simulationCount++;
-            console.log(
-              "Simulating button click with value:",
-              selectedButton.value
-            );
+
             return await handleAction(selectedButton.value);
           } else {
             console.log("No matching button found for action:", adjustedAction);
@@ -1288,12 +1229,10 @@ const handleBotConversation = asyncHandler(
 
       let botMessage;
       if (action) {
-        console.log("Processing action:", action);
         return await handleAction(action);
       }
 
       // Dialogflow call with improved error handling
-      console.log("Starting Dialogflow call...");
       const dialogflowTimeout = new Promise((_, reject) => {
         setTimeout(
           () =>
@@ -1312,10 +1251,6 @@ const handleBotConversation = asyncHandler(
         console.error("Dialogflow error:", err.message);
         dialogflowResponse = { intent: "default", parameters: {} }; // Fallback to default intent
       }
-      console.log(
-        "Dialogflow response:",
-        JSON.stringify(dialogflowResponse, null, 2)
-      );
 
       const brandMatch = content
         .toLowerCase()
@@ -1323,7 +1258,6 @@ const handleBotConversation = asyncHandler(
       const searchTerm = brandMatch ? brandMatch[2].trim() : content.trim();
       const isCompare = content.toLowerCase().includes("so sánh");
 
-      console.log("Fetching brands...");
       let brands;
       try {
         brands = await Promise.race([
@@ -1336,7 +1270,6 @@ const handleBotConversation = asyncHandler(
         console.error("Brand query error:", err.message);
         brands = [];
       }
-      console.log("Fetched brands:", brands);
 
       const matchedBrand = brands.find((brand) =>
         content.toLowerCase().includes(brand.toLowerCase())
@@ -1411,7 +1344,6 @@ const handleBotConversation = asyncHandler(
             };
           }
 
-          console.log("Searching product for place_order with query:", query);
           const product = await Promise.race([
             Phone.findOne(query)
               .lean()
@@ -1431,7 +1363,6 @@ const handleBotConversation = asyncHandler(
               )
             ),
           ]);
-          console.log("Found product for place_order:", product);
 
           if (product) {
             botMessage = new Message({
@@ -1507,7 +1438,6 @@ const handleBotConversation = asyncHandler(
             .toLowerCase()
             .match(new RegExp(`(${brands.join("|")})\\s*\\w+`, "gi")) || [];
         if (productNames.length >= 2) {
-          console.log("Comparing products:", productNames);
           const products = await Promise.race([
             Phone.find({
               name: {
@@ -1531,7 +1461,6 @@ const handleBotConversation = asyncHandler(
               )
             ),
           ]);
-          console.log("Found products for comparison:", products);
 
           if (products.length >= 2) {
             botMessage = new Message({
@@ -1626,7 +1555,6 @@ const handleBotConversation = asyncHandler(
           if (dialogflowResponse.parameters?.number) {
             searchValue = `${searchValue} ${dialogflowResponse.parameters.number}`;
           }
-          console.log("Searching for product (Ask_colors):", searchValue);
 
           let query = {
             name: { $regex: searchValue, $options: "i" },
@@ -1693,7 +1621,6 @@ const handleBotConversation = asyncHandler(
               ),
             ]);
           }
-          console.log("Found products (Ask_colors):", products);
 
           if (products.length === 1) {
             const product = products[0];
@@ -1832,408 +1759,7 @@ const handleBotConversation = asyncHandler(
             state.state = "waiting_for_product_selection";
           }
         }
-      }
-      // else if (
-      //   dialogflowResponse.intent === "search_product" &&
-      //   dialogflowResponse.intent !== "Ask_colors" &&
-      //   (brandMatch || matchedBrand || isSearchRequest)
-      // ) {
-      //   let query = { stock: { $gt: 0 }, price: { $gte: 0 } };
-      //   let searchValue = searchTerm;
-
-      //   if (
-      //     dialogflowResponse.parameters &&
-      //     dialogflowResponse.parameters["product-name"]
-      //   ) {
-      //     searchValue = dialogflowResponse.parameters["product-name"];
-      //     if (dialogflowResponse.parameters?.number) {
-      //       searchValue = `${searchValue} ${dialogflowResponse.parameters.number}`;
-      //     }
-      //     console.log("Using product-name from Dialogflow:", searchValue);
-      //   } else if (matchedBrand) {
-      //     query.brand = matchedBrand;
-      //     const productModel = searchTerm
-      //       .toLowerCase()
-      //       .replace(matchedBrand.toLowerCase(), "")
-      //       .trim();
-      //     if (productModel) searchValue = productModel;
-      //   } else if (
-      //     dialogflowResponse.parameters?.number &&
-      //     content.toLowerCase().includes("iphone")
-      //   ) {
-      //     // searchValue = `iPhone ${dialogflowResponse.parameters.number}`;
-      //     // console.log("Fallback searchValue:", searchValue);
-      //     let baseModel = content.toLowerCase().includes("pro")
-      //       ? "iPhone ${dialogflowResponse.parameters.number} Pro"
-      //       : `iPhone ${dialogflowResponse.parameters.number}`;
-      //     searchValue = baseModel;
-      //     console.log("Fallback searchValue:", searchValue);
-      //   }
-
-      //   query.name = { $regex: searchValue.trim(), $options: "i" };
-      //   console.log("Constructed name query:", query.name);
-
-      //   if (dialogflowResponse.parameters?.color) {
-      //     let requestedColor = dialogflowResponse.parameters.color
-      //       .toLowerCase()
-      //       .trim()
-      //       .replace(/[^a-zA-Z\s-]/g, "");
-      //     query.colors = {
-      //       $elemMatch: { $regex: `^${requestedColor}$`, $options: "i" },
-      //     };
-      //     console.log("Constructed color query:", query.colors);
-      //   }
-
-      //   console.log(
-      //     "Full query before execution:",
-      //     JSON.stringify(query, null, 2)
-      //   );
-      //   let products = await Promise.race([
-      //     Phone.find(query)
-      //       .lean()
-      //       .catch((err) => {
-      //         console.error("Error searching products:", err.message);
-      //         throw new Error(
-      //           "Không thể tìm kiếm sản phẩm trong cơ sở dữ liệu."
-      //         );
-      //       }),
-      //     new Promise((_, reject) =>
-      //       setTimeout(() => reject(new Error("Search query timed out")), 7000)
-      //     ),
-      //   ]);
-
-      //   console.log(
-      //     "Found products for search:",
-      //     JSON.stringify(products, null, 2)
-      //   );
-
-      //   if (products.length === 1) {
-      //     const product = products[0];
-      //     let content = `Chi tiết sản phẩm:\n- Tên: ${
-      //       product.name
-      //     }\n- Giá gốc: ${product.price.toLocaleString(
-      //       "vi-VN"
-      //     )}đ\n- Giá sau giảm: ${(
-      //       product.finalPrice || product.price
-      //     ).toLocaleString("vi-VN")}đ\n- Tồn kho: ${
-      //       product.stock
-      //     } suất\n- Màu sắc: ${product.colors.join(", ")}`;
-
-      //     if (dialogflowResponse.parameters?.color) {
-      //       let requestedColor = dialogflowResponse.parameters.color
-      //         .toLowerCase()
-      //         .trim()
-      //         .replace(/[^a-zA-Z\s-]/g, "");
-      //       let requestedColorDisplay =
-      //         product.colors.find(
-      //           (color) => color.toLowerCase().trim() === requestedColor
-      //         ) || requestedColor;
-      //       content += `\n- Màu yêu cầu: ${requestedColorDisplay}`;
-      //       const estimatedStockPerColor = Math.floor(
-      //         product.stock / product.colors.length
-      //       );
-      //       if (
-      //         product.stock > 0 &&
-      //         product.colors.some(
-      //           (color) => color.toLowerCase().trim() === requestedColor
-      //         )
-      //       ) {
-      //         if (
-      //           req &&
-      //           req.user &&
-      //           req.user.role &&
-      //           req.user.role.roleName &&
-      //           req.user.role.roleName.toLowerCase() === "admin"
-      //         ) {
-      //           content += `\n- Tình trạng: Còn ${estimatedStockPerColor.toLocaleString(
-      //             "vi-VN"
-      //           )} sản phẩm với màu ${requestedColorDisplay}.`;
-      //         } else {
-      //           if (!req || !req.user) {
-      //             console.warn(
-      //               "req.user is undefined - defaulting to non-admin response. Ensure protect middleware is applied and token is provided."
-      //             );
-      //           }
-      //           content += `\n- Tình trạng: Còn hàng với màu ${requestedColorDisplay}.`;
-      //         }
-      //       } else {
-      //         content += `\n- Tình trạng: Hết hàng hoặc không có màu ${requestedColorDisplay}.`;
-      //       }
-      //     }
-      //     content += `\n- Thông số: RAM ${
-      //       product.specifications?.ram || "N/A"
-      //     }, Bộ nhớ ${product.specifications?.storage || "N/A"}, Màn hình ${
-      //       product.specifications?.screen || "N/A"
-      //     }`;
-
-      //     let richContent = {
-      //       type: "button",
-      //       data: {
-      //         text: i18n.__({
-      //           phrase: "What would you like to do?",
-      //           locale: "vi",
-      //         }),
-      //         buttons: [
-      //           { text: "Thêm vào giỏ", value: `add_to_cart_${product._id}` },
-      //           { text: "Xem sản phẩm khác", value: "view_product" },
-      //         ],
-      //       },
-      //     };
-
-      //     botMessage = new Message({
-      //       _id: new mongoose.Types.ObjectId(),
-      //       conversation: conversationId,
-      //       isBot: true,
-      //       replyTo: replyTo || null,
-      //       content,
-      //       type: "rich",
-      //       richContent,
-      //       readBy: [],
-      //     });
-
-      //     state.state = "product_selected";
-      //     state.data.productId = product._id;
-      //   } else if (products.length > 1) {
-      //     const buttons = products.map((p) => ({
-      //       text: `${p.name} (Giá: ${p.finalPrice || p.price}đ, Stock: ${
-      //         p.stock
-      //       })`,
-      //       value: `view_product_${p._id}`,
-      //     }));
-      //     buttons.push({ text: "Xem sản phẩm khác", value: "view_product" });
-
-      //     botMessage = new Message({
-      //       _id: new mongoose.Types.ObjectId(),
-      //       conversation: conversationId,
-      //       isBot: true,
-      //       replyTo: replyTo || null,
-      //       content: i18n.__({
-      //         phrase: "Multiple matching products found. Please select one:",
-      //         locale: "vi",
-      //       }),
-      //       type: "rich",
-      //       richContent: {
-      //         type: "button",
-      //         data: {
-      //           text: i18n.__({ phrase: "Select product:", locale: "vi" }),
-      //           buttons,
-      //         },
-      //       },
-      //       readBy: [],
-      //     });
-      //     state.state = "product_suggestion";
-      //   }
-      //   else {
-
-      //     // Tìm kiếm sản phẩm tương tự với logic cải tiến
-      //     let similarQuery = {
-      //       stock: { $gt: 0 },
-      //       price: { $gte: 0 },
-      //     };
-
-      //     // Tìm các sản phẩm có tên gần giống (bao gồm các biến thể như iPhone 14 Pro, iPhone 14 Pro Max)
-      //     let baseModel = searchValue.trim().split(" ").slice(0, -1).join(" "); // Lấy phần cơ bản, ví dụ "iPhone 14" từ "iPhone 14 Pro"
-      //     similarQuery.name = { $regex: `^${baseModel}`, $options: "i" }; // Tìm các sản phẩm bắt đầu bằng "iPhone 14"
-
-      //     if (dialogflowResponse.parameters?.color) {
-      //       let requestedColor = dialogflowResponse.parameters.color
-      //         .toLowerCase()
-      //         .trim()
-      //         .replace(/[^a-zA-Z\s-]/g, "");
-      //       similarQuery.colors = {
-      //         $elemMatch: { $regex: requestedColor, $options: "i" },
-      //       };
-      //     }
-
-      //     let similarProducts = await Promise.race([
-      //       Phone.find(similarQuery)
-      //         .lean()
-      //         .catch((err) => {
-      //           console.error("Error searching similar products:", err.message);
-      //           throw new Error("Không thể tìm kiếm sản phẩm tương tự.");
-      //         }),
-      //       new Promise((_, reject) =>
-      //         setTimeout(
-      //           () => reject(new Error("Similar search query timed out")),
-      //           7000
-      //         )
-      //       ),
-      //     ]);
-
-      //     console.log(
-      //       "Found similar products:",
-      //       JSON.stringify(similarProducts, null, 2)
-      //     );
-
-      //     if (similarProducts.length > 0) {
-      //       // Sửa đổi: Hiển thị danh sách gợi ý ngay cả khi chỉ có 1 sản phẩm tương tự
-      //       const buttons = similarProducts.map((p) => ({
-      //         text: `${p.name} (Giá: ${(p.finalPrice || p.price).toLocaleString(
-      //           "vi-VN"
-      //         )}đ, Màu: ${p.colors.join(", ")})`,
-      //         value: `view_product_${p._id}`,
-      //       }));
-      //       buttons.push({
-      //         text: "Nhập tên sản phẩm khác",
-      //         value: "view_product_manual",
-      //       });
-      //       buttons.push({
-      //         text: "Liên hệ hỗ trợ",
-      //         value: "contact_support",
-      //       });
-
-      //       botMessage = new Message({
-      //         _id: new mongoose.Types.ObjectId(),
-      //         conversation: conversationId,
-      //         isBot: true,
-      //         replyTo: replyTo || null,
-      //         content: `Không tìm thấy ${searchValue} ${
-      //           dialogflowResponse.parameters?.color
-      //             ? `màu ${dialogflowResponse.parameters.color}`
-      //             : ""
-      //         }. Tuy nhiên, dưới đây là các sản phẩm tương tự:`,
-      //         type: "rich",
-      //         richContent: {
-      //           type: "button",
-      //           data: {
-      //             text: "Chọn sản phẩm:",
-      //             buttons,
-      //           },
-      //         },
-      //         readBy: [],
-      //       });
-      //       state.state = "waiting_for_product_selection";
-      //     } else {
-      //       // Nếu không tìm thấy sản phẩm tương tự, hiển thị tất cả sản phẩm có sẵn
-      //       console.log(
-      //         "Fetching all products with enhanced filtering, sorting, and pagination..."
-      //       );
-
-      //       let query = { stock: { $gt: 0 }, price: { $gte: 0 } };
-      //       if (matchedBrand) {
-      //         query.brand = matchedBrand;
-      //       }
-
-      //       let page = state.data.page || 0;
-      //       const pageSize = 10;
-
-      //       const totalProducts = await Promise.race([
-      //         Phone.countDocuments(query).catch((err) => {
-      //           console.error("Error counting products:", err.message);
-      //           throw new Error("Không thể đếm sản phẩm.");
-      //         }),
-      //         new Promise((_, reject) =>
-      //           setTimeout(
-      //             () => reject(new Error("Count query timed out")),
-      //             7000
-      //           )
-      //         ),
-      //       ]);
-      //       const totalPages = Math.ceil(totalProducts / pageSize);
-
-      //       const allProducts = await Promise.race([
-      //         Phone.find(query)
-      //           .sort({ finalPrice: 1, sold: -1 })
-      //           .skip(page * pageSize)
-      //           .limit(pageSize)
-      //           .select("name price finalPrice colors specifications stock")
-      //           .lean()
-      //           .catch((err) => {
-      //             console.error("Error fetching products:", err.message);
-      //             throw new Error("Không thể lấy danh sách sản phẩm.");
-      //           }),
-      //         new Promise((_, reject) =>
-      //           setTimeout(
-      //             () => reject(new Error("Products query timed out")),
-      //             7000
-      //           )
-      //         ),
-      //       ]);
-      //       console.log(
-      //         "Products for page",
-      //         page,
-      //         ":",
-      //         JSON.stringify(allProducts, null, 2)
-      //       );
-
-      //       const buttons = allProducts.map((p) => {
-      //         const colorsDisplay =
-      //           Array.isArray(p.colors) && p.colors.length > 0
-      //             ? p.colors.join(", ")
-      //             : "Không có màu";
-      //         return {
-      //           text: `${p.name} (Giá: ${(
-      //             p.finalPrice || p.price
-      //           ).toLocaleString("vi-VN")}đ, Màu: ${colorsDisplay}, RAM: ${
-      //             p.specifications?.ram || "N/A"
-      //           })`,
-      //           value: `view_product_${p._id}`,
-      //         };
-      //       });
-
-      //       if (page > 0) {
-      //         buttons.push({
-      //           text: "Quay lại",
-      //           value: `view_more_page_${page - 1}`,
-      //         });
-      //       }
-      //       if (allProducts.length === pageSize && page < totalPages - 1) {
-      //         buttons.push({
-      //           text: "Xem thêm",
-      //           value: `view_more_page_${page + 1}`,
-      //         });
-      //       }
-      //       buttons.push({
-      //         text: "Nhập tên sản phẩm khác",
-      //         value: "view_product_manual",
-      //       });
-      //       buttons.push({
-      //         text: "Liên hệ hỗ trợ",
-      //         value: "contact_support",
-      //       });
-
-      //       state.data.page = page;
-      //       await state.save().catch((err) => {
-      //         console.error("Error saving state:", err.message);
-      //         throw new Error("Không thể lưu trạng thái phân trang.");
-      //       });
-
-      //       botMessage = new Message({
-      //         _id: new mongoose.Types.ObjectId(),
-      //         conversation: conversationId,
-      //         isBot: true,
-      //         replyTo: replyTo || null,
-      //         content: i18n.__({
-      //           phrase: matchedBrand
-      //             ? `Không tìm thấy sản phẩm ${searchTerm}. Dưới đây là các sản phẩm của ${matchedBrand} (Trang ${
-      //                 page + 1
-      //               }/${totalPages}):`
-      //             : `Không tìm thấy sản phẩm ${searchTerm}. Dưới đây là tất cả sản phẩm có sẵn (Trang ${
-      //                 page + 1
-      //               }/${totalPages}):`,
-      //           locale: "vi",
-      //         }),
-      //         type: "rich",
-      //         richContent: {
-      //           type: "button",
-      //           data: {
-      //             text: i18n.__({ phrase: "Chọn sản phẩm:", locale: "vi" }),
-      //             buttons:
-      //               buttons.length > 0
-      //                 ? buttons
-      //                 : [
-      //                     { text: "Thử lại", value: "view_product_manual" },
-      //                     { text: "Liên hệ hỗ trợ", value: "contact_support" },
-      //                   ],
-      //           },
-      //         },
-      //         readBy: [],
-      //       });
-      //       state.state = "waiting_for_product_selection";
-      //     }
-      //   }
-      // }
-      else if (
+      } else if (
         dialogflowResponse.intent === "search_product" &&
         dialogflowResponse.intent !== "Ask_colors" &&
         (brandMatch || matchedBrand || isSearchRequest)
@@ -2249,7 +1775,6 @@ const handleBotConversation = asyncHandler(
           if (dialogflowResponse.parameters?.number) {
             searchValue = `${searchValue} ${dialogflowResponse.parameters.number}`;
           }
-          console.log("Using product-name from Dialogflow:", searchValue);
         } else if (matchedBrand) {
           query.brand = matchedBrand;
           const productModel = searchTerm
@@ -2265,12 +1790,10 @@ const handleBotConversation = asyncHandler(
             ? `iPhone ${dialogflowResponse.parameters.number} Pro`
             : `iPhone ${dialogflowResponse.parameters.number}`;
           searchValue = baseModel;
-          console.log("Fallback searchValue:", searchValue);
         }
 
         // Yêu cầu khớp chính xác tên sản phẩm
         query.name = { $regex: `^${searchValue.trim()}$`, $options: "i" };
-        console.log("Constructed name query:", query.name);
 
         // Cải thiện logic lọc màu sắc để nhận diện "Deep Purple"
         if (dialogflowResponse.parameters?.color) {
@@ -2281,14 +1804,8 @@ const handleBotConversation = asyncHandler(
           query.colors = {
             $elemMatch: { $regex: requestedColor, $options: "i" },
           };
-          console.log("Constructed color query:", query.colors);
         }
 
-        console.log("Starting product search...");
-        console.log(
-          "Full query before execution:",
-          JSON.stringify(query, null, 2)
-        );
         let products = await Promise.race([
           Phone.find(query)
             .lean()
@@ -2302,11 +1819,6 @@ const handleBotConversation = asyncHandler(
             setTimeout(() => reject(new Error("Search query timed out")), 10000)
           ),
         ]);
-        console.log(
-          "Product search completed:",
-          products.length,
-          "results found"
-        );
 
         if (products.length === 1) {
           const product = products[0];
@@ -2444,7 +1956,6 @@ const handleBotConversation = asyncHandler(
             };
           }
 
-          console.log("Starting similar products search...");
           let similarProducts = await Promise.race([
             Phone.find(similarQuery)
               .lean()
@@ -2460,11 +1971,6 @@ const handleBotConversation = asyncHandler(
               )
             ),
           ]);
-          console.log(
-            "Similar products search completed:",
-            similarProducts.length,
-            "results found"
-          );
 
           if (similarProducts.length > 0) {
             // Hiển thị danh sách gợi ý ngay cả khi chỉ có 1 sản phẩm tương tự
@@ -2506,9 +2012,6 @@ const handleBotConversation = asyncHandler(
             state.state = "waiting_for_product_selection";
           } else {
             // Nếu không tìm thấy sản phẩm tương tự, hiển thị tất cả sản phẩm có sẵn
-            console.log(
-              "Fetching all products with enhanced filtering, sorting, and pagination..."
-            );
 
             let query = { stock: { $gt: 0 }, price: { $gte: 0 } };
             if (matchedBrand) {
@@ -2550,12 +2053,6 @@ const handleBotConversation = asyncHandler(
                 )
               ),
             ]);
-            console.log(
-              "Products for page",
-              page,
-              ":",
-              JSON.stringify(allProducts, null, 2)
-            );
 
             const buttons = allProducts.map((p) => {
               const colorsDisplay =
@@ -2684,7 +2181,6 @@ const handleBotConversation = asyncHandler(
               ),
             ])
           : null;
-        console.log("Found product (waiting_for_product_selection):", product);
 
         let content =
           product && typeof product.price === "number" && product.price >= 0
@@ -2790,19 +2286,16 @@ const handleBotConversation = asyncHandler(
         console.error("Error saving conversation state:", err.message);
         throw new Error("Không thể lưu trạng thái cuộc hội thoại.");
       });
-      console.log("Saved conversation state:", state.state);
 
       await botMessage.save().catch((err) => {
         console.error("Error saving bot message:", err.message);
         throw new Error("Không thể lưu tin nhắn bot.");
       });
-      console.log("Saved bot message:", botMessage.content);
 
       await saveMessageToFirestore(botMessage.toObject()).catch((err) => {
         console.error("Error saving to Firestore:", err.message);
         throw new Error("Không thể lưu tin nhắn vào Firestore.");
       });
-      console.log("Saved message to Firestore");
 
       const simulatedMessages = [];
       if (
@@ -2874,14 +2367,6 @@ const handleBotConversation = asyncHandler(
 );
 // Controller chính
 const sendMessage = asyncHandler(async (req, res) => {
-  console.log("Request received at:", new Date().toISOString());
-  console.log("Request Body:", JSON.stringify(req.body, null, 2));
-  console.log("Uploaded File:", req.file ? req.file : "No file uploaded");
-  console.log(
-    "Multer Error:",
-    req.multerError ? req.multerError : "No Multer error"
-  );
-
   const {
     conversationId,
     content,
@@ -2894,7 +2379,6 @@ const sendMessage = asyncHandler(async (req, res) => {
     webhookUrl,
   } = req.body || {};
   const senderId = req.user?._id || req.user?.userId;
-  console.log("Sender ID:", senderId?.toString());
 
   let message = null;
   let conversation = null;
@@ -2926,7 +2410,6 @@ const sendMessage = asyncHandler(async (req, res) => {
 
     // Xác định loại tin nhắn
     const messageType = determineMessageType(type, attachmentType);
-    console.log("Message type determined:", messageType);
 
     // Tạo và lưu tin nhắn
     message = await createAndSaveMessage({
@@ -2952,7 +2435,6 @@ const sendMessage = asyncHandler(async (req, res) => {
       await message.populate("replyTo", "content sender");
     }
     io.to(conversationId).emit("newMessage", message);
-    console.log("User message emitted to room:", conversationId);
 
     // Gọi webhook nếu có
     if (webhookUrl) {

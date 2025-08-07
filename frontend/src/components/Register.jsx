@@ -126,176 +126,6 @@ const Register = () => {
   };
 
   return (
-    // <div className="min-h-screen flex items-center justify-center bg-gray-100">
-    //   <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-    //     <h2 className="text-2xl font-bold mb-6 text-center">Đăng Ký</h2>
-    //     {errors.general && (
-    //       <p className="text-red-500 text-center mb-4">{errors.general}</p>
-    //     )}
-    //     <form onSubmit={handleSubmit}>
-    //       <div className="mb-4">
-    //         <label
-    //           className="block text-gray-700 text-sm font-bold mb-2"
-    //           htmlFor="username"
-    //         >
-    //           Tên người dùng
-    //         </label>
-    //         <input
-    //           type="text"
-    //           id="username"
-    //           value={formData.username}
-    //           onChange={(e) =>
-    //             setFormData({ ...formData, username: e.target.value.trim() })
-    //           }
-    //           className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-    //           placeholder="Nhập tên của bạn"
-    //         />
-    //         {errors.username && (
-    //           <p className="text-red-500 text-sm">{errors.username}</p>
-    //         )}
-    //       </div>
-    //       <div className="mb-4">
-    //         <label
-    //           className="block text-gray-700 text-sm font-bold mb-2"
-    //           htmlFor="email"
-    //         >
-    //           Email
-    //         </label>
-    //         <input
-    //           type="email"
-    //           id="email"
-    //           value={formData.email}
-    //           onChange={(e) =>
-    //             setFormData({ ...formData, email: e.target.value.trim() })
-    //           }
-    //           className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-    //           placeholder="Nhập email của bạn"
-    //         />
-    //         {errors.email && (
-    //           <p className="text-red-500 text-sm">{errors.email}</p>
-    //         )}
-    //       </div>
-    //       <div className="mb-4">
-    //         <label
-    //           className="block text-gray-700 text-sm font-bold mb-2"
-    //           htmlFor="password"
-    //         >
-    //           Mật khẩu
-    //         </label>
-    //         <input
-    //           type="password"
-    //           id="password"
-    //           value={formData.password}
-    //           onChange={(e) =>
-    //             setFormData({ ...formData, password: e.target.value })
-    //           }
-    //           className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-    //           placeholder="Nhập mật khẩu của bạn"
-    //         />
-    //         {errors.password && (
-    //           <p className="text-red-500 text-sm">{errors.password}</p>
-    //         )}
-    //       </div>
-    //       <div className="mb-4">
-    //         <label
-    //           className="block text-gray-700 text-sm font-bold mb-2"
-    //           htmlFor="confirmPassword"
-    //         >
-    //           Xác nhận mật khẩu
-    //         </label>
-    //         <input
-    //           type="password"
-    //           id="confirmPassword"
-    //           value={formData.confirmPassword}
-    //           onChange={(e) =>
-    //             setFormData({ ...formData, confirmPassword: e.target.value })
-    //           }
-    //           className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-    //           placeholder="Xác nhận mật khẩu của bạn"
-    //         />
-    //         {errors.confirmPassword && (
-    //           <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
-    //         )}
-    //       </div>
-    //       <div className="mb-4">
-    //         <label
-    //           className="block text-gray-700 text-sm font-bold mb-2"
-    //           htmlFor="phone"
-    //         >
-    //           Số điện thoại
-    //         </label>
-    //         <input
-    //           type="tel"
-    //           id="phone"
-    //           value={formData.phone}
-    //           onChange={(e) =>
-    //             setFormData({ ...formData, phone: e.target.value.trim() })
-    //           }
-    //           className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-    //           placeholder="Nhập số điện thoại"
-    //         />
-    //         {errors.phone && (
-    //           <p className="text-red-500 text-sm">{errors.phone}</p>
-    //         )}
-    //       </div>
-    //       <div className="mb-4">
-    //         <label
-    //           className="block text-gray-700 text-sm font-bold mb-2"
-    //           htmlFor="dateOfBirth"
-    //         >
-    //           Ngày sinh
-    //         </label>
-    //         <input
-    //           type="date"
-    //           id="dateOfBirth"
-    //           value={formData.dateOfBirth}
-    //           onChange={(e) =>
-    //             setFormData({ ...formData, dateOfBirth: e.target.value })
-    //           }
-    //           className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-    //         />
-    //         {errors.dateOfBirth && (
-    //           <p className="text-red-500 text-sm">{errors.dateOfBirth}</p>
-    //         )}
-    //       </div>
-    //       <div className="mb-4">
-    //         <label
-    //           className="block text-gray-700 text-sm font-bold mb-2"
-    //           htmlFor="gender"
-    //         >
-    //           Giới tính
-    //         </label>
-    //         <select
-    //           id="gender"
-    //           value={formData.gender}
-    //           onChange={(e) =>
-    //             setFormData({ ...formData, gender: e.target.value })
-    //           }
-    //           className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-    //         >
-    //           <option value="male">Nam</option>
-    //           <option value="female">Nữ</option>
-    //           <option value="other">Khác</option>
-    //         </select>
-    //       </div>
-    //       <button
-    //         type="submit"
-    //         disabled={isLoading}
-    //         className={`w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition ${
-    //           isLoading ? "opacity-50 cursor-not-allowed" : ""
-    //         }`}
-    //       >
-    //         {isLoading ? "Đang xử lý..." : "Đăng Ký"}
-    //       </button>
-    //     </form>
-    //     <p className="mt-4 text-center">
-    //       Đã có tài khoản?{" "}
-    //       <a href="/login" className="text-blue-500 hover:underline">
-    //         Đăng nhập ngay
-    //       </a>
-    //     </p>
-    //   </div>
-    // </div>
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <h2
@@ -311,6 +141,28 @@ const Register = () => {
           <div className="mb-4">
             <label
               className="block text-gray-700 text-sm font-bold mb-2"
+              htmlFor="username"
+            >
+              Tên người dùng
+            </label>
+            <input
+              type="text"
+              id="username"
+              value={formData.username}
+              onChange={(e) =>
+                setFormData({ ...formData, username: e.target.value.trim() })
+              }
+              style={{ color: "black" }}
+              className="w-full p-3 bg-gray-300 rounded focus:outline-none"
+              placeholder="Nhập tên của bạn"
+            />
+            {errors.username && (
+              <p className="text-red-500 text-sm">{errors.username}</p>
+            )}
+          </div>
+          <div className="mb-4">
+            <label
+              className="block text-gray-700 text-sm font-bold mb-2"
               htmlFor="email"
             >
               Email
@@ -323,6 +175,7 @@ const Register = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value.trim() })
                 }
+                style={{ color: "black" }}
                 className="w-full p-3 bg-gray-300 rounded focus:outline-none"
                 placeholder="Nhập email của bạn"
                 autoComplete="email"
@@ -355,6 +208,7 @@ const Register = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
                 }
+                style={{ color: "black" }}
                 className="w-full p-3 bg-gray-300 rounded focus:outline-none"
                 placeholder="Nhập mật khẩu của bạn"
                 autoComplete="new-password"
@@ -387,6 +241,7 @@ const Register = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, confirmPassword: e.target.value })
                 }
+                style={{ color: "black" }}
                 className="w-full p-3 bg-gray-300 rounded focus:outline-none"
                 placeholder="Xác nhận mật khẩu của bạn"
                 autoComplete="new-password"
@@ -404,27 +259,7 @@ const Register = () => {
               <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
             )}
           </div>
-          <div className="mb-4">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="username"
-            >
-              Tên người dùng
-            </label>
-            <input
-              type="text"
-              id="username"
-              value={formData.username}
-              onChange={(e) =>
-                setFormData({ ...formData, username: e.target.value.trim() })
-              }
-              className="w-full p-3 bg-gray-300 rounded focus:outline-none"
-              placeholder="Nhập tên của bạn"
-            />
-            {errors.username && (
-              <p className="text-red-500 text-sm">{errors.username}</p>
-            )}
-          </div>
+
           <div className="mb-4">
             <label
               className="block text-gray-700 text-sm font-bold mb-2"
@@ -439,6 +274,7 @@ const Register = () => {
               onChange={(e) =>
                 setFormData({ ...formData, phone: e.target.value.trim() })
               }
+              style={{ color: "black" }}
               className="w-full p-3 bg-gray-300 rounded focus:outline-none"
               placeholder="Nhập số điện thoại"
             />
@@ -460,6 +296,7 @@ const Register = () => {
               onChange={(e) =>
                 setFormData({ ...formData, dateOfBirth: e.target.value })
               }
+              style={{ color: "black" }}
               className="w-full p-3 bg-gray-300 rounded focus:outline-none"
             />
             {errors.dateOfBirth && (
@@ -479,6 +316,7 @@ const Register = () => {
               onChange={(e) =>
                 setFormData({ ...formData, gender: e.target.value })
               }
+              style={{ color: "black" }}
               className="w-full p-3 bg-gray-300 rounded focus:outline-none"
             >
               <option value="male">Nam</option>

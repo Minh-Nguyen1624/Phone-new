@@ -50,7 +50,6 @@ router.post(
   multerErrorHandler, // Handle errors from multer
   sendMessage,
   (req, res) => {
-    console.log("Test upload file:", req.file);
     if (!req.file) {
       return res
         .status(400)

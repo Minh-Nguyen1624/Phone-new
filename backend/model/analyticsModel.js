@@ -191,11 +191,6 @@ const analyticsSchema = new mongoose.Schema(
   }
 );
 
-// analyticsSchema.index({ sessionId: 1 });
-// analyticsSchema.index({ user: 1 });
-// analyticsSchema.index({ sessionId: 1, user: 1 }, { unique: true });
-// analyticsSchema.index({ timestamp: -1 });
-
 analyticsSchema.index({ sessionId: 1, timestamp: -1 });
 analyticsSchema.index({ user: 1 });
 analyticsSchema.index({ action: 1 });

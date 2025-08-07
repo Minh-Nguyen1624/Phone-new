@@ -110,3 +110,31 @@ export const fetchSoldQuantities = async (phoneIds) => {
   );
   return quantities;
 };
+
+export const toggleLike = async (phoneId, token) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/phones/${phoneId}/like`,
+      {},
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return response.data.data;
+  } catch (error) {
+    console.error("Error toggling like:", error);
+    throw error;
+  }
+};
+
+export const purchasePhone = async (phoneId, quantity = 1, token) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/phones/${phoneId}/purchase`,
+      { quantity },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error purchasing phone:", error);
+    throw error;
+  }
+};

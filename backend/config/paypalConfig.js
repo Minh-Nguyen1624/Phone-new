@@ -1,34 +1,3 @@
-// // module.exports = paypalClient;
-// const paypal = require("@paypal/checkout-server-sdk");
-// require("dotenv").config();
-
-// // Kiểm tra biến môi trường
-// if (!process.env.PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET) {
-//   throw new Error(
-//     "Missing PayPal credentials: PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET are required"
-//   );
-// }
-
-// if (!process.env.PAYPAL_API_URL) {
-//   throw new Error("Missing PAYPAL_API_URL in environment variables");
-// }
-
-// const environment =
-//   process.env.PAYPAL_MODE === "live"
-//     ? new paypal.core.LiveEnvironment(
-//         process.env.PAYPAL_CLIENT_ID,
-//         process.env.PAYPAL_CLIENT_SECRET
-//       )
-//     : new paypal.core.SandboxEnvironment(
-//         process.env.PAYPAL_CLIENT_ID,
-//         process.env.PAYPAL_CLIENT_SECRET
-//       );
-
-// const client = new paypal.core.PayPalHttpClient(environment);
-
-// // module.exports = client;
-// module.exports = { paypal, client }; // Xuất cả paypal và client
-
 const redis = require("redis");
 require("dotenv").config();
 
@@ -54,17 +23,17 @@ redisClient.on("error", (err) => console.error("❌ Redis Client Error:", err));
 
 // Kết nối Redis
 redisClient.connect().then(async () => {
-  console.log("✅ Connected to Redis");
+  // console.log("✅ Connected to Redis");
   // Lưu token vào Redis ngay khi khởi động
   // storeInitialToken();
   await redisClient.del("paypal_access_token");
-  console.log("✅ Cleared old PayPal access token from Redis");
+  // console.log("✅ Cleared old PayPal access token from Redis");
 });
 
 // Đóng Redis khi process kết thúc
 process.on("SIGINT", async () => {
   await redisClient.quit();
-  console.log("Redis client disconnected");
+  // console.log("Redis client disconnected");
   process.exit(0);
 });
 

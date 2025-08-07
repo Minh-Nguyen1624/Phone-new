@@ -93,7 +93,7 @@ const phoneSchema = new mongoose.Schema({
       type: String,
       required: false,
       default: "N/A",
-      maxlength: [50, "Screen specification cannot exceed 50 characters"],
+      maxlength: [100, "Screen specification cannot exceed 50 characters"],
     },
     battery: {
       type: String,
@@ -162,16 +162,6 @@ const phoneSchema = new mongoose.Schema({
       },
     },
   },
-  // releaseDate: {
-  //   type: Date,
-  //   required: false,
-  //   validate: {
-  //     validator: function (v) {
-  //       return v <= new Date(); // Release date should not be in the future
-  //     },
-  //     message: "Release date cannot be in the future",
-  //   },
-  // },
   releaseDate: {
     type: Date,
     validate: {
@@ -322,28 +312,6 @@ phoneSchema.pre("save", async function (next) {
 });
 
 // Kiểm tra tồn kho khả dụng
-// phoneSchema.pre("validate", async function (next) {
-//   if (this.discount) {
-//     const Discount = mongoose.model("Discount");
-//     const discount = await Discount.findById(this.discount);
-//     if (!discount) return next(new Error("Invalid discount ID"));
-//     if (!discount.isActive)
-//       return next(new Error("The discount is not active"));
-
-//     this.discountValue = discount.discountValue; // Lưu tỷ lệ phần trăm
-//     this.discountAmount =
-//       discount.discountType === "percentage"
-//         ? (this.price * discount.discountValue) / 100
-//         : discount.discountValue; // Lưu số tiền giảm
-//     this.discountAmount = Math.min(this.discountAmount, this.price);
-//     this.finalPrice = this.price - this.discountAmount;
-//   } else {
-//     this.discountValue = 0;
-//     this.discountAmount = 0;
-//     this.finalPrice = this.price;
-//   }
-//   next();
-// });
 phoneSchema.pre("validate", async function (next) {
   if (this.discount) {
     const Discount = mongoose.model("Discount");
@@ -397,34 +365,6 @@ phoneSchema.pre("save", function (next) {
 });
 
 // Middleware tạo bản ghi Inventory khi thêm sản phẩm mới
-// phoneSchema.post("save", async function (doc, next) {
-//   try {
-//     let inventory = await Inventory.findOne({ phoneId: doc._id });
-//     // let inventory = await Inventory.findOne({ phone: doc.phoneId });
-//     if (!inventory) {
-//       // await Inventory.create({ phone: doc._id, stock: doc.stock });
-//       await Inventory.create({
-//         phoneId: doc._id,
-//         // phoneId: doc.phoneId,
-//         stock: doc.stock,
-//         warehouseLocation: doc.warehouseLocation || "Defaut", // Cập nhật vị trí kho,
-//         quantity: doc.quantity,
-//         reserved: doc.reserved,
-//       });
-//     } else {
-//       inventory.stock = doc.stock;
-//       inventory.warehouseLocation =
-//         doc.warehouseLocation || inventory.warehouseLocation;
-//       inventory.quantity = doc.quantity;
-//       inventory.reserved = doc.reserved;
-//       await inventory.save();
-//     }
-//     next();
-//   } catch (error) {
-//     console.error("Error updating Inventory:", error);
-//     next(error);
-//   }
-// });
 phoneSchema.post("save", async function (doc, next) {
   try {
     let inventory = await Inventory.findOne({
@@ -479,31 +419,6 @@ phoneSchema.post("save", async function (doc, next) {
 });
 
 // Cập nhật số lượng sản phẩm trong Inventory khi có thay đổi
-// phoneSchema.methods.updateStockAfterPurchase = async function (quantity) {
-//   const inventory = await Inventory.findOne({ phoneId: this._id });
-//   if (!inventory) throw new Error("Inventory record not found");
-
-//   await inventory.updateStock(-quantity, "purchase");
-// };
-
-// // 📌 Middleware: Cập nhật Inventory khi xóa sản phẩm
-// phoneSchema.pre("remove", async function (next) {
-//   await Inventory.deleteOne({ phone: this._id });
-//   next();
-// });
-
-// 📌 Phương thức giảm tồn kho sau khi mua hàng
-// phoneSchema.methods.updateStockAfterPurchase = async function (quantity) {
-//   // const inventory = await Inventory.findOne({ phone: this._id });
-//   const inventory = await Inventory.findOne({ phoneId: this._id });
-//   if (!inventory) throw new Error("Inventory not found");
-
-//   if (inventory.stock < quantity) throw new Error("Not enough stock available");
-
-//   inventory.stock -= quantity;
-//   await inventory.save();
-// };
-
 phoneSchema.methods.updateStockAfterPurchase = async function (quantity) {
   const inventory = await Inventory.findOne({
     warehouseLocation: this.warehouseLocation,
@@ -555,14 +470,6 @@ phoneSchema.methods.getSoldQuantity = async function () {
   return soldQuantity;
 };
 // 📌 Phương thức nhập thêm hàng vào kho
-// phoneSchema.methods.restock = async function (quantity) {
-//   // const inventory = await Inventory.findOne({ phone: this._id });
-//   const inventory = await Inventory.findOne({ phoneId: this._id });
-//   if (!inventory) throw new Error("Inventory not found");
-
-//   inventory.stock += quantity;
-//   await inventory.save();
-// };
 phoneSchema.methods.restock = async function (quantity) {
   const inventory = await Inventory.findOne({
     warehouseLocation: this.warehouseLocation,

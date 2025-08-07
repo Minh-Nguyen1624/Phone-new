@@ -23,7 +23,7 @@ const categorySchema = new mongoose.Schema({
     trim: true,
   },
   parentCategory: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: [mongoose.Schema.Types.ObjectId],
     ref: "Category",
     default: null,
     validate: {
@@ -34,41 +34,7 @@ const categorySchema = new mongoose.Schema({
       message: "A category cannot be its own parent.",
     },
   },
-  // discount: {
-  //   type: mongoose.Schema.Types.ObjectId,
-  //   ref: "Discount",
-  //   default: null,
-  //   validate: {
-  //     validator: async function (v) {
-  //       if (!v) return true; // No discount, valid
-  //       const Discount = mongoose.model("Discount");
-  //       const discountDoc = await Discount.findById(v);
-  //       if (!discountDoc) return false; // Discount doesn't exist
-  //       const now = new Date();
-  //       return (
-  //         discountDoc.isActive &&
-  //         now >= discountDoc.startDate &&
-  //         now <= discountDoc.endDate
-  //       );
-  //     },
-  //     message: "The assigned discount is not active or valid.",
-  //   },
-  // validate: {
-  //   validator: async function (v) {
-  //     if (!v || !this.isNew) return true; // Chỉ kiểm tra khi tạo mới
-  //     const Discount = mongoose.model("Discount");
-  //     const discountDoc = await Discount.findById(v);
-  //     if (!discountDoc) return false;
-  //     const now = new Date();
-  //     return (
-  //       discountDoc.isActive &&
-  //       now >= discountDoc.startDate &&
-  //       now <= discountDoc.endDate
-  //     );
-  //   },
-  //   message: "The assigned discount is not active or valid.",
-  // },
-  // },
+
   discount: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Discount",
@@ -129,22 +95,11 @@ const categorySchema = new mongoose.Schema({
   },
 });
 
-// categorySchema.pre("save", function (next) {
-//   this.updatedAt = Date.now();
-//   next();
-// });
-
 categorySchema.pre("findOneAndUpdate", function (next) {
   this.set({ updatedAt: Date.now() });
   next();
 });
 
-// categorySchema.pre("save", function (next) {
-//   if (!this.slug) {
-//     this.slug = slugify(this.name, { lower: true, strict: true });
-//   }
-//   next();
-// });
 categorySchema.pre("save", async function (next) {
   if (!this.slug) {
     this.slug = slugify(this.name, { lower: true, strict: true });

@@ -65,12 +65,6 @@ blogSchema.methods.incrementViews = function () {
   this.views += 1;
   return this.save();
 };
-// blogSchema.post("findOne", async function (doc) {
-//   if (doc) {
-//     doc.views += 1;
-//     await doc.save();
-//   }
-// });
 
 // Phương thức công nhận một lượt thích
 blogSchema.methods.addLike = function (userId) {

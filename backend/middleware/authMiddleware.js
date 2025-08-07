@@ -17,23 +17,72 @@ const authMiddleware = asyncHandler(async (req, res, next) => {
   }
 
   const token = authHeader.split(" ")[1];
-  console.log("Extracted Token:", token);
-
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
-  console.log("Decoded Token:", decoded);
-
-  // const user = await User.findById(decoded.id).select("-password");
-  const user = await User.findById(decoded.userId)
-    .select("-password")
-    .populate("role");
-  console.log("User found:", user);
-
-  if (!user) {
-    return res.status(401).json({ success: false, message: "User not found" });
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      message: "Token không hợp lệ",
+    });
   }
+  console.log("Extracted Token:", token);
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("Decoded Token:", decoded);
 
-  req.user = user;
-  next();
+    // const user = await User.findById(decoded.id).select("-password");
+    const user = await User.findById(decoded.userId)
+      .select("-password")
+      .populate("role");
+    console.log("User found:", user);
+
+    if (!user) {
+      return res
+        .status(401)
+        .json({ success: false, message: "User not found" });
+    }
+
+    // Kiểm tra trạng thái tài khoản
+    if (user.isLocked) {
+      return res.status(403).json({
+        success: false,
+        message: "Tài khoản đã bị khóa. Vui lòng liên hệ hỗ trợ.",
+      });
+    }
+    if (!user.isActive) {
+      return res.status(403).json({
+        success: false,
+        message: "Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ hỗ trợ.",
+      });
+    }
+    if (!user.isVerified) {
+      return res.status(403).json({
+        success: false,
+        message:
+          "Tài khoản chưa được xác minh. Vui lòng kiểm tra email để xác minh tài khoản.",
+      });
+    }
+
+    req.user = user;
+    next();
+  } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({
+        success: false,
+        message: "Token đã hết hạn. Vui lòng đăng nhập lại.",
+      });
+    }
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({
+        success: false,
+        message: "Token không hợp lệ.",
+      });
+    }
+    console.error("⚠️ Lỗi xác thực JWT:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Lỗi xác thực token",
+      error: error.message,
+    });
+  }
 });
 
 const adminMiddleware = asyncHandler(async (req, res, next) => {

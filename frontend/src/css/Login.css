@@ -246,7 +246,12 @@ input::placeholder {
 }
 
 input[type="email"],
-input[type="password"] {
+input[type="password"],
+input[type="text"],
+input[type="tel"],
+input[type="date"],
+select,
+option {
   background: transparent;
   border: none;
   border-bottom: 1px solid #d1d5db;
@@ -254,7 +259,7 @@ input[type="password"] {
   font-size: 1rem;
   width: 100%;
   padding: 0.75rem 1rem 0.75rem 2.5rem;
-  animation: fadeIn 5ms ease-in-out;
+  animation: fadeIn 2ms ease-in-out;
   /* transition: border-color 0.2s; */
   transition: border-color 5ms;
 }
@@ -269,7 +274,12 @@ input[type="password"] {
 }
 
 input[type="email"]:focus,
-input[type="password"]:focus {
+input[type="password"]:focus
+/* input[type="text"]:focus,
+input[type="tel"]:focus,
+input[type="date"]:focus,
+select:focus,
+option:focus { */ {
   border-bottom: 2px solid #60a5fa;
   outline: none;
   background: transparent;
@@ -345,4 +355,13 @@ button[disabled] {
   .rounded-lg {
     border-radius: 1rem;
   }
+}
+
+.back-icon {
+  position: absolute;
+  top: 5%;
+  left: 5%;
+  /* margin: 20px 20px 20px; */
+  width: 2rem;
+  height: 2rem;
 }

@@ -1,0 +1,94 @@
+/* MainProduct.css */
+.main-product-card {
+  width: 100%;
+  max-width: 250px; /* Adjust based on grid layout in LapTop.jsx */
+  margin: 0 auto;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+.product-image {
+  position: relative;
+  overflow: hidden;
+}
+
+.product-image img {
+  transition: opacity 0.3s ease;
+}
+
+.product-image img:hover {
+  opacity: 0.9;
+}
+
+.product-details {
+  padding: 1rem;
+}
+
+.product-details h3 {
+  margin-bottom: 0.5rem;
+  min-height: 2.5rem; /* Ensure space for two lines */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.price-section p {
+  margin: 0;
+}
+
+.price-section .text-red-600 {
+  font-size: 1.1rem;
+}
+
+.price-section .text-gray-500 {
+  font-size: 0.875rem;
+}
+
+.price-section .text-green-600 {
+  font-size: 0.875rem;
+}
+
+.stock-bar {
+  display: flex;
+  align-items: center;
+}
+
+.stock-bar .bg-gray-200 {
+  flex-grow: 1;
+}
+
+.stock-bar .bg-yellow-400,
+.stock-bar .bg-red-500 {
+  transition: width 0.3s ease;
+}
+
+.stock-bar span {
+  flex-shrink: 0;
+  margin-right: 0.5rem;
+}
+
+.rating-section {
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rating-section .text-gray-600 {
+  font-size: 0.875rem;
+}
+
+button {
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+button:disabled {
+  opacity: 0.6;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

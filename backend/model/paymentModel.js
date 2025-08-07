@@ -237,32 +237,6 @@ paymentSchema.pre("save", async function (next) {
     console.log("Order payment method:", order.paymentMethod);
     console.log("Payment method in request:", this.paymentMethod);
 
-    // Kiểm tra amount có khớp với totalAmount của order không
-    // if (this.amount !== order.totalAmount) {
-    //   return next(
-    //     new Error(
-    //       `Payment amount (${this.amount} VND) does not match order total (${order.totalAmount} VND)`
-    //     )
-    //   );
-    // }
-
-    // Chuyển đổi order.totalAmount nếu cần
-    // let orderAmount = order.totalAmount;
-    // let orderCurrency = order.currency || "VND";
-    // if (orderCurrency === "VND" && this.currency === "USD") {
-    //   orderAmount = await convertVNDToUSD(orderAmount);
-    //   orderCurrency = "USD";
-    // }
-
-    // // Kiểm tra amount có khớp với totalAmount của order không
-    // if (Math.abs(this.amount - orderAmount) > 0.01) {
-    //   return next(
-    //     new Error(
-    //       `Payment amount (${this.amount} ${this.currency}) does not match order total (${orderAmount} ${orderCurrency})`
-    //     )
-    //   );
-    // }
-
     // Kiểm tra nếu phương thức thanh toán không khớp với đơn hàng
     if (this.paymentMethod !== order.paymentMethod) {
       return next(
@@ -312,41 +286,6 @@ paymentSchema.pre("save", async function (next) {
 });
 
 // Pre-save hook to handle validations before saving the payment document
-// paymentSchema.pre("save", async function (next) {
-//   if (this.isRefunded && !this.refundedAt) {
-//     return next(new Error("Refunded payments must have a refundedAt date."));
-//   }
-
-//   // Ensure that a valid transaction ID is provided for non-Cash on Delivery payments
-//   if (
-//     this.paymentMethod !== "Cash on Delivery" &&
-//     (!this.transactionId || this.transactionId.trim() === "")
-//   ) {
-//     return next(
-//       new Error("Transaction ID is required for non-cash on delivery payments.")
-//     );
-//   }
-
-//   // Handle partial refund logic (if applicable)
-//   if (this.isRefunded && this.refundAmount) {
-//     // Ensure that the refund amount does not exceed the original payment amount
-//     if (this.refundAmount > this.amount) {
-//       return next(
-//         new Error("Refund amount cannot exceed the original payment amount")
-//       );
-//     }
-//   }
-
-//   // Check if products are in stock
-//   const products = await Phone.find({ _id: { $in: this.products } });
-//   for (const product of products) {
-//     if (product.stock <= 0) {
-//       return next(new Error(`Product ${product.name} is out of stock`));
-//     }
-//   }
-
-//   next(); // Proceed to save the document
-// });
 paymentSchema.pre("save", async function (next) {
   if (this.isRefunded && !this.refundedAt) {
     return next(new Error("Refunded payments must have a refundedAt date."));
@@ -428,63 +367,6 @@ paymentSchema.post("save", async function (doc, next) {
 });
 
 // Post-save hook: Update stock, send email, and handle refund
-// paymentSchema.post("save", async function (doc, next) {
-//   try {
-//     const order = await Order.findById(doc.order).populate("items.phone");
-//     if (!order) {
-//       return next(new Error("Order not found"));
-//     }
-
-//     const user = await User.findById(doc.user); // Lấy thông tin user để lấy email
-//     if (!user) {
-//       return next(new Error("User not found"));
-//     }
-
-//     // Cập nhật tồn kho khi thanh toán thành công
-//     if (doc.paymentStatus === "Completed") {
-//       for (const item of order.items) {
-//         const product = await Phone.findById(item.phone);
-//         if (product) {
-//           product.stock -= item.quantity;
-//           await product.save();
-//         }
-//       }
-//       // Gửi email xác nhận thanh toán
-//       await sendPaymentConfirmationEmail(user.email, {
-//         amount: doc.amount,
-//         currency: doc.currency,
-//         transactionId: doc.transactionId,
-//         paymentMethod: doc.paymentMethod,
-//         createdAt: doc.createdAt,
-//       });
-//     }
-
-//     // Khôi phục tồn kho và gửi email khi hoàn tiền
-//     if (doc.isRefunded && order.items) {
-//       for (const item of order.items) {
-//         const product = await Phone.findById(item.phone);
-//         if (product) {
-//           product.stock += item.quantity;
-//           await product.save();
-//         }
-//       }
-//       if (order.orderStatus !== "cancelled") {
-//         order.orderStatus = "cancelled";
-//         await order.save();
-//       }
-//       await sendRefundConfirmationEmail(user.email, {
-//         refundAmount: doc.refundAmount,
-//         currency: doc.currency,
-//         transactionId: doc.transactionId,
-//         refundedAt: doc.refundedAt,
-//       });
-//     }
-
-//     next();
-//   } catch (error) {
-//     next(error);
-//   }
-// });
 paymentSchema.post("save", async function (doc, next) {
   try {
     const order = await Order.findById(doc.order).populate({

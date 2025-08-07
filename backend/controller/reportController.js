@@ -70,8 +70,6 @@ const reportReview = async (req, res) => {
 // Hàm gửi email thông báo
 const sendNotification = async (email, subject, message) => {
   try {
-    console.log("Sending notification...", process.env.EMAIL_USER);
-    console.log("Sending notification...", process.env.EMAIL_PASSWORD);
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
       console.warn("Missing email credentials");
       return;
@@ -80,8 +78,6 @@ const sendNotification = async (email, subject, message) => {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        // user: process.env.EMAIL_USER || "your-email@gmail.com",
-        // pass: process.env.EMAIL_PASS || "your-email-password",
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASSWORD,
       },
@@ -103,12 +99,6 @@ const sendNotification = async (email, subject, message) => {
     throw new Error("Unable to send email notification.");
   }
 };
-
-// sendNotification(
-//   "minhphancailay@gmail.com",
-//   "HongNguyen1624.",
-//   "This is a test email from Node.js!"
-// );
 
 const createReport = async (req, res) => {
   try {
@@ -494,7 +484,6 @@ const createAutomaticReport = async (productId) => {
         category: "product",
       });
       await report.save();
-      console.log("Automatic report created:", report._id);
     }
   } catch (error) {
     console.error("Failed to create automatic report:", error.message);
@@ -523,7 +512,6 @@ const createCancelledOrderReport = async (orderId) => {
         details: `The order has been cancelled due to issues with stock or customer request.`,
       });
       await report.save();
-      console.log("Cancelled order report created:", report._id);
     }
   } catch (error) {
     console.error("Failed to create cancelled order report:", error.message);

@@ -168,38 +168,6 @@ discountSchema.virtual("isCurrentlyActive").get(function () {
 });
 
 // Middleware: Update related phones when discount changes
-// discountSchema.post("save", async function () {
-//   const Phone = mongoose.model("Phone");
-
-//   // Nếu mã giảm giá không còn hiệu lực, xóa mã giảm giá khỏi các sản phẩm liên quan
-//   if (!this.isCurrentlyActive) {
-//     await Phone.updateMany(
-//       { discount: this._id },
-//       {
-//         $set: {
-//           discount: null,
-//           discountValue: 0,
-//           finalPrice: mongoose.model("Phone").price,
-//         },
-//       }
-//     );
-//     return;
-//   }
-
-//   const phones = await Phone.find({ discount: this._id });
-//   for (const phone of phones) {
-//     if (this.discountType === "percentage") {
-//       phone.discountValue = (phone.price * this.discountValue) / 100;
-//     } else {
-//       phone.discountValue = this.discountValue;
-//     }
-
-//     phone.discountValue = Math.min(phone.discountValue, phone.price);
-//     phone.finalPrice = phone.price - phone.discountValue;
-
-//     await phone.save();
-//   }
-// });
 discountSchema.post("save", async function () {
   const Phone = mongoose.model("Phone");
 

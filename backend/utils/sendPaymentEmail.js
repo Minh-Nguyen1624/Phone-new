@@ -1,6 +1,4 @@
-const {
-    sendEmail
-} = require('./email');
+const { sendEmail } = require("./email");
 
 /**
  * Gửi email xác nhận thanh toán
@@ -10,12 +8,12 @@ const {
  */
 
 const sendPaymentEmail = async (recipientEmail, transactionId, status) => {
-    const subject = `Payment ${status === 'success' ? 'Success' : 'Failed'}`;
-    const message = `Your payment with transaction ID ${transactionId} has been ${status}.`;
-    await sendEmail(recipientEmail, subject, message);
-    console.log(`Payment email sent to ${recipientEmail}`);
+  const subject = `Payment ${status === "success" ? "Success" : "Failed"}`;
+  const message = `Your payment with transaction ID ${transactionId} has been ${status}.`;
+  await sendEmail(recipientEmail, subject, message);
+  // console.log(`Payment email sent to ${recipientEmail}`);
 };
 
 module.exports = {
-    sendPaymentEmail
+  sendPaymentEmail,
 };

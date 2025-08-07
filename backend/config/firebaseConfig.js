@@ -1,52 +1,6 @@
 // // require("dotenv").config();
 
 const { database } = require("firebase-admin");
-
-// // const firebaseConfig = {
-// //   apiKey: process.env.Fire_Api_Key,
-// //   authDomain: process.env.Fire_Auth_Domain,
-// //   projectId: process.env.Fire_Project_Id,
-// //   storageBucket: process.env.Fire_Storage_Bucket,
-// //   messagingSenderId: process.env.Fire_Messaging_Sender_Id,
-// //   appId: process.env.Fire_App_Id,
-// //   measurementId: process.env.Fire_Measurement_Id,
-// // };
-
-// // console.log("Firebase Config: ", firebaseConfig);
-// // module.exports = firebaseConfig;
-
-// // config/firebaseConfig.js
-// require("dotenv").config();
-
-// const firebaseConfig = {
-//   apiKey: process.env.Fire_Api_Key,
-//   authDomain: process.env.Fire_Auth_Domain,
-//   projectId: process.env.Fire_Project_Id,
-//   storageBucket: process.env.Fire_Storage_Bucket,
-//   messagingSenderId: process.env.Fire_Messaging_Sender_Id,
-//   appId: process.env.Fire_App_Id,
-//   measurementId: process.env.Fire_Measurement_Id,
-// };
-
-// // Log configuration to verify values
-// console.log("Firebase Config Loaded:", {
-//   apiKey: firebaseConfig.apiKey ? "****" : undefined, // Hide sensitive data
-//   authDomain: firebaseConfig.authDomain,
-//   projectId: firebaseConfig.projectId,
-//   storageBucket: firebaseConfig.storageBucket,
-//   messagingSenderId: firebaseConfig.messagingSenderId,
-//   appId: firebaseConfig.appId,
-//   measurementId: firebaseConfig.measurementId,
-// });
-
-// if (!firebaseConfig.storageBucket) {
-//   console.error(
-//     "Error: Fire_Storage_Bucket is not defined in environment variables!"
-//   );
-// }
-
-// module.exports = firebaseConfig;
-
 // backend/config/firebaseConfig.js
 require("dotenv").config();
 
@@ -61,17 +15,17 @@ const firebaseConfig = {
   databaseURL: process.env.Fire_Database_Url,
 };
 
-// Log configuration to verify values
-console.log("Firebase Config Loaded:", {
-  apiKey: firebaseConfig.apiKey ? "****" : undefined, // Hide sensitive data
-  authDomain: firebaseConfig.authDomain,
-  projectId: firebaseConfig.projectId,
-  storageBucket: firebaseConfig.storageBucket,
-  messagingSenderId: firebaseConfig.messagingSenderId,
-  appId: firebaseConfig.appId,
-  // measurementId: firebaseConfig.measurementId,
-  databaseURL: firebaseConfig.databaseURL,
-});
+// // Log configuration to verify values
+// console.log("Firebase Config Loaded:", {
+//   apiKey: firebaseConfig.apiKey ? "****" : undefined, // Hide sensitive data
+//   authDomain: firebaseConfig.authDomain,
+//   projectId: firebaseConfig.projectId,
+//   storageBucket: firebaseConfig.storageBucket,
+//   messagingSenderId: firebaseConfig.messagingSenderId,
+//   appId: firebaseConfig.appId,
+//   // measurementId: firebaseConfig.measurementId,
+//   databaseURL: firebaseConfig.databaseURL,
+// });
 
 if (
   !firebaseConfig.apiKey ||

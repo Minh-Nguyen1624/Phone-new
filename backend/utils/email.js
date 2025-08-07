@@ -93,11 +93,6 @@ const generatePaymentReceiptPDF = (paymentDetails, userEmail) => {
  */
 const sendEmail = async (to, subject, text, html = null, attachment = null) => {
   try {
-    // // Kiểm tra email hợp lệ
-    // if (!to || !/^\S+@\S+\.\S+$/.test(to)) {
-    //   throw new Error("Invalid email address");
-    // }
-
     // Kiểm tra email hợp lệ
     if (
       !to ||
@@ -107,13 +102,7 @@ const sendEmail = async (to, subject, text, html = null, attachment = null) => {
     ) {
       throw new Error("Invalid email address");
     }
-    // const mailOptions = {
-    //   from: `"Your App" <${process.env.EMAIL_USER}>`,
-    //   to,
-    //   subject,
-    //   text,
-    //   ...(html && { html }),
-    // };
+
     const mailOptions = {
       from: `"Your App" <${process.env.EMAIL_USER}>`,
       to: Array.isArray(to) ? to.join(", ") : to,
@@ -130,14 +119,10 @@ const sendEmail = async (to, subject, text, html = null, attachment = null) => {
       }),
     };
 
-    // const info = await transporter.sendMail(mailOptions);
-    // console.log(`Email sent successfully: ${info.response}`);
     const info = await transporter.sendMail(mailOptions);
     logger.info(`Email sent successfully to ${to}: ${info.response}`);
     return info;
   } catch (error) {
-    // console.error("Error sending email:", error.message);
-    // throw new Error("Unable to send email.");
     logger.error(`Error sending email to ${to}: ${error.message}`);
     if (error.code === "EAUTH") {
       throw new Error(
@@ -175,22 +160,7 @@ const sendPaymentConfirmationEmail = async (
 
   const subject = "Xác nhận thanh toán";
   const text = `Thanh toán của bạn (${paymentDetails.amount} ${paymentDetails.currency}) đã được xử lý thành công!\nMã giao dịch: ${paymentDetails.transactionId}\nPhương thức thanh toán: ${paymentDetails.paymentMethod}`;
-  // const html = `
-  //   <h2>Xác nhận thanh toán</h2>
-  //   <p>Thanh toán của bạn đã được xử lý thành công!</p>
-  //   <ul>
-  //     <li><strong>Số tiền:</strong> ${paymentDetails.amount} ${
-  //   paymentDetails.currency
-  // }</li>
-  //     <li><strong>Mã giao dịch:</strong> ${paymentDetails.transactionId}</li>
-  //     <li><strong>Phương thức thanh toán:</strong> ${
-  //       paymentDetails.paymentMethod
-  //     }</li>
-  //     <li><strong>Thời gian:</strong> ${new Date(
-  //       paymentDetails.createdAt
-  //     ).toLocaleString()}</li>
-  //   </ul>
-  // `;
+
   const html = `
     <h2>Xác nhận thanh toán</h2>
     <p>Thanh toán của bạn đã được xử lý thành công!</p>
@@ -235,79 +205,6 @@ const sendPaymentConfirmationEmail = async (
  * @param {string} userEmail - Email của khách hàng
  * @param {Object} refundDetails - Chi tiết hoàn tiền
  */
-// const sendRefundConfirmationEmail = async (userEmail, refundDetails) => {
-//   if (!userEmail) {
-//     throw new Error("User email is required");
-//   }
-//   // Kiểm tra dữ liệu đầu vào
-//   if (
-//     !refundDetails ||
-//     !refundDetails.transactionId ||
-//     !refundDetails.refundAmount ||
-//     !refundDetails.currency
-//   ) {
-//     throw new Error("Invalid refund details");
-//   }
-
-//   // Chuyển đổi paymentStatus thành dạng dễ đọc
-//   const statusMap = {
-//     // Refunded: "Đã hoàn tiền",
-//     // Pending: "Đang chờ xử lý",
-//     // Success: "Thành công",
-//     // Failed: "Thất bại",
-//     Refunded: "Refunded",
-//     Pending: "Pending",
-//     Success: "Completed",
-//     Failed: "Failed",
-//   };
-
-//   const paymentStatus =
-//     statusMap[refundDetails.paymentStatus] || payment.paymentStatus;
-
-//   // const subject = "Xác nhận hoàn tiền";
-//   // const text = `Hoàn tiền ${refundDetails.refundAmount} ${refundDetails.currency} đã được thực hiện.\nMã giao dịch: ${refundDetails.transactionId}`;
-//   // const html = `
-//   //   <h2>Xác nhận hoàn tiền</h2>
-//   //   <p>Hoàn tiền của bạn đã được thực hiện thành công!</p>
-//   //   <ul>
-//   //     <li><strong>Số tiền hoàn:</strong> ${refundDetails.refundAmount} ${
-//   //   refundDetails.currency
-//   // }</li>
-//   //     <li><strong>Mã giao dịch:</strong> ${refundDetails.transactionId}</li>
-//   //     <li><strong>Thời gian:</strong> ${new Date(
-//   //       refundDetails.refundedAt
-//   //     ).toLocaleString()}</li>
-//   //   </ul>
-//   // `;
-//   // await sendEmail(userEmail, subject, text, html);
-
-//   const subject = `Payment Confirmation - Order #${payment.order}`;
-//   const text = `Dear Customer,\n\nYour payment for order #${
-//     payment.order
-//   } has been ${displayStatus}.\n\nDetails:\n- Amount: ${payment.amount} ${
-//     payment.currency
-//   }\n- Transaction ID: ${payment.transactionId}\n- Date: ${new Date(
-//     payment.createdAt || Date.now()
-//   ).toLocaleString()}\n\nThank you for your purchase!`;
-//   const html = `
-//     <h2>Payment Confirmation - Order #${payment.order}</h2>
-//     <p>Dear Customer,</p>
-//     <p>Your payment for order #${payment.order} has been ${displayStatus}.</p>
-//     <p><strong>Details:</strong></p>
-//     <ul>
-//       <li><strong>Amount:</strong> ${payment.amount} ${payment.currency}</li>
-//       <li><strong>Transaction ID:</strong> ${payment.transactionId}</li>
-//       <li><strong>Status:</strong> ${displayStatus}</li>
-//       <li><strong>Date:</strong> ${new Date(
-//         payment.createdAt || Date.now()
-//       ).toLocaleString()}</li>
-//     </ul>
-//     <p>Thank you for your purchase!</p>
-//     <p>Best regards,<br/>Support Team</p>
-//   `;
-
-//   await sendEmail(userEmail, subject, text, html);
-// };
 const sendRefundConfirmationEmail = async (userEmail, refundDetails) => {
   if (!userEmail) {
     throw new Error("User email is required");
@@ -376,29 +273,6 @@ const sendRefundConfirmationEmail = async (userEmail, refundDetails) => {
  */
 
 // // Hàm gửi email thông báo
-// const sendPaymentNotification = async (userEmail, payment) => {
-//   try {
-//     const transporter = nodemailer.createTransport({
-//       service: "gmail",
-//       auth: {
-//         user: process.env.EMAIL_USER,
-//         pass: process.env.EMAIL_PASSWORD,
-//       },
-//     });
-
-//     const mailOptions = {
-//       from: process.env.EMAIL_USER,
-//       to: userEmail,
-//       subject: `Payment Confirmation - Order #${payment.order}`,
-//       text: `Dear Customer,\n\nYour payment for order #${payment.order} has been ${payment.paymentStatus}.\n\nDetails:\n- Amount: ${payment.amount} ${payment.currency}\n- Transaction ID: ${payment.transactionId}\n\nThank you for your purchase!`,
-//     };
-
-//     await transporter.sendMail(mailOptions);
-//     console.log(`✅ Email sent to ${userEmail} for payment ${payment._id}`);
-//   } catch (error) {
-//     console.error("❌ Error sending email:", error.message);
-//   }
-// };
 const sendPaymentNotification = async (userEmail, payment) => {
   // Kiểm tra dữ liệu đầu vào
   if (
@@ -411,22 +285,6 @@ const sendPaymentNotification = async (userEmail, payment) => {
   ) {
     throw new Error("Invalid payment data");
   }
-
-  // const subject = `Payment Confirmation - Order #${payment.order}`;
-  // const text = `Dear Customer,\n\nYour payment for order #${payment.order} has been ${payment.paymentStatus}.\n\nDetails:\n- Amount: ${payment.amount} ${payment.currency}\n- Transaction ID: ${payment.transactionId}\n- Status: ${payment.paymentStatus}\n\nThank you for your purchase!`;
-  // const html = `
-  //   <h2>Payment Confirmation - Order #${payment.order}</h2>
-  //   <p>Dear Customer,</p>
-  //   <p>Your payment for order # ${payment.order} has been ${payment.paymentStatus}.</p>
-  //   <p><strong>Details:</strong></p>
-  //   <ul>
-  //     <li><strong>Amount:</strong> ${payment.amount} ${payment.currency}</li>
-  //     <li><strong>Transaction ID:</strong> ${payment.transactionId}</li>
-  //     <li><strong>Status:</strong> ${payment.paymentStatus}</li>
-  //   </ul>
-  //   <p>Thank you for your purchase!</p>
-  //   <p>Best regards,<br/>Support Team</p>
-  // `;
 
   let subject, text, html;
   if (

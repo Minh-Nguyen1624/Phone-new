@@ -596,6 +596,18 @@ body {
   transition-duration: 300ms;
 }
 
+.title {
+  font-weight: 700;
+  font-size: 24px;
+  color: #1d2939;
+  margin-bottom: 20px;
+  line-height: 32px;
+  max-width: 1200px;
+  margin-left: auto;
+  padding-left: 12px;
+  margin-right: auto;
+}
+
 /* Container utility */
 .container {
   max-width: 1200px;
@@ -885,4 +897,22 @@ button.single-line {
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.header_main {
+  height: 60px;
+  background-color: rgb(255, 255, 255);
+  max-width: 1176px;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  border-bottom: 1px solid #eaecf0;
+}
+
+.pagination {
+  margin-bottom: 20px;
 }

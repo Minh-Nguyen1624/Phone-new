@@ -120,38 +120,6 @@ const getRoleById = async (req, res) => {
   }
 };
 
-// const updateRole = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const { roleName, description, permissions, isDefault } = req.body;
-
-//     const role = await Role.findById(id).populate(
-//       "permissions",
-//       "permissionName description"
-//     );
-//     if (!role) {
-//       return res.status(404).json({ message: "Role not found" });
-//     }
-
-//     role.roleName = roleName || role.roleName;
-//     role.description = description || role.description;
-//     role.permissions = permissions || role.permissions;
-//     role.isDefault = isDefault || role.isDefault;
-
-//     const updatedRole = await role.save();
-//     res.status(200).json({
-//       success: true,
-//       message: "Role updated successfully",
-//       data: updatedRole,
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Error updating role",
-//       error: error.message,
-//     });
-//   }
-// };
 const updateRole = async (req, res) => {
   try {
     const { id } = req.params;
@@ -234,72 +202,6 @@ const deleteRole = async (req, res) => {
   }
 };
 
-// const addPermissions = async (req, res) => {
-//   try {
-//     const { roleId, permissionId } = req.body;
-
-//     const role = await Role.findById(roleId);
-//     const permissions = await Permission.findById(permissionId);
-
-//     if (!role || !permissions) {
-//       return res.status(404).json({ message: "Role or permission not found" });
-//     }
-
-//     if (role.permissions.includes(permissionId)) {
-//       return res
-//         .status(400)
-//         .json({ message: "Permission already added to role" });
-//     }
-
-//     // thêm quyền
-//     role.permissions.push(permissionId);
-//     const updatedRole = await role.save();
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Permission added to role successfully",
-//       data: updatedRole,
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Error adding permissions to role",
-//       error: error.message,
-//     });
-//   }
-// };
-
-// const removePermissions = async (req, res) => {
-//   try {
-//     const { roleId, permissionId } = req.body;
-//     const role = await Role.findById(roleId);
-
-//     if (!role) {
-//       return res.status(404).json({ message: "Role not found" });
-//     }
-
-//     // xóa quyền
-//     // role.permissions = role.permissions.filter(
-//     //     (permission) => permission.toString() !== permissionId.toString()
-//     // )
-//     role.permissions = role.permissions.filter(
-//       (permission) => permission.toString() !== permissionId
-//     );
-//     const updatedRole = await role.save();
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Permission removed from role successfully",
-//       data: updatedRole,
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Error removing permissions from role",
-//       error: error.message,
-//     });
-//   }
-// };
 const addPermissions = async (req, res) => {
   try {
     const { roleId, permissionId } = req.body;

@@ -51,6 +51,7 @@ const userSchema = new mongoose.Schema(
     isLocked: { type: Boolean, default: false },
     emailVerified: { type: Boolean, default: false },
     // emailVerified: { type: Boolean, default: true },
+    isVerified: { type: Boolean, default: false },
     twoFactorEnabled: { type: Boolean, default: false },
     lastLogin: { type: Date },
     // role: { type: String, enum: ["admin", "user"], required: true },
@@ -163,8 +164,8 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
     return false;
   }
 
-  console.log("🔹 Mật khẩu nhập:", candidatePassword);
-  console.log("🔹 Hash trong DB:", this.password);
+  // console.log("🔹 Mật khẩu nhập:", candidatePassword);
+  // console.log("🔹 Hash trong DB:", this.password);
 
   try {
     const result = await bcrypt.compare(candidatePassword, this.password);
