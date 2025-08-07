@@ -85,7 +85,7 @@ const reportRoute = require("./routes/reportRoute");
 const chatBoxRoute = require("./routes/chatBoxRoute");
 
 // Debug: Confirm chatBoxRoute import
-console.log("chatBoxRoute imported:", chatBoxRoute);
+// console.log("chatBoxRoute imported:", chatBoxRoute);
 
 // Import and connect to database
 const connectDB = require("./config/db");
@@ -122,10 +122,10 @@ app.use((req, res, next) => {
       secure: false, // Set to true if using HTTPS
       // secure: process.env.NODE_ENV, // Set to true if using HTTPS
     });
-    console.log("New session created:", req.session.sessionId);
+    // console.log("New session created:", req.session.sessionId);
   }
   req.body.sessionId = req.session.sessionId; // Attach sessionId to request body
-  console.log("Session ID:", req.session.sessionId);
+  // console.log("Session ID:", req.session.sessionId);
   next();
 });
 
@@ -153,13 +153,13 @@ app.get("/", (req, res) => {
 });
 
 app.get("/api/payment/order/vnpay_return", (req, res) => {
-  console.log("🔹 Full Request URL:", req.url);
-  console.log("🔹 Query Parameters:", JSON.stringify(req.query, null, 2));
-  console.log("🔹 Request Headers:", JSON.stringify(req.headers, null, 2));
-  console.log("🔹 Request Method:", req.method);
+  // console.log("🔹 Full Request URL:", req.url);
+  // console.log("🔹 Query Parameters:", JSON.stringify(req.query, null, 2));
+  // console.log("🔹 Request Headers:", JSON.stringify(req.headers, null, 2));
+  // console.log("🔹 Request Method:", req.method);
 
   if (!req.query || Object.keys(req.query).length === 0) {
-    console.log("❌ Error: No query parameters received from VNPay");
+    // console.log("❌ Error: No query parameters received from VNPay");
     return res.status(400).json({
       success: false,
       message: "No query parameters received from VNPay",
@@ -167,15 +167,15 @@ app.get("/api/payment/order/vnpay_return", (req, res) => {
   }
 
   if (!req.query.vnp_SecureHash) {
-    console.log("❌ Error: Missing vnp_SecureHash");
-    console.log("🔹 Available Query Parameters:", Object.keys(req.query));
+    //   console.log("❌ Error: Missing vnp_SecureHash");
+    //   console.log("🔹 Available Query Parameters:", Object.keys(req.query));
     return res
       .status(400)
       .json({ success: false, message: "Missing vnp_SecureHash" });
   }
 
   const isValid = verifySignature(req.query, vnpayConfig.secretKey);
-  console.log("🔹 Signature Verification:", isValid);
+  // console.log("🔹 Signature Verification:", isValid);
 
   if (isValid) {
     return res.json({ success: true, message: "Payment successful" });
@@ -187,18 +187,18 @@ app.get("/api/payment/order/vnpay_return", (req, res) => {
 });
 
 app.get("/api/payment/order/vnpay-ipn", (req, res) => {
-  console.log("Received IPN from VNPAY:", req.query);
+  // console.log("Received IPN from VNPAY:", req.query);
   res.status(200).send("OK");
 });
 
 app.get("/api/payment/order/ZaloPay_return", (req, res) => {
-  console.log("🔹 Full Request URL:", req.url);
-  console.log("🔹 Query Parameters:", JSON.stringify(req.query, null, 2));
-  console.log("🔹 Request Headers:", JSON.stringify(req.headers, null, 2));
-  console.log("🔹 Request Method:", req.method);
+  // console.log("🔹 Full Request URL:", req.url);
+  // console.log("🔹 Query Parameters:", JSON.stringify(req.query, null, 2));
+  // console.log("🔹 Request Headers:", JSON.stringify(req.headers, null, 2));
+  // console.log("🔹 Request Method:", req.method);
 
   if (!req.query || Object.keys(req.query).length === 0) {
-    console.log("❌ Error: No query parameters received from ZaloPay");
+    // console.log("❌ Error: No query parameters received from ZaloPay");
     return res.status(400).json({
       success: false,
       message: "No query parameters received from ZaloPay",
@@ -206,13 +206,13 @@ app.get("/api/payment/order/ZaloPay_return", (req, res) => {
   }
 
   if (!req.query.mac) {
-    console.log("❌ Error: Missing mac");
-    console.log("🔹 Available Query Parameters:", Object.keys(req.query));
+    // console.log("❌ Error: Missing mac");
+    // console.log("🔹 Available Query Parameters:", Object.keys(req.query));
     return res.status(400).json({ success: false, message: "Missing mac" });
   }
 
   const isValid = verifyZaloPaySignature(req.query, zaloPayConfig.key2);
-  console.log("🔹 Signature Verification:", isValid);
+  // console.log("🔹 Signature Verification:", isValid);
 
   if (isValid) {
     const status = parseInt(req.query.status, 10);
@@ -236,20 +236,20 @@ setIo(io);
 
 // Socket.IO connection handling
 io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
+  // console.log("User connected:", socket.id);
 
   socket.on("joinConversation", (conversationId) => {
     socket.join(conversationId);
-    console.log(`User ${socket.id} joined conversation ${conversationId}`);
+    // console.log(`User ${socket.id} joined conversation ${conversationId}`);
   });
 
   socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
+    // console.log("User disconnected:", socket.id);
   });
 });
 
 // Initialize chatBoxRoute with io
-console.log("Initializing chatBoxRoute with io");
+// console.log("Initializing chatBoxRoute with io");
 chatBoxRoute.initializeIo(io); // Call initializeIo before using router
 app.use("/api/chatbox", chatBoxRoute.router); // Use chatBoxRoute.router after initialization
 
