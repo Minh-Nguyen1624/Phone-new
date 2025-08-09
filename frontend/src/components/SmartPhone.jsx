@@ -207,8 +207,8 @@ const SmartPhone = () => {
   };
 
   useEffect(() => {
-    fetchCategoriesAndPhones();
-  }, [searchQuery]);
+    fetchCategoriesAndPhones(selectedCategoryId);
+  }, [searchQuery, selectedCategoryId]);
 
   const handleSearch = async (query) => {
     try {

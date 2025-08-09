@@ -40,11 +40,21 @@ body {
 .header-logo {
   display: flex;
   align-items: center;
-  font-size: 2rem;
-  font-weight: bold;
+  font-size: 24px;
+  font-weight: 400;
   color: #222;
   text-decoration: none;
   gap: 8px;
+}
+
+.header-logo span {
+  line-height: normal;
+  letter-spacing: normal;
+  font-size: 24px;
+  font-weight: 400;
+  color: black;
+  font-family: "Lobster", cursive;
+  text-decoration: none;
 }
 
 .header__search {

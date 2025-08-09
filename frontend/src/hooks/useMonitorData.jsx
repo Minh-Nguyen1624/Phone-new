@@ -365,6 +365,46 @@ const useMonitorData = () => {
     }
   };
 
+  const getChildCategories = (filter) => {
+    if (!category || !categoryMap) return [];
+    const parentCategory = category.find(
+      (cat) => cat._id === selectedCategoryId
+    );
+    if (!parentCategory) {
+      const parentCategoryName =
+        filter === "máy tính để bàn"
+          ? "desktop-computer"
+          : filter === "máy in"
+          ? "printer"
+          : "computer-screen";
+      const fallbackCategory = category.find(
+        (cat) =>
+          cat.name && cat.name.toLowerCase().trim() === parentCategoryName
+      );
+      if (!fallbackCategory) return [];
+      return category
+        .filter((cat) =>
+          cat.parentCategory?.some(
+            (parent) => parent._id === fallbackCategory._id
+          )
+        )
+        .filter(
+          (cat) =>
+            cat.name &&
+            cat.name.toLowerCase() !== fallbackCategory.name.toLowerCase()
+        );
+    }
+    return category
+      .filter((cat) =>
+        cat.parentCategory?.some((parent) => parent._id === parentCategory._id)
+      )
+      .filter(
+        (cat) =>
+          cat.name &&
+          cat.name.toLowerCase() !== parentCategory.name.toLowerCase()
+      );
+  };
+
   const handleDoubleSidedFilter = async () => {
     if (!monitors || !Array.isArray(monitors) || monitors.length === 0) {
       console.error("Error: monitors is empty or not an array", { monitors });
@@ -420,46 +460,6 @@ const useMonitorData = () => {
       alert(err.response?.data?.message || "Lỗi khi mua hàng.");
       console.error("Error purchasing phone:", err);
     }
-  };
-
-  const getChildCategories = (filter) => {
-    if (!category || !categoryMap) return [];
-    const parentCategory = category.find(
-      (cat) => cat._id === selectedCategoryId
-    );
-    if (!parentCategory) {
-      const parentCategoryName =
-        filter === "máy tính để bàn"
-          ? "desktop-computer"
-          : filter === "máy in"
-          ? "printer"
-          : "computer-screen";
-      const fallbackCategory = category.find(
-        (cat) =>
-          cat.name && cat.name.toLowerCase().trim() === parentCategoryName
-      );
-      if (!fallbackCategory) return [];
-      return category
-        .filter((cat) =>
-          cat.parentCategory?.some(
-            (parent) => parent._id === fallbackCategory._id
-          )
-        )
-        .filter(
-          (cat) =>
-            cat.name &&
-            cat.name.toLowerCase() !== fallbackCategory.name.toLowerCase()
-        );
-    }
-    return category
-      .filter((cat) =>
-        cat.parentCategory?.some((parent) => parent._id === parentCategory._id)
-      )
-      .filter(
-        (cat) =>
-          cat.name &&
-          cat.name.toLowerCase() !== parentCategory.name.toLowerCase()
-      );
   };
 
   const loadMore = () => {

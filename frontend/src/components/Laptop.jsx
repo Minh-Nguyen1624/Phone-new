@@ -26,6 +26,19 @@ const LapTop = () => {
   const [displayLimit, setDisplayLimit] = useState(InitialDisplayLimit);
   const navigate = useNavigate();
 
+  const categoryNameMap = {
+    asus: "Laptop Asus",
+    hp: "Laptop Hp",
+    dell: "Laptop Dell",
+  };
+
+  const categoryMap2 = categories
+    ? categories.reduce((map, cat) => {
+        map[cat._id] = categoryNameMap[cat.name] || cat.name || "Laptop";
+        return map;
+      }, {})
+    : {};
+
   const fetchCategoriesAndPhones = async (category = null) => {
     try {
       setLoading(true);
@@ -281,7 +294,12 @@ const LapTop = () => {
           <li className="title_category">
             <Link to="/">Trang chủ</Link>
           </li>
-          <li className="number_category">{`> ${totalPhones} Laptop`}</li>
+          {/* <li className="number_category">{`> ${totalPhones} Laptop`}</li> */}
+          <li className="number_category">{`> ${totalPhones} ${
+            categoryMap2[selectedCategoryId || "Laptop"] === undefined
+              ? "Laptop"
+              : categoryMap2[selectedCategoryId || "Laptop"]
+          }`}</li>
         </ul>
       </section>
 

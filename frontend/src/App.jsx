@@ -13,6 +13,7 @@ import ResetPassword from "./components/ResetPassword";
 import VerifyEmail from "./components/VerifyEmail";
 import Notifications from "./components/Notifications";
 import AddressTag from "./components/AddressTag"; // Import AddressTag
+import Tablets from "./components/Tablets";
 import {
   BrowserRouter as Router,
   Route,
@@ -137,6 +138,7 @@ function App() {
         <Route path="/laptops" element={<Laptop />} />
         <Route path="/monitors" element={<Monitor />} />
         <Route path="/computerscreen" element={<ComputerScreen />} />
+        <Route path="/tablets" element={<Tablets />} />
       </Routes>
     </Router>
   );

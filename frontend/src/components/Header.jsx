@@ -140,9 +140,6 @@ const Header = ({ onSearch, onFilterByCategory, user: propUser }) => {
             <FaCartPlus />
             <span>Giỏ Hàng</span>
           </a>
-          {/* <a href="#" className="header__map">
-            <AddressTag />
-          </a> */}
         </div>
       </div>
       <a href="#" className="header__map">
@@ -214,7 +211,9 @@ const Header = ({ onSearch, onFilterByCategory, user: propUser }) => {
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  if (onFilterByCategory) onFilterByCategory("categoryId4");
+                  // if (onFilterByCategory) onFilterByCategory("categoryId4");
+                  navigate("/tablets");
+                  handleClickReload();
                 }}
               >
                 <i>
