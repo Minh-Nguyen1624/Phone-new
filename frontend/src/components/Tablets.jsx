@@ -256,7 +256,7 @@ const Tablets = () => {
     try {
       setLoading(true);
       const normalizedCategoryName = (categoryName || "").toLowerCase().trim();
-
+      console.log("Filtering by category:", normalizedCategoryName);
       // Nếu không có categoryName => reset về tất cả tablets
       if (!normalizedCategoryName) {
         setSelectedCategoryId(null);
@@ -264,28 +264,26 @@ const Tablets = () => {
         setDisplayLimit(InitialDisplayLimit);
         setIsCategorySelected(false);
         setShowSubCategories(false);
-        // setShowSubCategories(true);
         await fetchTablets(); // load tất cả
         return;
       }
 
       // Tìm category object theo tên
       const targetCategory = categories.find((cat) => {
-        const catName = (cat.name || "").toLowerCase().trim();
-        if (catName !== normalizedCategoryName) return false;
-
-        // Kiểm tra có thuộc nhánh Tablet hay không
-        const isTabletRelated =
-          cat._id === tabletCategoryId ||
-          (Array.isArray(cat.parentCategory)
-            ? cat.parentCategory.some((p) => (p._id || p) === tabletCategoryId)
-            : (cat.parentCategory?._id || cat.parentCategory) ===
-              tabletCategoryId);
-
-        return isTabletRelated;
+        cat.name &&
+          cat.name.toLowerCase().trim() === normalizedCategoryName &&
+          (cat._id === tabletCategoryId ||
+            (Array.isArray(cat.parentCategory)
+              ? cat.parentCategory.some(
+                  (p) => (p._id || p) === tabletCategoryId
+                )
+              : (cat.parentCategory?._id || cat.parentCategory) ===
+                tabletCategoryId));
       });
 
-      if (!targetCategory) {
+      let newCategoryId = targetCategory ? targetCategory?._id : null;
+
+      if (!newCategoryId) {
         setError(
           `Danh mục '${categoryName}' không tồn tại hoặc không thuộc tablet.`
         );
@@ -293,13 +291,13 @@ const Tablets = () => {
       }
 
       // Lưu lại để highlight button
-      setSelectedCategoryId(targetCategory._id);
+      setSelectedCategoryId(newCategoryId);
       setSelectedFilter(categoryName);
       setDisplayLimit(InitialDisplayLimit);
       setIsCategorySelected(true);
       setShowSubCategories(true);
       // Fetch sản phẩm thuộc category này
-      await fetchTablets(targetCategory._id);
+      await fetchTablets(newCategoryId, selectedFilter);
     } catch (err) {
       console.error("Error in filterByCategory (tablet):", err);
       setError("Lỗi khi lọc tablet theo danh mục.");
@@ -310,6 +308,7 @@ const Tablets = () => {
 
   const filterByBrand = async (brand) => {
     try {
+      console.log("Filtering by brand:", brand);
       setLoading(true);
       const normalizedBrand = (brand || "").toLowerCase().trim();
       if (!normalizedBrand) {
@@ -482,13 +481,19 @@ const Tablets = () => {
               <button
                 key={category._id}
                 className="filter_brand"
-                onClick={() => filterByCategory(category.name)}
+                onClick={() => {
+                  filterByCategory(category.name);
+                  filterByBrand(category.name.toLowerCase().trim());
+                }}
                 style={{
                   backgroundColor:
-                    selectedCategoryId === category._id
+                    selectedFilter === category.name.toLowerCase().trim()
                       ? "#939ee8"
                       : "transparent",
-                  color: selectedCategoryId === category._id ? "#fff" : "#000",
+                  color:
+                    selectedFilter === category.name.toLowerCase().trim()
+                      ? "#fff"
+                      : "#000",
                   padding: "5px 10px",
                   margin: "0 5px",
                   borderRadius: "5px",
