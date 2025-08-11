@@ -230,7 +230,9 @@ const Header = ({ onSearch, onFilterByCategory, user: propUser }) => {
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  if (onFilterByCategory) onFilterByCategory("categoryId4");
+                  // if (onFilterByCategory) onFilterByCategory("categoryId4");
+                  navigate("/accessories");
+                  handleClickReload();
                 }}
               >
                 <i>
