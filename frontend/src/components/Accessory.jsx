@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaFilter } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
-// import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import Header from "../components/Header";
 import MainProduct from "../components/MainProduct";
 import useAccessoryData from "../hooks/useAccessoryData";
+import AccessoryBrand from "../components/AccessoryBrand";
 import "../css/Accessory.css";
 
 const API_URL = "http://localhost:8080/api";
@@ -13,6 +13,54 @@ const Limit = 10;
 const InitialDisplayLimit = 8;
 
 const Accessory = () => {
+  const {
+    accessories,
+    loading,
+    error,
+    soldQuantities,
+    selectedCategoryId,
+    searchQuery,
+    category,
+    categoryMap,
+    brands: brand,
+    totalAccessories,
+    displayLimit,
+    isFilterVisible,
+    selectedBrandId,
+    isCategorySelected,
+    selectedFilter,
+    setSelectedFilter,
+    showSubCategories,
+    setShowSubCategories,
+    filterByCategory,
+    filterByBrand,
+    handleSearch,
+    purchasePhone,
+    getChildCategories,
+    loadMore,
+    toggleLike,
+    setAccessories,
+  } = useAccessoryData();
+
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Bản ghi gỡ lỗi để kiểm tra props
+  console.log("Accessory Props:", {
+    showSubCategories,
+    loading,
+    accessories,
+    getChildCategories: getChildCategories(),
+  });
+
+  // Đảm bảo showSubCategories là true nếu có danh mục con
+  useEffect(() => {
+    const childCategories = getChildCategories();
+    if (childCategories.length > 0 && !showSubCategories && !loading) {
+      setShowSubCategories(true);
+    }
+  }, [showSubCategories, loading, getChildCategories, setShowSubCategories]);
+
   return (
     <>
       <div className="header-top-bar">
@@ -50,19 +98,21 @@ const Accessory = () => {
               </div>
             </div>
           </section>
+          <section className="category-brand">
+            <AccessoryBrand
+              accessories={accessories}
+              getChildCategories={getChildCategories}
+              isCategorySelected={isCategorySelected}
+              selectedFilter={selectedFilter}
+              selectedCategoryId={selectedCategoryId}
+              showSubCategories={showSubCategories}
+              filterByCategory={filterByCategory}
+              filterByBrand={filterByBrand}
+              setAccessories={setAccessories}
+              loading={loading}
+            />
+          </section>
         </div>
-
-        <section className="category-brand">
-          <div className="category-brand-header">
-            <h3 className="category-brand-title">Thương hiệu phụ kiện</h3>
-            <a href="#" className="category-all-brand">
-              Xem tất cả
-            </a>
-          </div>
-          <div className="quick-link">
-            <a href="#" className="quick-link-item"></a>
-          </div>
-        </section>
       </div>
     </>
   );

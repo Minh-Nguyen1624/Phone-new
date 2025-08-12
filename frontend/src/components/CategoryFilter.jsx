@@ -54,6 +54,7 @@ const CategoryFilter = ({
 
   return (
     <div style={{ display: "flex", gap: "10px" }}>
+      {console.log("Show Sub Categories: ", showSubCategories)}
       {showSubCategories && !loading && (
         <>
           <div className="cate-main-filter-1">

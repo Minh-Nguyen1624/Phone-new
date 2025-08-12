@@ -10,6 +10,10 @@ const useAccessoryData = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [allAccessories, setAllAccessories] = useState([]);
+  const [searchMode, setSearchMode] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [categoriesData, setCategoriesData] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [totalAccessories, setTotalAccessories] = useState(0);
   const [displayedAccessories, setDisplayedAccessories] = useState([]);
   const [isFilterVisible, setIsFilterVisible] = useState(false);
@@ -67,7 +71,7 @@ const useAccessoryData = () => {
       setCategoryMap(map);
 
       const accessoriesCategory = accessoriesData.find(
-        (cat) => cat.name && cat.name.toLowerCase() === "accessories"
+        (cat) => cat.name && cat.name.toLowerCase() === "phukien"
       );
 
       const accessoriesIdNew = accessoriesCategory
@@ -314,6 +318,7 @@ const useAccessoryData = () => {
   const loadMore = () => {
     setDisplayLimit((prev) => prev + InitialDisplayLimit);
   };
+
   return {
     accessories,
     loading,
