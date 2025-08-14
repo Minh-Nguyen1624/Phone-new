@@ -15,7 +15,8 @@ const AccessoryBrand = ({
   brand,
 }) => {
   const toCapitalize = (str) => {
-    return str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : str;
+    // return str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : str;
+    return str ? str.charAt(0).toUpperCase() + str.slice(1).toUpperCase() : str;
   };
   console.log("Accessories: ", accessories);
 
@@ -53,7 +54,7 @@ const AccessoryBrand = ({
           </div>
           <div className="quick-link">
             {childCategories.length > 0 ? (
-              childCategories.map((cat) => (
+              childCategories.slice(0, 20).map((cat) => (
                 <button
                   key={cat._id}
                   className={`category-button ${
