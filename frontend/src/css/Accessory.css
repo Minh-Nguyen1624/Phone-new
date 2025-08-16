@@ -7,6 +7,7 @@
 .accessory-container {
   background: #f1f1f1;
   margin-top: 21px;
+  min-height: 100vh; /* Đảm bảo container chiếm toàn bộ chiều cao */
 }
 
 .accessory-options {
@@ -19,12 +20,15 @@
   margin: auto;
   display: flex;
   background: #f1f1f1;
+  padding: 10px 0; /* Thêm padding để tránh nội dung bị ép sát mép */
 }
 
 .accessory-options li {
   display: flex;
   vertical-align: middle;
-  width: calc(100% / 3 + 5px);
+  width: calc(
+    100% / 3 - 10px
+  ); /* Điều chỉnh để tránh tràn, giảm 10px tổng cộng */
   height: 93px;
   margin-right: 8px;
   background-color: #fff;
@@ -35,12 +39,17 @@
   padding-left: 18px;
 }
 
+.accessory-options li:last-child {
+  margin-right: 0; /* Loại bỏ margin-right cho phần tử cuối cùng */
+}
+
 .warpper-content {
   position: relative;
   background-color: #f1f1f1;
-  width: 1186px;
+  width: 100%;
+  max-width: 1200px;
   margin: auto;
-  padding-left: 25px;
+  /* /* padding: 0 25px; */
 }
 
 .accessory-products {
@@ -50,19 +59,21 @@
   margin-bottom: 20px;
   border-radius: 10px;
   margin-top: 23px;
-  height: 181px;
+  padding: 15px; /* Thêm padding để nội dung không sát mép */
+  min-height: 181px; /* Đảm bảo chiều cao tối thiểu */
+  /* background-color: #ffde06 !important; */
 }
 
 .accessory-options-title {
-  display: block;
+  position: relative;
+  /* background-color: #f1f1f1; */
+  width: 100%;
+  max-width: 1200px;
   /* margin: auto; */
-  font-weight: bold;
   font-size: 18px;
-  line-height: 16px;
-  padding-top: 20px;
-  margin-left: 19px;
-  /* margin-top: 19px; */
-  margin-bottom: 19px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  /* /* padding: 0 25px; */
 }
 
 .accessory-products span {
@@ -72,9 +83,10 @@
 }
 
 .accessory-products-list {
-  /* display: flex; */
+  display: flex;
   gap: 20px;
   /* justify-content: center; */
+  flex-wrap: wrap;
 }
 
 .accessory-products-category {
@@ -85,6 +97,7 @@
   width: auto;
   display: inline-block;
   margin-right: 20px;
+  margin-bottom: 20px; /* Thêm margin-bottom để cách nhau */
 }
 
 .accessory-products-category h3 {
@@ -99,16 +112,17 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
+  object-fit: cover; /* Đảm bảo ảnh không bị méo */
 }
 
 .category-brand-title {
   display: block;
-  /* margin: auto; */
   font-weight: bold;
   font-size: 18px;
   line-height: 16px;
   padding-top: 20px;
-  margin-left: 19px;
+  margin-left: 0;
+  text-align: center;
 }
 
 .category-button {
@@ -116,23 +130,35 @@
   height: 41px;
   letter-spacing: -0.04em;
   line-height: normal;
+  background-color: #fff;
+  color: #000;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.category-button:hover {
+  background-color: #f1f1f1;
 }
 
 .category-all-brand {
   padding: 20px;
+  color: #007bff;
+  text-decoration: none;
 }
-/* 
-.brand-item-link {
-  width: 99px;
-} */
 
 .category-brand {
   background-color: #fff;
   margin-bottom: 20px;
   border-radius: 10px;
   margin-top: 23px;
-  width: 1165px;
-  height: 160px;
+  width: 100%;
+  max-width: 1200px;
+  /* margin-left: auto; */
+  /* margin-right: auto; */
+  /* padding: 15px; */
+  min-height: 160px;
 }
 
 .category-brand-header {
@@ -140,29 +166,35 @@
   align-items: center;
   margin-top: 13px;
   justify-content: space-between;
+  padding: 0 15px;
 }
 
 .quick-link {
   display: flex;
-  /* padding-top: 15px; */
   padding-left: 3px;
-  max-width: 1938px;
+  max-width: 1200px;
   margin: auto;
   flex-wrap: wrap;
-  column-gap: 3px;
-  row-gap: 5px;
+  column-gap: 7px;
+  row-gap: 8px;
 }
 
 .quick-link a {
-  /* align-items: center; */
   border-radius: 4px;
   background-color: #fff;
-  /* justify-content: center; */
   display: flex;
   height: 40px;
   width: 114px;
   padding: 0 14px;
   border: 1px solid #e0e0e0;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: #000;
+}
+
+.quick-link a:hover {
+  background-color: #f1f1f1;
 }
 
 .brand-modal-overlay {
@@ -186,7 +218,6 @@
   max-height: 80vh;
   overflow-y: auto;
   position: relative;
-  height: 317px;
 }
 
 .brand-modal-close {
@@ -254,4 +285,155 @@
 
 .brand-item span {
   letter-spacing: -0.04em;
+}
+
+.camera-section {
+  display: flex;
+  /* justify-content: space-between; */
+  align-items: center;
+  /* padding: 15px 0; */
+  gap: 10px;
+  width: auto;
+}
+
+.camera-banner a img {
+  width: 400px;
+  height: 400px;
+  object-fit: cover;
+}
+
+.accessory-block_products {
+  display: flex;
+  /* flex-direction: column; */
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  line-height: 20px;
+  max-height: 50px;
+}
+
+.accessory-list {
+  list-style: none;
+  width: 85px;
+  height: 40px;
+  background-color: #333333;
+  color: #f1f1f1;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 5px;
+  text-align: center;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  /* margin-bottom: 10px; */
+}
+
+.accessory-list a {
+  color: #f1f1f1;
+  text-decoration: none;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sell-all {
+  display: flex;
+  justify-content: center;
+  /* padding-top: 10px; */
+  width: 786px;
+  height: 50px;
+  align-items: center;
+  padding-left: 65px;
+}
+
+.accessory-list a {
+  width: 85.66px;
+  height: 40px;
+}
+
+.sell-all a {
+  color: #fff;
+  text-decoration: none;
+}
+
+.caret-icon {
+  display: flex;
+  align-items: center;
+  margin-left: 5px;
+}
+
+ul {
+  margin-bottom: 0;
+}
+
+.camera-list {
+  margin-left: 0;
+  padding: 0;
+  width: calc(1200px - 415px);
+  padding: 10px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* .accessory-block_products {
+  justify-content: flex-start;
+  padding: 0;
+  display: flex;
+  align-items: center;
+} */
+
+.accessory-all_products,
+.caret-icon {
+  color: #fff;
+}
+
+.prt-accessory {
+  height: 377.8px;
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 10px 0;
+  /* margin: 0 10px; */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.accessory-products_camera {
+  background-color: #ffde06 !important;
+  border-radius: 5px;
+}
+
+.owt-item {
+  width: 190.76px;
+  height: 357px;
+  background-color: #fff;
+  border: 1px solid #d1d1d1;
+}
+
+.list-product_camera {
+  transform: translate3d(0px, 0px, 0px);
+  transition: all;
+  /* width: 2293px; */
+  position: relative;
+  -ms-touch-action: pan-Y;
+  touch-action: manipulation;
+}
+
+.owt-stage {
+  transform: translate3d(0px, 0px, 0px);
+  transition: all;
+  display: flex;
+  /* width: 2293px; */
+}
+
+.item__cate {
+  text-decoration: none;
+  color: #000;
+  font-weight: 600;
+  list-style: none;
 }

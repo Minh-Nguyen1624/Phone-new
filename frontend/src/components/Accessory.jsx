@@ -6,6 +6,7 @@ import Header from "../components/Header";
 import MainProduct from "../components/MainProduct";
 import useAccessoryData from "../hooks/useAccessoryData";
 import AccessoryBrand from "../components/AccessoryBrand";
+import CameraSection from "./CameraSection";
 import "../css/Accessory.css";
 
 const API_URL = "http://localhost:8080/api";
@@ -110,6 +111,19 @@ const Accessory = () => {
               filterByBrand={filterByBrand}
               setAccessories={setAccessories}
               loading={loading}
+            />
+          </section>
+
+          <section className="accessory-products_camera">
+            <CameraSection
+              accessories={accessories}
+              category={category}
+              selectedFilter={selectedFilter}
+              selectedCategoryId={selectedCategoryId}
+              setAccessories={setAccessories}
+              loading={loading}
+              getChildCategories={getChildCategories}
+              showSubCategories={showSubCategories}
             />
           </section>
         </div>
