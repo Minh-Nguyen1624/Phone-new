@@ -338,6 +338,25 @@
   justify-content: center;
 }
 
+.accessory-list-1 {
+  /* width: 113px;
+  height: 41px; */
+  list-style: none;
+  width: 34%;
+  height: 100%;
+  letter-spacing: -0.04em;
+  line-height: normal;
+  background-color: #fff;
+  color: #000;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .sell-all {
   display: flex;
   justify-content: center;
@@ -356,6 +375,7 @@
 .sell-all a {
   color: #fff;
   text-decoration: none;
+  font-size: 14px;
 }
 
 .caret-icon {
@@ -413,6 +433,24 @@ ul {
   height: 357px;
   background-color: #fff;
   border: 1px solid #d1d1d1;
+  padding: 10px 12px 15px;
+}
+
+.item__cate-link {
+  position: relative;
+  display: block; /* Đảm bảo là block để hover áp dụng đúng */
+}
+
+.item__cate-link:hover .item-img img {
+  animation: bounce 0.8s ease-in-out infinite; /* Chạy liên tục khi hover */
+}
+
+.item__cate-link h3:hover {
+  color: #007bff;
+}
+
+.item-img img {
+  transition: transform 0.3s ease; /* Thêm transition cho mượt mà */
 }
 
 .list-product_camera {
@@ -436,4 +474,170 @@ ul {
   color: #000;
   font-weight: 600;
   list-style: none;
+}
+
+.item-img {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.item-img img {
+  width: 137px;
+  height: 137px;
+  margin-top: 10px;
+}
+
+.result-label {
+  border-radius: 20px;
+  display: flex;
+  font-size: 0;
+  overflow: hidden;
+  max-width: 80%;
+  padding-right: 8px;
+  background: linear-gradient(to right, #faab08, #d42611);
+}
+
+p {
+  margin-top: 0;
+  /* margin-bottom: 1rem; */
+  -webkit-margin-before: 0;
+  -webkit-margin-after: 0;
+  -webkit-margin-start: 0;
+  -webkit-margin-end: 0;
+  text-rendering: geometricPrecision;
+}
+.result-label span {
+  color: #fff;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  font-size: 10px;
+  line-height: 13px;
+  margin-left: 3px;
+  overflow: hidden;
+  padding: 4px 0 0 3px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  -webkit-line-clamp: 2;
+  text-transform: uppercase;
+}
+
+.result-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 14px;
+  line-height: 16px;
+  margin-top: 10px;
+  margin-bottom: 5px;
+  max-height: 38px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #1d2939;
+}
+
+.price {
+  color: #dd2f2c;
+  display: inline-block;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 16px;
+  margin-bottom: 5px;
+}
+
+.box-p {
+  display: flex;
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.price-old {
+  color: #98a2b3;
+  text-decoration-line: line-through; /* tạo đường gạch*/
+  font-size: 13px;
+  line-height: 17px;
+}
+
+.percent {
+  padding-left: 6px;
+  color: #dd2f2c;
+  font-size: 13px;
+  line-height: 17px;
+  display: inline-block;
+}
+
+.item-bottom {
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+
+.shipping {
+  color: #333;
+  font-size: 12px;
+  line-height: 16px;
+  margin-top: 7px;
+}
+
+.rating_Compare {
+  display: flex;
+  overflow: hidden;
+  justify-items: center;
+  margin-top: 0;
+  align-items: center;
+}
+
+.vote-txt {
+  color: #667085;
+  font-size: 12px;
+  line-height: 13px;
+  white-space: nowrap;
+  padding-right: 5px;
+  font-weight: normal;
+}
+
+.rating_Compare span {
+  width: 50%;
+  font-size: 12px;
+  color: #667085;
+  white-space: nowrap;
+  font-weight: normal;
+}
+
+.item-label {
+  margin-bottom: 10px;
+  height: 20px;
+}
+
+.owt-stage:hover h3 {
+  animation-name: bounce;
+  color: #007bff;
+}
+
+.bounce:hover {
+  animation-name: bounce;
+  animation-duration: 0.8s; /* Tăng thời gian để hiệu ứng chậm hơn và tự nhiên hơn */
+  animation-timing-function: ease-in-out; /* Sử dụng ease-in-out để mượt mà */
+  animation-iteration-count: 1; /* Chạy 1 lần khi hover, tránh lặp vô hạn */
+  transform: translateY(-10px); /* Di chuyển lên ngay khi hover */
+}
+
+@keyframes bounce {
+  0% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-12px); /* Nảy lên cao hơn một chút */
+  }
+  50% {
+    transform: translateY(-8px); /* Giảm độ cao khi xuống */
+  }
+  75% {
+    transform: translateY(-4px); /* Tiếp tục giảm dần */
+  }
+  100% {
+    transform: translateY(0); /* Trở về vị trí ban đầu */
+  }
 }
