@@ -29,6 +29,7 @@ const MainProduct = ({ phone, soldQuantities, toggleLike, purchasePhone }) => {
     soldQuantity,
     availableStock,
     isOutOfStock,
+    originalPrice,
   }); // Debug chi tiết
 
   const stockPercentage =

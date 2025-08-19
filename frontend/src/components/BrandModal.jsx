@@ -39,7 +39,7 @@ const BrandModal = ({ brands, onClose, onSelect }) => {
           />
         </div>
         <div className="brand-modal-list">
-          {filteredBrand.map((brand) => (
+          {filteredBrand.slice(0, 60).map((brand) => (
             <div key={brand._id} className="brand-item">
               <a
                 href="#"

@@ -339,19 +339,26 @@
 }
 
 .accessory-list-1 {
-  /* width: 113px;
-  height: 41px; */
   list-style: none;
-  width: 34%;
-  height: 100%;
-  letter-spacing: -0.04em;
-  line-height: normal;
+  width: 85px;
+  height: 40px;
   background-color: #fff;
-  color: #000;
-  border: 1px solid #ccc;
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
   border-radius: 5px;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  text-align: center;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  /* margin-bottom: 10px;*/
+}
+
+.accessory-list-1 a {
+  color: #333;
+  text-decoration: none;
+  width: 85.66px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -640,4 +647,14 @@ p {
   100% {
     transform: translateY(0); /* Trở về vị trí ban đầu */
   }
+}
+
+.star {
+  margin-bottom: 2px;
+  margin-right: 5px;
+  color: #ffde06;
+}
+
+.accessory-list.active a {
+  font-weight: bold;
 }

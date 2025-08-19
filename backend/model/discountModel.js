@@ -27,6 +27,18 @@ const discountSchema = new mongoose.Schema({
   //  ref: "Order",
   //  required: true,
   // }
+  discountImage: {
+    type: String,
+    trim: true,
+    default: null,
+    validate: {
+      validator: function (v) {
+        if (!v) return true;
+        return /^https?:\/\/.+\.(jpg|jpeg|png|webp|gif)$/i.test(v);
+      },
+      message: "Image must be a valid URL to an image file",
+    },
+  },
   minimumOrderAmount: {
     type: Number,
     default: 0, // Số tiền tối thiểu để áp dụng giảm giá
@@ -74,6 +86,7 @@ const discountSchema = new mongoose.Schema({
       message: "End date must be later than start date",
     },
   },
+
   isActive: {
     type: Boolean,
     default: true, // Trạng thái hoạt động

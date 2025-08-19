@@ -192,13 +192,6 @@ const phoneSchema = new mongoose.Schema({
     max: [5, "Rating cannot be more than 5"],
     default: 0,
   },
-  // discount: {
-  //   type: Number,
-  //   required: false,
-  //   min: [0, "Discount cannot be negative"],
-  //   max: [100, "Discount cannot exceed 100%"],
-  //   default: 0,
-  // },
   discount: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Discount", // Reference to Discount model

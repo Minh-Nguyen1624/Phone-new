@@ -6,7 +6,7 @@
 // import MainProduct from "../components/MainProduct";
 // import useAccessoryData from "../hooks/useAccessoryData";
 // import AccessoryBrand from "../components/AccessoryBrand";
-// import CameraSection from "./CameraSection";
+// import AccessorySection from "./AccessorySection";
 // import "../css/Accessory.css";
 
 // const API_URL = "http://localhost:8080/api";
@@ -41,22 +41,35 @@
 //     loadMore,
 //     toggleLike,
 //     setAccessories,
+//     allAccessories,
 //   } = useAccessoryData();
 
 //   const navigate = useNavigate();
 //   const location = useLocation();
 
-//   // Bản ghi gỡ lỗi để kiểm tra props
+//   // Bản ghi gỡ lỗi chi tiết
 //   console.log("Accessory Props:", {
 //     showSubCategories,
 //     loading,
-//     accessories,
+//     accessories: accessories.map((item, index) => ({
+//       id: item?._id,
+//       name: item?.name,
+//       category: item?.category,
+//     })), // Sử dụng optional chaining để tránh lỗi
+//     allAccessories: allAccessories.map((item, index) => ({
+//       id: item?._id,
+//       name: item?.name,
+//       category: item?.category,
+//     })), // Log allAccessories để debug
 //     getChildCategories: getChildCategories(),
+//     selectedFilter,
+//     selectedCategoryId,
 //   });
 
 //   // Đảm bảo showSubCategories là true nếu có danh mục con
 //   useEffect(() => {
 //     const childCategories = getChildCategories();
+//     console.log("Child Categories in useEffect:", childCategories); // Log danh mục con
 //     if (childCategories.length > 0 && !showSubCategories && !loading) {
 //       setShowSubCategories(true);
 //     }
@@ -115,7 +128,7 @@
 //           </section>
 
 //           <section className="accessory-products_camera">
-//             <CameraSection
+//             <AccessorySection
 //               accessories={accessories}
 //               category={category}
 //               selectedFilter={selectedFilter}
@@ -124,6 +137,10 @@
 //               loading={loading}
 //               getChildCategories={getChildCategories}
 //               showSubCategories={showSubCategories}
+//               soldQuantities={soldQuantities}
+//               toggleLike={toggleLike}
+//               purchasePhone={purchasePhone}
+//               filterByCategory={filterByCategory}
 //             />
 //           </section>
 //         </div>
@@ -141,7 +158,7 @@ import Header from "../components/Header";
 import MainProduct from "../components/MainProduct";
 import useAccessoryData from "../hooks/useAccessoryData";
 import AccessoryBrand from "../components/AccessoryBrand";
-import CameraSection from "./CameraSection";
+import AccessorySection from "./AccessorySection";
 import "../css/Accessory.css";
 
 const API_URL = "http://localhost:8080/api";
@@ -176,6 +193,7 @@ const Accessory = () => {
     loadMore,
     toggleLike,
     setAccessories,
+    allAccessories, // Thêm allAccessories từ useAccessoryData
   } = useAccessoryData();
 
   const navigate = useNavigate();
@@ -186,10 +204,15 @@ const Accessory = () => {
     showSubCategories,
     loading,
     accessories: accessories.map((item, index) => ({
-      id: item._id,
-      name: item.name,
-      category: item.category,
-    })), // Log ngắn gọn
+      id: item?._id,
+      name: item?.name,
+      category: item?.category,
+    })), // Sử dụng optional chaining để tránh lỗi
+    allAccessories: allAccessories.map((item, index) => ({
+      id: item?._id,
+      name: item?.name,
+      category: item?.category,
+    })), // Log allAccessories để debug
     getChildCategories: getChildCategories(),
     selectedFilter,
     selectedCategoryId,
@@ -257,8 +280,9 @@ const Accessory = () => {
           </section>
 
           <section className="accessory-products_camera">
-            <CameraSection
+            <AccessorySection
               accessories={accessories}
+              allAccessories={allAccessories} // Truyền allAccessories
               category={category}
               selectedFilter={selectedFilter}
               selectedCategoryId={selectedCategoryId}
@@ -266,6 +290,10 @@ const Accessory = () => {
               loading={loading}
               getChildCategories={getChildCategories}
               showSubCategories={showSubCategories}
+              soldQuantities={soldQuantities}
+              toggleLike={toggleLike}
+              purchasePhone={purchasePhone}
+              filterByCategory={filterByCategory}
             />
           </section>
         </div>

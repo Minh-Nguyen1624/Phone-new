@@ -663,7 +663,7 @@ const searchPhones = async (req, res) => {
       .populate("category", "_id name parentCategory") // Thêm _id và parentCategory
       .populate(
         "discount",
-        "code description discountType discountValue minimumOrderAmount"
+        "code description discountType discountValue minimumOrderAmount discountImage"
       )
       .skip((page - 1) * limit)
       .limit(limit);
