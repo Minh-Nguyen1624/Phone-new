@@ -24,6 +24,7 @@ const AccessorySection = ({
     return str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : str;
   };
 
+  console.log("Selected Filter: ", selectedFilter);
   // Chỉ lọc khi có selectedFilter, nếu không thì sử dụng toàn bộ accessories
   const filteredAccessories = selectedFilter
     ? accessories.filter((item) => {
@@ -53,21 +54,15 @@ const AccessorySection = ({
             />
             <div className="prt-accessory">
               <div className="ajax-call">
-                {/* <AccessoryProductList
-                  accessories={
-                    filteredAccessories.length > 0
-                      ? filteredAccessories
-                      : allAccessories
-                  }
-                  soldQuantities={soldQuantities}
-                /> */}
                 {filteredAccessories.length > 0 ? (
                   <AccessoryProductList
-                    accessories={
-                      filteredAccessories.length > 0
-                        ? filteredAccessories
-                        : allAccessories
-                    }
+                    // accessories={
+                    //   filteredAccessories.length > 0
+                    //     ? filteredAccessories
+                    //     : allAccessories
+                    // }
+                    // soldQuantities={soldQuantities}
+                    accessories={accessories}
                     soldQuantities={soldQuantities}
                   />
                 ) : (

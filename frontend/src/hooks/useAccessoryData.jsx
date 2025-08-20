@@ -5,7 +5,7 @@ const API_URL = "http://localhost:8080/api";
 const Limit = 10;
 const InitialDisplayLimit = 8;
 
-const validCategories = ["camera", "thẻ nhớ", "router", "máy chiếu"]; // Chỉ giữ "camera" và "thẻ nhớ"
+const validCategories = ["camera", "thẻ nhớ", "router", "máy chiếu"];
 
 const useAccessoryData = () => {
   const [accessories, setAccessories] = useState([]);
@@ -61,7 +61,6 @@ const useAccessoryData = () => {
       setAccessoriesCategoryId(accessoriesIdNew);
       console.log("Accessories Category ID:", accessoriesIdNew);
 
-      // Lấy tất cả sản phẩm mà không lọc theo category ban đầu
       const accessoriesResponse = await axios.get(`${API_URL}/phones/search`, {
         params: {
           limit: Limit * 10,
@@ -82,7 +81,6 @@ const useAccessoryData = () => {
         );
 
         let filteredAccessories = rawAccessories;
-        const childCategoryIds = getChildCategories().map((cat) => cat._id);
 
         if (!filter && !categoryId) {
           filteredAccessories = rawAccessories.filter((accessory) => {
@@ -94,6 +92,7 @@ const useAccessoryData = () => {
             );
             return validCategories.includes(accessoryCategoryName);
           });
+          // Xóa giới hạn slice, hiển thị tất cả sản phẩm hợp lệ
         } else if (
           filter &&
           typeof filter === "string" &&
@@ -113,12 +112,6 @@ const useAccessoryData = () => {
             filteredAccessories = rawAccessories.filter((accessory) => {
               const accessoryCategoryId =
                 accessory.category?._id?.toString() || "";
-              console.log(
-                "Comparing - Accessory Category ID:",
-                accessoryCategoryId,
-                "with Target ID:",
-                targetCategoryId
-              );
               return (
                 accessoryCategoryId === targetCategoryId ||
                 categoriesData.some(
@@ -150,7 +143,7 @@ const useAccessoryData = () => {
             category: a.category?.name,
           }))
         );
-        setAccessories(filteredAccessories); // Không fallback đến rawAccessories, chỉ giữ sản phẩm hợp lệ
+        setAccessories(filteredAccessories);
         setTotalAccessories(filteredAccessories.length);
       } else {
         setError("Không thể tải danh sách sản phẩm.");
@@ -173,7 +166,12 @@ const useAccessoryData = () => {
       selectedFilter,
       selectedCategoryId,
     });
-    fetchAccessory(accessoriesCategoryId, selectedFilter);
+    if (selectedCategoryId === null && selectedFilter === null) {
+      setAccessories([]); // Xóa dữ liệu cũ trước khi fetch
+      fetchAccessory();
+    } else {
+      fetchAccessory(selectedCategoryId, selectedFilter);
+    }
   }, [searchQuery, selectedCategoryId, selectedFilter]);
 
   const handleSearch = async (query) => {
@@ -201,7 +199,8 @@ const useAccessoryData = () => {
         setDisplayLimit(InitialDisplayLimit);
         setIsCategorySelected(false);
         setShowSubCategories(false);
-        await fetchAccessory(); // Lấy tất cả sản phẩm từ "camera" và "thẻ nhớ"
+        setAccessories([]); // Xóa dữ liệu cũ trước khi fetch
+        await fetchAccessory(); // Lấy tất cả sản phẩm từ "camera", "thẻ nhớ", "router", "máy chiếu"
         return;
       }
 
@@ -219,7 +218,7 @@ const useAccessoryData = () => {
 
       if (!newCategoryId || !validCategories.includes(normalizedCategoryName)) {
         setError(
-          `Danh mục '${categoryName}' không hợp lệ. Chỉ chấp nhận 'camera' hoặc 'thẻ nhớ'.`
+          `Danh mục '${categoryName}' không hợp lệ. Chỉ chấp nhận 'camera', 'thẻ nhớ', 'router', hoặc 'máy chiếu'.`
         );
         return;
       }
@@ -228,6 +227,7 @@ const useAccessoryData = () => {
       setDisplayLimit(InitialDisplayLimit);
       setIsCategorySelected(true);
       setShowSubCategories(true);
+      setAccessories([]); // Xóa dữ liệu cũ trước khi fetch
       await fetchAccessory(newCategoryId, normalizedCategoryName);
     } catch (error) {
       console.error("Error during filterByCategory:", error);

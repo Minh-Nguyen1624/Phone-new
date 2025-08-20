@@ -351,7 +351,7 @@
   align-items: center;
   display: flex;
   justify-content: center;
-  /* margin-bottom: 10px;*/
+  /* margin-bottom: 10px; */
 }
 
 .accessory-list-1 a {
@@ -441,6 +441,7 @@ ul {
   background-color: #fff;
   border: 1px solid #d1d1d1;
   padding: 10px 12px 15px;
+  transition: background-color 0.3s ease; /* Thêm transition cho mượt mà */
 }
 
 .item__cate-link {
@@ -657,4 +658,90 @@ p {
 
 .accessory-list.active a {
   font-weight: bold;
+}
+
+.highlight-track {
+  display: flex;
+  transition: transform 0.5s ease;
+}
+
+.owl-nav {
+  display: flex;
+  width: 100%;
+  top: 42%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.owl-next {
+  position: absolute;
+  right: 0px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.owl-prev {
+  position: absolute;
+  left: 0px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.owl-nav button.owl-prev {
+  background: #fff !important;
+  height: 44px;
+  position: absolute;
+  width: 44px;
+  border-radius: 100% !important;
+  border: #e1e1e1;
+  filter: drop-shadow(0 4px 7px rgba(0, 0, 0, 0.15));
+  transform: translateY(0);
+}
+
+.owl-nav button.owl-next {
+  background: #fff !important;
+  height: 44px;
+  position: absolute;
+  width: 44px;
+  border-radius: 100% !important;
+  border: #e1e1e1;
+  filter: drop-shadow(0 4px 7px rgba(0, 0, 0, 0.15));
+  transform: translateY(0);
+}
+
+.owl-nav button.owl-prev span::before {
+  content: "";
+  height: 10px;
+  top: 16px;
+  width: 10px;
+  border-top: 3px solid #666;
+  border-right: 3px solid #666;
+  position: absolute;
+  transform: rotate(-135deg);
+  left: 18px;
+}
+
+.owl-nav button.owl-next span::before {
+  content: "";
+  height: 10px;
+  top: 16px;
+  width: 10px;
+  border-top: 3px solid #666;
+  border-right: 3px solid #666;
+  position: absolute;
+  transform: rotate(45deg);
+  left: 14px;
+}
+
+.owl-nav button span::before {
+  content: "";
+  height: 10px;
+  top: 16px;
+  width: 10px;
+  border-top: 3px solid #666;
+  border-right: 3px solid #666;
+  position: absolute;
+}
+
+.owt-item:hover {
+  background-color: #f8f9fa; /* Màu nền khi hover, bạn có thể thay đổi */
 }
