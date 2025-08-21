@@ -25,6 +25,72 @@ const getAllCategory = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
+// const getAllCategory = async (req, res) => {
+//   try {
+//     const { isActive, page = 1, limit = 10, fields } = req.query;
+//     const filter = {};
+
+//     // Xử lý filter isActive
+//     if (isActive !== undefined) {
+//       if (isActive === "true" || isActive === "false") {
+//         filter.isActive = isActive === "true";
+//       } else {
+//         return res.status(400).json({
+//           success: false,
+//           message: "Invalid value for isActive. Use 'true' or 'false'.",
+//         });
+//       }
+//     }
+
+//     // Chuyển page và limit thành số
+//     const pageNum = parseInt(page);
+//     const limitNum = parseInt(limit);
+//     const skip = (pageNum - 1) * limitNum;
+
+//     // Kiểm tra hợp lệ của page và limit
+//     if (pageNum < 1 || limitNum < 1) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Page and limit must be positive numbers.",
+//       });
+//     }
+
+//     // Lấy tổng số bản ghi
+//     const totalItems = await Category.countDocuments(filter);
+
+//     let categories;
+//     if (fields === "ids") {
+//       // Chỉ lấy mảng _id
+//       categories = await Category.find(filter, "_id")
+//         .skip(skip)
+//         .limit(limitNum);
+//       categories = categories.map((category) => category._id);
+//     } else {
+//       // Lấy đầy đủ thông tin category
+//       categories = await Category.find(filter)
+//         .populate("parentCategory", "name")
+//         .populate("discount", "code discountValue")
+//         .skip(skip)
+//         .limit(limitNum);
+//     }
+
+//     // Tính tổng số trang
+//     const totalPages = Math.ceil(totalItems / limitNum);
+
+//     res.status(200).json({
+//       success: true,
+//       data: categories,
+//       pagination: {
+//         totalItems,
+//         totalPages,
+//         currentPage: pageNum,
+//         itemsPerPage: limitNum,
+//       },
+//     });
+//   } catch (error) {
+//     res.status(500).json({ success: false, error: error.message });
+//   }
+// };
 
 const getCategoryById = async (req, res) => {
   try {

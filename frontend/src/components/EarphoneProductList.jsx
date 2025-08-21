@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { FaStar } from "react-icons/fa";
 import "../css/Accessory.css";
 
-const AccessoryProductList = ({ accessories = [], soldQuantities = {} }) => {
-  console.log("AccessoryProductList - accessories:", accessories); // Log chi tiết
+const EarphoneProductList = ({ accessories = [], soldQuantities = {} }) => {
+  console.log("EarphoneProductList - accessories:", accessories); // Log chi tiết
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const itemsPerPage = 4; // Số sản phẩm hiển thị trên màn hình, cố định là 4
@@ -163,4 +163,4 @@ const AccessoryProductList = ({ accessories = [], soldQuantities = {} }) => {
   );
 };
 
-export default AccessoryProductList;
+export default EarphoneProductList;

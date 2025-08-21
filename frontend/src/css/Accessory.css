@@ -441,7 +441,9 @@ ul {
   background-color: #fff;
   border: 1px solid #d1d1d1;
   padding: 10px 12px 15px;
-  transition: background-color 0.3s ease; /* Thêm transition cho mượt mà */
+  /* transition: background-color 0.3s ease; Thêm transition cho mượt mà */
+  transition: all 0.3s ease;
+  flex-shrink: 0; /* Ngăn item co lại khi scroll */
 }
 
 .item__cate-link {
@@ -449,16 +451,30 @@ ul {
   display: block; /* Đảm bảo là block để hover áp dụng đúng */
 }
 
+.item__cate-link:hover .result-title {
+  color: #007bff; /* Màu vàng từ theme khi hover */
+  transition: color 0.3s ease;
+}
+
 .item__cate-link:hover .item-img img {
   animation: bounce 0.8s ease-in-out infinite; /* Chạy liên tục khi hover */
 }
 
 .item__cate-link h3:hover {
-  color: #007bff;
+  color: #000;
+}
+
+.owt-item:hover {
+  /* background-color: #f8f9fa; Màu nền khi hover, bạn có thể thay đổi */
+  background-color: #f8f9fa;
 }
 
 .item-img img {
-  transition: transform 0.3s ease; /* Thêm transition cho mượt mà */
+  /* transition: transform 0.3s ease; Thêm transition cho mượt mà */
+  width: 137px;
+  height: 137px;
+  margin-top: 10px;
+  transition: all 0.3s ease;
 }
 
 .list-product_camera {
@@ -471,10 +487,14 @@ ul {
 }
 
 .owt-stage {
-  transform: translate3d(0px, 0px, 0px);
+  /* transform: translate3d(0px, 0px, 0px);
   transition: all;
-  display: flex;
+  display: flex; */
   /* width: 2293px; */
+  overflow-x: auto; /* Cho phép scroll ngang */
+  width: 100%;
+  display: flex;
+  -webkit-overflow-scrolling: touch; /* Tối ưu scroll trên mobile */
 }
 
 .item__cate {
@@ -663,6 +683,7 @@ p {
 .highlight-track {
   display: flex;
   transition: transform 0.5s ease;
+  min-width: 100%; /* Đảm bảo track chiếm đủ không gian */
 }
 
 .owl-nav {
@@ -684,6 +705,26 @@ p {
   left: 0px;
   top: 50%;
   transform: translateY(-50%);
+}
+
+.owl-nav button {
+  background: #fff;
+  height: 44px;
+  width: 44px;
+  border-radius: 100%;
+  border: 1px solid #e1e1e1;
+  filter: drop-shadow(0 4px 7px rgba(0, 0, 0, 0.15));
+  cursor: pointer;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.owl-nav button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.owl-nav button:hover:not(:disabled) {
+  transform: scale(1.1);
 }
 
 .owl-nav button.owl-prev {
@@ -742,6 +783,8 @@ p {
   position: absolute;
 }
 
-.owt-item:hover {
-  background-color: #f8f9fa; /* Màu nền khi hover, bạn có thể thay đổi */
+.accessory-products_earphone {
+  margin-top: 20px;
+  background-color: #ffde06 !important;
+  border-radius: 5px;
 }

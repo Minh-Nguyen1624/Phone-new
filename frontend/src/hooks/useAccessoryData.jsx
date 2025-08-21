@@ -5,7 +5,16 @@ const API_URL = "http://localhost:8080/api";
 const Limit = 10;
 const InitialDisplayLimit = 8;
 
-const validCategories = ["camera", "thẻ nhớ", "router", "máy chiếu"];
+const validCategories = [
+  "camera",
+  "thẻ nhớ",
+  "router",
+  "máy chiếu",
+  "bluetooth",
+  "có dây",
+  "chụp tai",
+  "xiaomi",
+];
 
 const useAccessoryData = () => {
   const [accessories, setAccessories] = useState([]);

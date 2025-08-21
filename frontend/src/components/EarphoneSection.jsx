@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import AccessoryBanner from "./AccessoryBanner";
-import AccessoryCategoryList from "./AccessoryCategoryList";
-import AccessoryProductList from "./AccessoryProductList";
+import EarphoneBanner from "./EarphoneBanner";
+import EarphoneCategoryList from "./EarphoneCategoryList";
+import EarphoneProductList from "./EarphoneProductList";
 import "../css/Accessory.css";
 
-const AccessorySection = ({
+const EarphoneSection = ({
   accessories,
   allAccessories,
   category,
@@ -23,23 +23,18 @@ const AccessorySection = ({
   const toCapitalize = (str) => {
     return str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : str;
   };
+  const allowedCategories = ["bluetooth", "có dây", "chụp tai", "xiaomi"];
 
-  // Danh mục được phép
-  const allowedCategories = ["camera", "máy chiếu", "router", "thẻ nhớ"];
-
-  // Lọc sản phẩm: chỉ giữ các sản phẩm thuộc allowedCategories
+  // Chỉ lọc khi có selectedFilter, nếu không thì sử dụng toàn bộ accessories
   const filteredAccessories = selectedFilter
     ? accessories.filter((item) => {
         const itemCategoryName = item?.category?.name?.toLowerCase() || "";
-        return (
-          itemCategoryName === selectedFilter.toLowerCase() &&
-          allowedCategories.includes(itemCategoryName)
-        );
+        return itemCategoryName === selectedFilter.toLowerCase();
       })
     : accessories.filter((item) => {
         const itemCategoryName = item?.category?.name?.toLowerCase() || "";
         return allowedCategories.includes(itemCategoryName);
-      });
+      }); // Hiển thị tất cả accessories từ danh mục con
 
   const [showSub, setShowSub] = useState(false);
   const childCategories = getChildCategories();
@@ -51,9 +46,9 @@ const AccessorySection = ({
     <>
       {shouldRender && !loading && (
         <div className="camera-section">
-          <AccessoryBanner />
+          <EarphoneBanner />
           <aside className="camera-list">
-            <AccessoryCategoryList
+            <EarphoneCategoryList
               childCategories={childCategories}
               selectedFilter={selectedFilter}
               filterByCategory={filterByCategory}
@@ -63,8 +58,8 @@ const AccessorySection = ({
             <div className="prt-accessory">
               <div className="ajax-call">
                 {filteredAccessories.length > 0 ? (
-                  <AccessoryProductList
-                    accessories={filteredAccessories} // Sử dụng filteredAccessories thay vì accessories
+                  <EarphoneProductList
+                    accessories={filteredAccessories}
                     soldQuantities={soldQuantities}
                   />
                 ) : (
@@ -79,4 +74,4 @@ const AccessorySection = ({
   );
 };
 
-export default AccessorySection;
+export default EarphoneSection;

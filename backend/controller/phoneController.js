@@ -659,7 +659,7 @@ const searchPhones = async (req, res) => {
 
     // Lấy danh sách sản phẩm với phân trang
     const phones = await Phone.find(filter)
-      // .populate("category", "name")
+      // .populate("category")
       .populate("category", "_id name parentCategory") // Thêm _id và parentCategory
       .populate(
         "discount",

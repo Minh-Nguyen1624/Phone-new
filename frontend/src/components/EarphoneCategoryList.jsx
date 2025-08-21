@@ -2,7 +2,7 @@ import React from "react";
 import { FaCaretRight } from "react-icons/fa";
 import "../css/Accessory.css";
 
-const AccessoryCategoryList = ({
+const EarphoneCategoryList = ({
   childCategories,
   selectedFilter,
   filterByCategory,
@@ -34,7 +34,7 @@ const AccessoryCategoryList = ({
         childCategories
           .filter((cats) => {
             const categoryName = cats.name.toLowerCase();
-            return ["camera", "thẻ nhớ", "router", "máy chiếu"].includes(
+            return ["bluetooth", "có dây", "chụp tai", "xiaomi"].includes(
               categoryName
             );
           })
@@ -58,7 +58,7 @@ const AccessoryCategoryList = ({
       )}
       <div className="sell-all">
         <a href="#" className="accessory-all_products">
-          Xem tất cả phụ kiện Camera...
+          Xem tất cả phụ kiện Tai Nghe
         </a>
         <FaCaretRight className="caret-icon" />
       </div>
@@ -66,4 +66,4 @@ const AccessoryCategoryList = ({
   );
 };
 
-export default AccessoryCategoryList;
+export default EarphoneCategoryList;
