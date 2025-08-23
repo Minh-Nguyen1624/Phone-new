@@ -9,6 +9,11 @@ import AccessoryBrand from "../components/AccessoryBrand";
 import AccessorySection from "./AccessorySection";
 import "../css/Accessory.css";
 import EarphoneSection from "./EarphoneSection";
+import BackupChargerSection from "./BackupChargerSection";
+import GenuineAppleSection from "./GenuineAppleSection";
+import LoudspeakerSection from "./LoudspeakerSection";
+import ChargingCableSection from "./ChargingCableSection";
+import IncludedAccessoriesSection from "./IncludedAccessoriesSection";
 
 const API_URL = "http://localhost:8080/api";
 const Limit = 10;
@@ -50,11 +55,58 @@ const Accessory = () => {
 
   const [selectedFilterTop, setSelectedFilterTop] = useState(null);
   const [selectedFilterBottom, setSelectedFilterBottom] = useState(null);
+  const [selectedFilterBackupCharger, setSelectedFilterBackupCharger] =
+    useState(null);
+  const [selectedFilterGenuineApple, setSelectedFilterGenuineApple] =
+    useState(null);
+  const [selectedFilterLoudspeaker, setSelectedFilterLoudspeaker] =
+    useState(null);
+  const [selectedFilterChargingCable, setSelectedFilterChargingCable] =
+    useState(null);
+  const [
+    selectedFilterIncludedAccessories,
+    setSelectedFilterIncludedAccessories,
+  ] = useState(null);
 
   // Danh mục cho phần trên
   const allowedCategoriesTop = ["camera", "máy chiếu", "router", "thẻ nhớ"];
   // Danh mục cho phần dưới
   const allowedCategoriesBottom = ["xiaomi", "bluetooth", "có dây", "chụp tai"];
+  // Danh mục cho phần backup charger
+  const allowedCategoriesBackupCharger = [
+    "10000mah",
+    "20000mah",
+    "dưới 300.000đ",
+    "xmobile",
+  ];
+
+  const allowedCategoriesGenuineApple = [
+    "tai nghe",
+    "adapter sạc",
+    "cáp sạc",
+    "ốp lưng",
+  ];
+
+  const allowedCategoriesLoudspeaker = [
+    "loa bluetooth",
+    "loa vi tính",
+    "jbl",
+    "sony",
+  ];
+
+  const allowedCategoriesChargingCable = [
+    "lightning",
+    "adapter type-c",
+    "adapter usb",
+    "cáp type-c",
+  ];
+
+  const allowedCategoriesIncludedAccessories = [
+    "chuột",
+    "bàn phím",
+    "usb",
+    "túi chống sốc",
+  ];
 
   // Bản ghi gỡ lỗi chi tiết
   console.log("Accessory Props:", {
@@ -88,6 +140,46 @@ const Accessory = () => {
       setSelectedFilterBottom(filter);
     } else {
       setSelectedFilterBottom(null);
+    }
+  };
+
+  const handleFilterCategoriesBackupCharger = (filter) => {
+    if (allowedCategoriesBackupCharger.includes(filter.toLowerCase())) {
+      setSelectedFilterBackupCharger(filter);
+    } else {
+      setSelectedFilterBackupCharger(null);
+    }
+  };
+
+  const handleFilterCategoriesGenuineApple = (filter) => {
+    if (allowedCategoriesGenuineApple.includes(filter.toLowerCase())) {
+      setSelectedFilterGenuineApple(filter);
+    } else {
+      setSelectedFilterGenuineApple(null);
+    }
+  };
+
+  const handleFilterCategoriesLoudspeaker = (filter) => {
+    if (allowedCategoriesLoudspeaker.includes(filter.toLowerCase())) {
+      setSelectedFilterLoudspeaker(filter);
+    } else {
+      setSelectedFilterLoudspeaker(null);
+    }
+  };
+
+  const handleFilterCategoriesChargingCable = (filter) => {
+    if (allowedCategoriesChargingCable.includes(filter.toLowerCase())) {
+      setSelectedFilterChargingCable(filter);
+    } else {
+      setSelectedFilterChargingCable(null);
+    }
+  };
+
+  const handleFilterCategoriesIncludedAccessories = (filter) => {
+    if (allowedCategoriesIncludedAccessories.includes(filter.toLowerCase())) {
+      setSelectedFilterIncludedAccessories(filter);
+    } else {
+      setSelectedFilterIncludedAccessories(null);
     }
   };
 
@@ -189,6 +281,103 @@ const Accessory = () => {
               purchasePhone={purchasePhone}
               filterByCategory={filterByCategory}
               setSelectedFilter={handleFilterCategoriesBottom}
+            />
+          </section>
+
+          <section className="accessory-products_backup-charger">
+            <BackupChargerSection
+              accessories={accessories}
+              allAccessories={allAccessories} // Truyền allAccessories
+              category={category}
+              // selectedFilter={selectedFilter}
+              selectedFilter={selectedFilterBackupCharger}
+              selectedCategoryId={selectedCategoryId}
+              setAccessories={setAccessories}
+              loading={loading}
+              getChildCategories={getChildCategories}
+              showSubCategories={showSubCategories}
+              soldQuantities={soldQuantities}
+              toggleLike={toggleLike}
+              purchasePhone={purchasePhone}
+              filterByCategory={filterByCategory}
+              setSelectedFilter={handleFilterCategoriesBackupCharger}
+            />
+          </section>
+
+          <section className="accessory-products_backup-charger">
+            <GenuineAppleSection
+              accessories={accessories}
+              allAccessories={allAccessories} // Truyền allAccessories
+              category={category}
+              // selectedFilter={selectedFilter}
+              selectedFilter={selectedFilterGenuineApple}
+              selectedCategoryId={selectedCategoryId}
+              setAccessories={setAccessories}
+              loading={loading}
+              getChildCategories={getChildCategories}
+              showSubCategories={showSubCategories}
+              soldQuantities={soldQuantities}
+              toggleLike={toggleLike}
+              purchasePhone={purchasePhone}
+              filterByCategory={filterByCategory}
+              setSelectedFilter={handleFilterCategoriesGenuineApple}
+            />
+          </section>
+          <section className="accessory-products_backup-charger">
+            <LoudspeakerSection
+              accessories={accessories}
+              allAccessories={allAccessories} // Truyền allAccessories
+              category={category}
+              // selectedFilter={selectedFilter}
+              selectedFilter={selectedFilterLoudspeaker}
+              selectedCategoryId={selectedCategoryId}
+              setAccessories={setAccessories}
+              loading={loading}
+              getChildCategories={getChildCategories}
+              showSubCategories={showSubCategories}
+              soldQuantities={soldQuantities}
+              toggleLike={toggleLike}
+              purchasePhone={purchasePhone}
+              filterByCategory={filterByCategory}
+              setSelectedFilter={handleFilterCategoriesLoudspeaker}
+            />
+          </section>
+          <section className="accessory-products_backup-charger">
+            <ChargingCableSection
+              accessories={accessories}
+              allAccessories={allAccessories} // Truyền allAccessories
+              category={category}
+              // selectedFilter={selectedFilter}
+              selectedFilter={selectedFilterChargingCable}
+              selectedCategoryId={selectedCategoryId}
+              setAccessories={setAccessories}
+              loading={loading}
+              getChildCategories={getChildCategories}
+              showSubCategories={showSubCategories}
+              soldQuantities={soldQuantities}
+              toggleLike={toggleLike}
+              purchasePhone={purchasePhone}
+              filterByCategory={filterByCategory}
+              setSelectedFilter={handleFilterCategoriesChargingCable}
+            />
+          </section>
+          <section className="accessory-products_backup-charger">
+            <IncludedAccessoriesSection
+              accessories={accessories}
+              allAccessories={allAccessories} // Truyền allAccessories
+              category={category}
+              // selectedFilter={selectedFilter}
+              selectedFilter={selectedFilterIncludedAccessories}
+              selectedCategoryId={selectedCategoryId}
+              setAccessories={setAccessories}
+              loading={loading}
+              getChildCategories={getChildCategories}
+              showSubCategories={showSubCategories}
+              soldQuantities={soldQuantities}
+              toggleLike={toggleLike}
+              purchasePhone={purchasePhone}
+              filterByCategory={filterByCategory}
+              setSelectedFilter={handleFilterCategoriesIncludedAccessories}
             />
           </section>
         </div>

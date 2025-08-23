@@ -53,15 +53,6 @@ const phoneSchema = new mongoose.Schema({
     min: [0, "Stock cannot be negative"],
     default: 0,
   },
-  // category: {
-  //   type: String,
-  //   required: true,
-  //   trim: true,
-  //   // enum: {
-  //   //   values: ['Smartphone', 'Tablet', 'Laptop', 'Accessories'],
-  //   //   message: '{VALUE} is not a valid category'
-  //   // }
-  // },
 
   warehouseLocation: {
     type: String,

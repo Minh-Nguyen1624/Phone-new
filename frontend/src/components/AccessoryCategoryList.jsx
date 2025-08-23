@@ -16,17 +16,47 @@ const AccessoryCategoryList = ({
   // console.log("SelectedFilter in AccessoryCategoryList: ", selectedFilter);
   // console.log("ChildCategories: ", childCategories);
 
-  const handleFilterClick = (categoryName) => {
-    setSelectedFilter(categoryName);
+  const categoryNameMap = {
+    "nổi bật": "Xem tất cả Camera",
+    camera: "Xem tất cả Camera",
+    "thẻ nhớ": "Xem tất cả Thẻ nhớ",
+    router: "Xem tất cả Router",
+    "máy chiếu": "Xem tất cả Máy chiếu",
   };
+
+  const allCategory = ["camera", "thẻ nhớ", "router", "máy chiếu"];
+
+  const handleFilterClick = (event, categoryName) => {
+    event.preventDefault();
+    setSelectedFilter(categoryName);
+    // if (filterByCategory) {
+    //   filterByCategory(categoryName);
+    // }
+  };
+
+  // Xác định nội dung "Xem tất cả" dựa trên selectedFilter
+  const getAllText = () => {
+    const filterKey = selectedFilter?.toLowerCase() || "nổi bật";
+    return categoryNameMap[filterKey] || "Xem tất cả Camera";
+  };
+
   return (
     <ul className="accessory-block_products">
       <li
         className={`accessory-list ${
           !selectedFilter && !selectedCategoryId ? "active" : ""
         }`}
+        onClick={(e) => handleFilterClick(e, "nổi bật")}
       >
-        <a href="#" onClick={() => filterByCategory(null)}>
+        <a
+          href="#"
+          style={{
+            backgroundColor:
+              !selectedCategoryId && !selectedFilter ? "#333333" : "#fff",
+            color: !selectedCategoryId && !selectedFilter ? "#fff" : "#333333",
+            borderRadius: "5px",
+          }}
+        >
           Nổi bật
         </a>
       </li>
@@ -34,9 +64,7 @@ const AccessoryCategoryList = ({
         childCategories
           .filter((cats) => {
             const categoryName = cats.name.toLowerCase();
-            return ["camera", "thẻ nhớ", "router", "máy chiếu"].includes(
-              categoryName
-            );
+            return allCategory.includes(categoryName);
           })
           .map((cat) => (
             <li
@@ -48,9 +76,26 @@ const AccessoryCategoryList = ({
                   : ""
               }`}
               // onClick={() => filterByCategory(cat.name)}
-              onClick={() => handleFilterClick(cat.name)}
+              onClick={(e) => handleFilterClick(e, cat.name)}
             >
-              <a href="#">{toCapitalize(cat.name)}</a>
+              <a
+                href="#"
+                style={{
+                  backgroundColor:
+                    selectedFilter === cat.name.toLowerCase()
+                      ? "#333333"
+                      : "#fff",
+                  color:
+                    selectedFilter === cat.name.toLowerCase()
+                      ? "#fff"
+                      : "#333333",
+                  borderRadius: "5px",
+                  fontWeight:
+                    selectedFilter === cat.name.toLowerCase() ? "bold" : "",
+                }}
+              >
+                {toCapitalize(cat.name)}
+              </a>
             </li>
           ))
       ) : (
@@ -58,7 +103,8 @@ const AccessoryCategoryList = ({
       )}
       <div className="sell-all">
         <a href="#" className="accessory-all_products">
-          Xem tất cả phụ kiện Camera...
+          {/* Xem tất cả phụ kiện Camera */}
+          {getAllText()}
         </a>
         <FaCaretRight className="caret-icon" />
       </div>

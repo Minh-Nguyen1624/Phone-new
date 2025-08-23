@@ -2,37 +2,34 @@ import React from "react";
 import { FaCaretRight } from "react-icons/fa";
 import "../css/Accessory.css";
 
-const EarphoneCategoryList = ({
+const BackupChargerCategoryList = ({
   childCategories,
   selectedFilter,
-  filterByCategory,
-  toCapitalize,
+  filterCategory,
   selectedCategoryId,
   setSelectedFilter,
+  toCapitalize,
 }) => {
-  // console.log("SelectedFilter: ", selectedFilter);
-  // console.log("ChildCategories: ", childCategories);
-  // console.log("FilterByCategory: ", filterByCategory);
-  // console.log("SelectedFilter in AccessoryCategoryList: ", selectedFilter);
-  // console.log("ChildCategories: ", childCategories);
-
   const categoryNameMap = {
-    "nổi bật": "Xem tất cả phụ kiện Tai Nghe",
-    bluetooth: "Xem tất cả Tai nghe Bluetooth",
-    "có dây": "Xem tất cả Tai nghe Có dây",
-    "chụp tai": "Xem tất cả Tai nghe Chụp Tai",
-    xiaomi: "Xem tất cả Tai nghe Xiaomi",
+    "nổi bật": "Xem tất cả phụ kiện Pin sạc",
+    "10000mah": "Xem tất cả pin sạc 10000mah",
+    "20000mah": "Xem tất cả pin sạc 20000mah",
+    "dưới 300.000đ": "Xem tất cả pin sạc Dưới 300.000đ",
+    xmobile: "Xem tất cả pin sạc Xmobile",
   };
 
-  const getAllText = () => {
-    const filterKey = selectedFilter?.toLowerCase() || "nổi bật";
-    return categoryNameMap[filterKey] || "Xem tất cả phụ kiện Tai Nghe";
-  };
+  const allCategory = ["10000mah", "20000mah", "dưới 300.000đ", "xmobile"];
 
   const handleFilterClick = (event, categoryName) => {
     event.preventDefault();
     setSelectedFilter(categoryName);
   };
+
+  const getAllText = () => {
+    const filterKey = selectedFilter?.toLowerCase() || "nổi bật";
+    return categoryNameMap[filterKey] || "Xem tất cả phụ kiện Pin sạc";
+  };
+
   return (
     <ul className="accessory-block_products">
       <li
@@ -45,8 +42,9 @@ const EarphoneCategoryList = ({
           href="#"
           style={{
             backgroundColor:
-              !selectedCategoryId && !selectedFilter ? "#333333" : "#fff",
-            color: !selectedCategoryId && !selectedFilter ? "#fff" : "#333333",
+              !selectedCategoryId && !selectedFilter ? "#333333" : "#ffffff",
+            color:
+              !selectedCategoryId && !selectedFilter ? "#ffffff" : "#333333",
             borderRadius: "5px",
           }}
         >
@@ -57,14 +55,12 @@ const EarphoneCategoryList = ({
         childCategories
           .filter((cats) => {
             const categoryName = cats.name.toLowerCase();
-            return ["bluetooth", "có dây", "chụp tai", "xiaomi"].includes(
-              categoryName
-            );
+            return allCategory.includes(categoryName);
           })
           .map((cat) => (
             <li
               key={cat._id}
-              className={`accessory-list-1 ${
+              className={`accessory-list-2 ${
                 Array.isArray(selectedFilter) &&
                 selectedFilter.includes(cat.name.toLowerCase())
                   ? "accessory-list"
@@ -87,6 +83,8 @@ const EarphoneCategoryList = ({
                   borderRadius: "5px",
                   fontWeight:
                     selectedFilter === cat.name.toLowerCase() ? "bold" : "",
+                  letterSpacing: "-0.04em",
+                  width: "100%",
                 }}
               >
                 {toCapitalize(cat.name)}
@@ -96,8 +94,9 @@ const EarphoneCategoryList = ({
       ) : (
         <p>Không có danh mục con để hiển thị</p>
       )}
-      <div className="sell-all">
+      <div className="sell-all-1">
         <a href="#" className="accessory-all_products">
+          {/* Xem tất cả phụ kiện Pin sạc */}
           {getAllText()}
         </a>
         <FaCaretRight className="caret-icon" />
@@ -106,4 +105,4 @@ const EarphoneCategoryList = ({
   );
 };
 
-export default EarphoneCategoryList;
+export default BackupChargerCategoryList;

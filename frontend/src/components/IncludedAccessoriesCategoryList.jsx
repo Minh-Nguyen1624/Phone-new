@@ -2,7 +2,7 @@ import React from "react";
 import { FaCaretRight } from "react-icons/fa";
 import "../css/Accessory.css";
 
-const EarphoneCategoryList = ({
+const IncludedAccessoriesCategoryList = ({
   childCategories,
   selectedFilter,
   filterByCategory,
@@ -10,29 +10,26 @@ const EarphoneCategoryList = ({
   selectedCategoryId,
   setSelectedFilter,
 }) => {
-  // console.log("SelectedFilter: ", selectedFilter);
-  // console.log("ChildCategories: ", childCategories);
-  // console.log("FilterByCategory: ", filterByCategory);
-  // console.log("SelectedFilter in AccessoryCategoryList: ", selectedFilter);
-  // console.log("ChildCategories: ", childCategories);
-
   const categoryNameMap = {
-    "nổi bật": "Xem tất cả phụ kiện Tai Nghe",
-    bluetooth: "Xem tất cả Tai nghe Bluetooth",
-    "có dây": "Xem tất cả Tai nghe Có dây",
-    "chụp tai": "Xem tất cả Tai nghe Chụp Tai",
-    xiaomi: "Xem tất cả Tai nghe Xiaomi",
+    "nổi bật": "Xem tất cả phụ kiện Laptop",
+    chuột: "Xem tất cả chuột",
+    "bàn phím": "Xem tất cả bàn phím",
+    usb: "Xem tất cả USB",
+    "túi chống sốc": "Xem tất cả túi chống sốc",
   };
 
-  const getAllText = () => {
-    const filterKey = selectedFilter?.toLowerCase() || "nổi bật";
-    return categoryNameMap[filterKey] || "Xem tất cả phụ kiện Tai Nghe";
-  };
+  const allCategory = ["chuột", "bàn phím", "usb", "túi chống sốc"];
 
   const handleFilterClick = (event, categoryName) => {
     event.preventDefault();
     setSelectedFilter(categoryName);
   };
+
+  const getAllText = () => {
+    const filterKey = selectedFilter?.toLowerCase() || "nổi bật";
+    return categoryNameMap[filterKey] || "Xem tất cả phụ kiện Laptop";
+  };
+
   return (
     <ul className="accessory-block_products">
       <li
@@ -57,9 +54,7 @@ const EarphoneCategoryList = ({
         childCategories
           .filter((cats) => {
             const categoryName = cats.name.toLowerCase();
-            return ["bluetooth", "có dây", "chụp tai", "xiaomi"].includes(
-              categoryName
-            );
+            return allCategory.includes(categoryName);
           })
           .map((cat) => (
             <li
@@ -98,6 +93,7 @@ const EarphoneCategoryList = ({
       )}
       <div className="sell-all">
         <a href="#" className="accessory-all_products">
+          {/* Xem tất cả phụ kiện Camera */}
           {getAllText()}
         </a>
         <FaCaretRight className="caret-icon" />
@@ -106,4 +102,4 @@ const EarphoneCategoryList = ({
   );
 };
 
-export default EarphoneCategoryList;
+export default IncludedAccessoriesCategoryList;

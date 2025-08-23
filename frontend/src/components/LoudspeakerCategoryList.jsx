@@ -2,7 +2,7 @@ import React from "react";
 import { FaCaretRight } from "react-icons/fa";
 import "../css/Accessory.css";
 
-const EarphoneCategoryList = ({
+const AccessoryCategoryList = ({
   childCategories,
   selectedFilter,
   filterByCategory,
@@ -17,22 +17,29 @@ const EarphoneCategoryList = ({
   // console.log("ChildCategories: ", childCategories);
 
   const categoryNameMap = {
-    "nổi bật": "Xem tất cả phụ kiện Tai Nghe",
-    bluetooth: "Xem tất cả Tai nghe Bluetooth",
-    "có dây": "Xem tất cả Tai nghe Có dây",
-    "chụp tai": "Xem tất cả Tai nghe Chụp Tai",
-    xiaomi: "Xem tất cả Tai nghe Xiaomi",
+    "nổi bật": "Xem tất cả phụ kiện Loa",
+    "loa bluetooth": "Xem tất cả loa Bluetooth",
+    "loa vi tính": "Xem tất cả loa vi tinh",
+    jbl: "Xem tất cả loa jbl",
+    sony: "Xem tất cả loa sony",
   };
 
-  const getAllText = () => {
-    const filterKey = selectedFilter?.toLowerCase() || "nổi bật";
-    return categoryNameMap[filterKey] || "Xem tất cả phụ kiện Tai Nghe";
-  };
+  const allCategory = ["loa bluetooth", "loa vi tính", "jbl", "sony"];
 
   const handleFilterClick = (event, categoryName) => {
     event.preventDefault();
     setSelectedFilter(categoryName);
+    // if (filterByCategory) {
+    //   filterByCategory(categoryName);
+    // }
   };
+
+  // Xác định nội dung "Xem tất cả" dựa trên selectedFilter
+  const getAllText = () => {
+    const filterKey = selectedFilter?.toLowerCase() || "nổi bật";
+    return categoryNameMap[filterKey] || "Xem tất cả Camera";
+  };
+
   return (
     <ul className="accessory-block_products">
       <li
@@ -45,8 +52,9 @@ const EarphoneCategoryList = ({
           href="#"
           style={{
             backgroundColor:
-              !selectedCategoryId && !selectedFilter ? "#333333" : "#fff",
-            color: !selectedCategoryId && !selectedFilter ? "#fff" : "#333333",
+              !selectedCategoryId && !selectedFilter ? "#333333" : "#ffffff",
+            color:
+              !selectedCategoryId && !selectedFilter ? "#ffffff" : "#333333",
             borderRadius: "5px",
           }}
         >
@@ -57,14 +65,12 @@ const EarphoneCategoryList = ({
         childCategories
           .filter((cats) => {
             const categoryName = cats.name.toLowerCase();
-            return ["bluetooth", "có dây", "chụp tai", "xiaomi"].includes(
-              categoryName
-            );
+            return allCategory.includes(categoryName);
           })
           .map((cat) => (
             <li
               key={cat._id}
-              className={`accessory-list-1 ${
+              className={`accessory-list-4 ${
                 Array.isArray(selectedFilter) &&
                 selectedFilter.includes(cat.name.toLowerCase())
                   ? "accessory-list"
@@ -98,6 +104,7 @@ const EarphoneCategoryList = ({
       )}
       <div className="sell-all">
         <a href="#" className="accessory-all_products">
+          {/* Xem tất cả phụ kiện Camera */}
           {getAllText()}
         </a>
         <FaCaretRight className="caret-icon" />
@@ -106,4 +113,4 @@ const EarphoneCategoryList = ({
   );
 };
 
-export default EarphoneCategoryList;
+export default AccessoryCategoryList;

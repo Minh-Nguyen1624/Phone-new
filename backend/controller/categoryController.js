@@ -2,6 +2,7 @@ const Category = require("../model/categoryModel");
 const mongoose = require("mongoose");
 const User = require("../model/userModel");
 const Discount = require("../model/discountModel");
+const slugify = require("slugify");
 
 const getAllCategory = async (req, res) => {
   try {
@@ -25,72 +26,6 @@ const getAllCategory = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
-// const getAllCategory = async (req, res) => {
-//   try {
-//     const { isActive, page = 1, limit = 10, fields } = req.query;
-//     const filter = {};
-
-//     // Xử lý filter isActive
-//     if (isActive !== undefined) {
-//       if (isActive === "true" || isActive === "false") {
-//         filter.isActive = isActive === "true";
-//       } else {
-//         return res.status(400).json({
-//           success: false,
-//           message: "Invalid value for isActive. Use 'true' or 'false'.",
-//         });
-//       }
-//     }
-
-//     // Chuyển page và limit thành số
-//     const pageNum = parseInt(page);
-//     const limitNum = parseInt(limit);
-//     const skip = (pageNum - 1) * limitNum;
-
-//     // Kiểm tra hợp lệ của page và limit
-//     if (pageNum < 1 || limitNum < 1) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Page and limit must be positive numbers.",
-//       });
-//     }
-
-//     // Lấy tổng số bản ghi
-//     const totalItems = await Category.countDocuments(filter);
-
-//     let categories;
-//     if (fields === "ids") {
-//       // Chỉ lấy mảng _id
-//       categories = await Category.find(filter, "_id")
-//         .skip(skip)
-//         .limit(limitNum);
-//       categories = categories.map((category) => category._id);
-//     } else {
-//       // Lấy đầy đủ thông tin category
-//       categories = await Category.find(filter)
-//         .populate("parentCategory", "name")
-//         .populate("discount", "code discountValue")
-//         .skip(skip)
-//         .limit(limitNum);
-//     }
-
-//     // Tính tổng số trang
-//     const totalPages = Math.ceil(totalItems / limitNum);
-
-//     res.status(200).json({
-//       success: true,
-//       data: categories,
-//       pagination: {
-//         totalItems,
-//         totalPages,
-//         currentPage: pageNum,
-//         itemsPerPage: limitNum,
-//       },
-//     });
-//   } catch (error) {
-//     res.status(500).json({ success: false, error: error.message });
-//   }
-// };
 
 const getCategoryById = async (req, res) => {
   try {
@@ -193,6 +128,110 @@ const createCategory = async (req, res) => {
   } catch (error) {
     const statusCode = error.name === "ValidationError" ? 400 : 500;
     res.status(statusCode).json({ success: false, error: error.message });
+  }
+};
+
+const addMultipleCategory = async (req, res) => {
+  try {
+    const categoriesData = req.body; // Mong đợi một mảng các category
+
+    if (!Array.isArray(categoriesData) || categoriesData.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "Input must be a non-empty array of category objects",
+      });
+    }
+
+    const newCategories = await Promise.all(
+      categoriesData.map(async (categoryData) => {
+        // Validate required fields
+        if (!categoryData.name || !categoryData.imageUrl) {
+          throw new Error("Name and imageUrl are required for each category");
+        }
+
+        // Tạo slug từ name nếu chưa có
+        const slug =
+          categoryData.slug ||
+          slugify(categoryData.name, { lower: true, strict: true });
+
+        // Kiểm tra tính duy nhất của slug
+        const existingCategory = await Category.findOne({ slug });
+        if (
+          existingCategory &&
+          existingCategory._id.toString() !==
+            (categoryData._id || "").toString()
+        ) {
+          throw new Error(`Slug "${slug}" is already in use`);
+        }
+
+        // Xử lý parentCategory: đảm bảo không tự tham chiếu
+        if (categoryData.parentCategory && categoryData._id) {
+          const parentIds = Array.isArray(categoryData.parentCategory)
+            ? categoryData.parentCategory
+            : [categoryData.parentCategory];
+          if (
+            parentIds.some(
+              (id) => id.toString() === categoryData._id.toString()
+            )
+          ) {
+            throw new Error("A category cannot be its own parent.");
+          }
+        }
+
+        // Xử lý discount: validate nếu có
+        if (categoryData.discount) {
+          const Discount = mongoose.model("Discount");
+          const discountDoc = await Discount.findById(categoryData.discount);
+          if (!discountDoc) {
+            throw new Error("The assigned discount does not exist.");
+          }
+          const now = new Date();
+          if (
+            !discountDoc.isActive ||
+            now < discountDoc.startDate ||
+            now > discountDoc.endDate
+          ) {
+            throw new Error("The assigned discount is not active or valid.");
+          }
+        }
+
+        // Validate imageUrl
+        const imageUrlRegex = /^https?:\/\/.*\.(jpg|jpeg|png|gif)$/;
+        if (!imageUrlRegex.test(categoryData.imageUrl)) {
+          throw new Error(
+            `${categoryData.imageUrl} is not a valid image URL (must end with .jpg, .jpeg, .png, or .gif)`
+          );
+        }
+
+        // Tạo đối tượng category mới
+        const category = new Category({
+          name: categoryData.name,
+          parentCategory: categoryData.parentCategory,
+          discount: categoryData.discount,
+          // description: categoryData.description,
+          imageUrl: categoryData.imageUrl,
+          isActive:
+            categoryData.isActive !== undefined ? categoryData.isActive : true,
+          createAt: categoryData.createAt || Date.now(),
+          updatedAt: categoryData.updatedAt || Date.now(),
+          slug,
+        });
+
+        // Lưu category
+        return await category.save();
+      })
+    );
+
+    res.status(201).json({
+      success: true,
+      data: newCategories,
+      message: "Categories added successfully",
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
   }
 };
 
@@ -332,4 +371,5 @@ module.exports = {
   updateCategory,
   deleteCategory,
   toggleCategoryStatus,
+  addMultipleCategory,
 };

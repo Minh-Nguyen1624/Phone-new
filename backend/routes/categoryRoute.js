@@ -6,6 +6,7 @@ const {
   updateCategory,
   deleteCategory,
   toggleCategoryStatus,
+  addMultipleCategory,
 } = require("../controller/categoryController");
 
 const {
@@ -29,5 +30,6 @@ router.post("/add", protect, adminMiddleware, createCategory);
 router.put("/update/:id", protect, adminMiddleware, updateCategory);
 router.delete("/deleted/:id", protect, adminMiddleware, deleteCategory);
 router.patch("/toggle/:id", protect, adminMiddleware, toggleCategoryStatus);
+router.post("/add-multiple", protect, adminMiddleware, addMultipleCategory);
 
 module.exports = router;

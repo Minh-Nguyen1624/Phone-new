@@ -14,6 +14,14 @@ const validCategories = [
   "có dây",
   "chụp tai",
   "xiaomi",
+  "10000mah",
+  "20000mah",
+  "dưới 300.000đ",
+  "xmobile",
+  "lightning",
+  "adapter type-c",
+  "adapter usb",
+  "cáp type-c",
 ];
 
 const useAccessoryData = () => {
