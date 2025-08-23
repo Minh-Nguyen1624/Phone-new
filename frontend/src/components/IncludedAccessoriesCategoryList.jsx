@@ -59,7 +59,7 @@ const IncludedAccessoriesCategoryList = ({
           .map((cat) => (
             <li
               key={cat._id}
-              className={`accessory-list-1 ${
+              className={`accessory-list-6 ${
                 Array.isArray(selectedFilter) &&
                 selectedFilter.includes(cat.name.toLowerCase())
                   ? "accessory-list"
@@ -91,7 +91,7 @@ const IncludedAccessoriesCategoryList = ({
       ) : (
         <p>Không có danh mục con để hiển thị</p>
       )}
-      <div className="sell-all">
+      <div className="sell-all-3">
         <a href="#" className="accessory-all_products">
           {/* Xem tất cả phụ kiện Camera */}
           {getAllText()}

@@ -54,6 +54,7 @@ const GenuineAppleCategoryList = ({
         childCategories
           .filter((cats) => {
             const categoryName = cats.name.toLowerCase();
+            // return allCategory.includes(categoryName);
             return allCategory.includes(categoryName);
           })
           .map((cat) => (
