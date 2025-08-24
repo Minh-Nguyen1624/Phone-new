@@ -14,6 +14,7 @@ import GenuineAppleSection from "./GenuineAppleSection";
 import LoudspeakerSection from "./LoudspeakerSection";
 import ChargingCableSection from "./ChargingCableSection";
 import IncludedAccessoriesSection from "./IncludedAccessoriesSection";
+import OutstandingAccessories from "./OutstandingAccessories";
 
 const API_URL = "http://localhost:8080/api";
 const Limit = 10;
@@ -220,14 +221,21 @@ const Accessory = () => {
         <div className="warpper-content">
           <section className="accessory-products">
             <h3 className="accessory-options-title">Phụ kiện nổi bật</h3>
-            <div className="accessory-products-list">
+            {/* <div className="accessory-products-list">
               <div className="accessory-products-category">
                 <a href="#" className="accessory-product-link">
-                  <img src="" alt="" width="64px" height="64px" />
-                  <h3></h3>
+                  <OutstandingAccessories
+                    accessories={accessories}
+                    selectedCategoryId={selectedCategoryId}
+                  />
                 </a>
               </div>
-            </div>
+              
+            </div> */}
+            <OutstandingAccessories
+              accessories={accessories}
+              selectedCategoryId={selectedCategoryId}
+            />
           </section>
           <section className="category-brand">
             <AccessoryBrand

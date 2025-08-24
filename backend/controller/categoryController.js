@@ -19,7 +19,7 @@ const getAllCategory = async (req, res) => {
       }
     }
     const categories = await Category.find(filter)
-      .populate("parentCategory", "name")
+      .populate("parentCategory", "name slug")
       .populate("discount", "code discountValue");
     res.status(200).json({ success: true, data: categories });
   } catch (error) {
@@ -37,7 +37,7 @@ const getCategoryById = async (req, res) => {
     }
 
     const category = await Category.findById(id)
-      .populate("parentCategory", "name")
+      .populate("parentCategory", "name slug")
       .populate("discount", "code discountValue");
     if (!category) {
       return res
@@ -349,7 +349,6 @@ const toggleCategoryStatus = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Category not found" });
     }
-    s;
     category.isActive = !category.isActive;
     category.updatedAt = new Date();
     await category.save();
@@ -364,6 +363,26 @@ const toggleCategoryStatus = async (req, res) => {
   }
 };
 
+const getCategoryBySlug = async (req, res) => {
+  try {
+    const { categorySlug } = req.params; // Sử dụng categorySlug thay vì slug
+    const category = await Category.findOne({ slug: categorySlug })
+      .populate("parentCategory", "name slug")
+      .populate("discount", "code discountValue");
+
+    if (!category) {
+      return res.status(404).json({
+        success: false,
+        message: `Category with slug '${categorySlug}' not found`,
+      });
+    }
+
+    res.status(200).json({ success: true, data: category });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
 module.exports = {
   getAllCategory,
   getCategoryById,
@@ -372,4 +391,5 @@ module.exports = {
   deleteCategory,
   toggleCategoryStatus,
   addMultipleCategory,
+  getCategoryBySlug,
 };

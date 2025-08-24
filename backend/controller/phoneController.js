@@ -660,7 +660,7 @@ const searchPhones = async (req, res) => {
     // Lấy danh sách sản phẩm với phân trang
     const phones = await Phone.find(filter)
       // .populate("category")
-      .populate("category", "_id name parentCategory") // Thêm _id và parentCategory
+      .populate("category", "_id name parentCategory imageUrl slug") // Thêm _id và parentCategory
       .populate(
         "discount",
         "code description discountType discountValue minimumOrderAmount discountImage"

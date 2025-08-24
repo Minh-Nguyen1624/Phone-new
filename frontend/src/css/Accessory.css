@@ -85,7 +85,7 @@
 .accessory-products-list {
   display: flex;
   gap: 20px;
-  /* justify-content: center; */
+  justify-content: center;
   flex-wrap: wrap;
 }
 

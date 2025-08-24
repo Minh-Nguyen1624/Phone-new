@@ -15,6 +15,7 @@ import Notifications from "./components/Notifications";
 import AddressTag from "./components/AddressTag"; // Import AddressTag
 import Tablets from "./components/Tablets";
 import Accessory from "./components/Accessory"; // Import Accessory component
+import CategoryPage from "./components/CategoryPage";
 import {
   BrowserRouter as Router,
   Route,
@@ -141,6 +142,7 @@ function App() {
         <Route path="/computerscreen" element={<ComputerScreen />} />
         <Route path="/tablets" element={<Tablets />} />
         <Route path="/accessories" element={<Accessory />} />
+        <Route path="/category/:categorySlug" element={<CategoryPage />} />
       </Routes>
     </Router>
   );

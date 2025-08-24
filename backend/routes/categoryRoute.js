@@ -7,6 +7,7 @@ const {
   deleteCategory,
   toggleCategoryStatus,
   addMultipleCategory,
+  getCategoryBySlug,
 } = require("../controller/categoryController");
 
 const {
@@ -25,6 +26,9 @@ const router = express.Router();
 // router.patch("/toggle/:id", toggleCategoryStatus);
 
 router.get("/all", getAllCategory);
+// router.get("/categorySlug", getCategoryBySlug);
+// Route để lấy danh mục theo slug (công khai)
+router.get("/category/:categorySlug", getCategoryBySlug); // Đặt trước để ưu tiên khớp
 router.get("/:id", protect, adminMiddleware, getCategoryById);
 router.post("/add", protect, adminMiddleware, createCategory);
 router.put("/update/:id", protect, adminMiddleware, updateCategory);

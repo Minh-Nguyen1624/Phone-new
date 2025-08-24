@@ -106,10 +106,15 @@ const useAccessoryData = () => {
           rawAccessories.map((a) => ({
             _id: a._id,
             category: a.category?.name,
+            slug: a.category?.slug,
           }))
         );
 
-        let filteredAccessories = rawAccessories;
+        // let filteredAccessories = rawAccessories;
+        let filteredAccessories = rawAccessories.map((accessory) => ({
+          ...accessory,
+          categorySlug: accessory.category?.slug || null, // Sử dụng slug từ API
+        }));
 
         if (!filter && !categoryId) {
           filteredAccessories = rawAccessories.filter((accessory) => {
