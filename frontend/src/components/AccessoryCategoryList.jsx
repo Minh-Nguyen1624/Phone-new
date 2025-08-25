@@ -1,6 +1,7 @@
 import React from "react";
 import { FaCaretRight } from "react-icons/fa";
 import "../css/Accessory.css";
+import { useNavigate } from "react-router-dom";
 
 const AccessoryCategoryList = ({
   childCategories,
@@ -10,12 +11,6 @@ const AccessoryCategoryList = ({
   selectedCategoryId,
   setSelectedFilter,
 }) => {
-  // console.log("SelectedFilter: ", selectedFilter);
-  // console.log("ChildCategories: ", childCategories);
-  // console.log("FilterByCategory: ", filterByCategory);
-  // console.log("SelectedFilter in AccessoryCategoryList: ", selectedFilter);
-  // console.log("ChildCategories: ", childCategories);
-
   const categoryNameMap = {
     "nổi bật": "Xem tất cả Camera",
     camera: "Xem tất cả Camera",
@@ -33,7 +28,9 @@ const AccessoryCategoryList = ({
     //   filterByCategory(categoryName);
     // }
   };
-
+  const defaultFunctionType = (event) => {
+    event.preventDefault();
+  };
   // Xác định nội dung "Xem tất cả" dựa trên selectedFilter
   const getAllText = () => {
     const filterKey = selectedFilter?.toLowerCase() || "nổi bật";
@@ -102,7 +99,11 @@ const AccessoryCategoryList = ({
         <p>Không có danh mục con để hiển thị</p>
       )}
       <div className="sell-all">
-        <a href="#" className="accessory-all_products">
+        <a
+          href="#"
+          className="accessory-all_products"
+          onClick={defaultFunctionType}
+        >
           {/* Xem tất cả phụ kiện Camera */}
           {getAllText()}
         </a>

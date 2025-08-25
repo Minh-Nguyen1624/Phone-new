@@ -19,7 +19,7 @@ const getAllCategory = async (req, res) => {
       }
     }
     const categories = await Category.find(filter)
-      .populate("parentCategory", "name slug")
+      .populate("parentCategory", "name slug imageUrl")
       .populate("discount", "code discountValue");
     res.status(200).json({ success: true, data: categories });
   } catch (error) {
@@ -37,7 +37,7 @@ const getCategoryById = async (req, res) => {
     }
 
     const category = await Category.findById(id)
-      .populate("parentCategory", "name slug")
+      .populate("parentCategory", "name slug imageUrl")
       .populate("discount", "code discountValue");
     if (!category) {
       return res

@@ -1,13 +1,13 @@
 import React from "react";
-import OutstandingAccessoriesItem from "./OutstandingAccessoriesItem";
+import TechAccessoriesItem from "./TechAccessoriesItem";
 import "../css/Accessory.css";
 
-const OutstandingAccessories = ({
+const TechAccessories = ({
   accessories = [],
   selectedCategoryId,
   allAccessories = [],
 }) => {
-  const toCapitalize = (str) => {
+  const topCapitalize = (str) => {
     return str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : str;
   };
 
@@ -17,7 +17,7 @@ const OutstandingAccessories = ({
       new URL(url);
       return true;
     } catch (_) {
-      return url.startsWith("/") || url.startsWith("http");
+      return url.startsWith("/") || url.startsWith("https");
     }
   };
 
@@ -52,41 +52,42 @@ const OutstandingAccessories = ({
       seenCategoryNames.add(categoryName);
       uniqueAccessories.push(accessory);
     } else {
-      // console.warn("Accessory filtered out:", {
-      //   id,
-      //   categoryName,
-      //   imageUrl,
-      //   isValid: isValid(imageUrl),
-      //   isExampleDomain,
-      // });
+      //   console.warn("Accessory filtered out:", {
+      //     id,
+      //     categoryName,
+      //     imageUrl,
+      //     isValid: isValid(imageUrl),
+      //     isExampleDomain,
+      //   });
     }
   });
 
-  // console.log(
-  //   "Unique accessories after filtering:",
-  //   uniqueAccessories.map((a) => ({
-  //     _id: a._id,
-  //     name: a.name,
-  //     categoryName: a.category?.name,
-  //     categorySlug: a.category?.slug,
-  //     imageUrl: a.category?.imageUrl,
-  //   }))
-  // );
+  console.log(
+    "Unique accessories after filtering:",
+    uniqueAccessories.map((a) => ({
+      _id: a._id,
+      name: a.name,
+      categoryName: a.category?.name,
+      categorySlug: a.category?.slug,
+      imageUrl: a.category?.imageUrl,
+    }))
+  );
 
   if (uniqueAccessories.length === 0) {
     return null;
   }
 
   return (
-    <div className="accessory-products-list">
-      {uniqueAccessories.map((accessory) => (
-        <OutstandingAccessoriesItem
-          key={accessory._id || Math.random()}
+    <ul className="accessory-options">
+      {uniqueAccessories.slice(0, 5).map((accessory, index) => (
+        <TechAccessoriesItem
+          key={accessory._id}
           accessory={accessory}
+          index={index}
         />
       ))}
-    </div>
+    </ul>
   );
 };
 
-export default OutstandingAccessories;
+export default TechAccessories;

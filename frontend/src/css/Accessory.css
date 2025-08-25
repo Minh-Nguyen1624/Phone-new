@@ -7,20 +7,20 @@
 .accessory-container {
   background: #f1f1f1;
   margin-top: 21px;
-  min-height: 100vh; /* Đảm bảo container chiếm toàn bộ chiều cao */
+  min-height: 100vh;
 }
 
 .accessory-options {
   overflow: hidden;
-  text-align: center;
+  /* text-align: center; */
   border-radius: 12px;
   position: relative;
   z-index: 1;
   max-width: 1200px;
   margin: auto;
   display: flex;
-  background: #f1f1f1;
-  padding: 10px 0; /* Thêm padding để tránh nội dung bị ép sát mép */
+  /* background: #f1f1f1; */
+  padding: 10px 0;
 }
 
 .accessory-options li {
@@ -33,10 +33,10 @@
   margin-right: 8px;
   background-color: #fff;
   border-radius: 12px;
-  padding: 7px 0;
+  /* padding: 7px 0; */
   align-items: center;
   justify-content: flex-start;
-  padding-left: 18px;
+  /* padding-left: 18px; */
 }
 
 .accessory-options li:last-child {
@@ -96,8 +96,9 @@
   text-align: center;
   width: auto;
   display: inline-block;
-  margin-right: 20px;
-  margin-bottom: 20px; /* Thêm margin-bottom để cách nhau */
+
+  width: 100px;
+  height: 105px;
 }
 
 .accessory-products-category h3 {
@@ -113,6 +114,7 @@
   height: 64px;
   border-radius: 50%;
   object-fit: cover; /* Đảm bảo ảnh không bị méo */
+  border: 1px solid #f5f5f5;
 }
 
 .category-brand-title {
@@ -1016,4 +1018,13 @@ p {
 
 .camera-list .accessory-block_products {
   padding-left: 0;
+}
+
+.accessory-info {
+  display: grid;
+}
+
+.accessory-info span:nth-child(1) {
+  /* width: 0; */
+  max-width: 59%;
 }

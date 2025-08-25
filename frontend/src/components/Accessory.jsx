@@ -15,6 +15,7 @@ import LoudspeakerSection from "./LoudspeakerSection";
 import ChargingCableSection from "./ChargingCableSection";
 import IncludedAccessoriesSection from "./IncludedAccessoriesSection";
 import OutstandingAccessories from "./OutstandingAccessories";
+import TechAccessories from "./TechAccessories";
 
 const API_URL = "http://localhost:8080/api";
 const Limit = 10;
@@ -117,11 +118,13 @@ const Accessory = () => {
       id: item?._id,
       name: item?.name,
       category: item?.category,
+      imageUrl: item?.category?.imageUrl,
     })), // Sử dụng optional chaining để tránh lỗi
     allAccessories: allAccessories.map((item, index) => ({
       id: item?._id,
       name: item?.name,
       category: item?.category,
+      imageUrl: item?.category?.imageUrl,
     })), // Log allAccessories để debug
     getChildCategories: getChildCategories(),
     selectedFilter,
@@ -207,34 +210,22 @@ const Accessory = () => {
       <Header />
       <div className="accessory-container">
         <section className="accessory-menu">
-          <ul className="accessory-options">
-            <li>
-              <a>
-                <img width="50" height="50" src="" />
-                <span></span>
-                <span></span>
-              </a>
-            </li>
-          </ul>
+          <TechAccessories
+            accessories={accessories}
+            allAccessories={allAccessories}
+            totalAccessories={totalAccessories}
+            selectedCategoryId={selectedCategoryId}
+          />
         </section>
 
         <div className="warpper-content">
           <section className="accessory-products">
             <h3 className="accessory-options-title">Phụ kiện nổi bật</h3>
-            {/* <div className="accessory-products-list">
-              <div className="accessory-products-category">
-                <a href="#" className="accessory-product-link">
-                  <OutstandingAccessories
-                    accessories={accessories}
-                    selectedCategoryId={selectedCategoryId}
-                  />
-                </a>
-              </div>
-              
-            </div> */}
             <OutstandingAccessories
               accessories={accessories}
               selectedCategoryId={selectedCategoryId}
+              allAccessories={allAccessories}
+              totalAccessories={totalAccessories}
             />
           </section>
           <section className="category-brand">

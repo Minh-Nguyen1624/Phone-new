@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaStar } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import slugify from "slugify";
 import "../css/Accessory.css";
 
 const LoudspeakerProductList = ({ accessories = [], soldQuantities = {} }) => {
@@ -9,6 +11,7 @@ const LoudspeakerProductList = ({ accessories = [], soldQuantities = {} }) => {
   const itemsPerPage = 4; // Số sản phẩm hiển thị trên màn hình, cố định là 4
   const trackRef = useRef(null); // Tham chiếu đến highlight-track
   const animationRef = useRef(null); // Tham chiếu đến animation frame
+  const navigate = useNavigate();
 
   // Hàm cuộn mượt mà tùy chỉnh
   const smoothScroll = (element, to, duration) => {
@@ -72,6 +75,19 @@ const LoudspeakerProductList = ({ accessories = [], soldQuantities = {} }) => {
     (currentIndex + 1) * itemsPerPage
   );
 
+  const handleProductClick = (item) => {
+    console.log("handleProductClick:", item); // Log item khi click
+    const categorySlug =
+      item.category?.slug ||
+      slugify(item.name || "product", { lower: true, strict: true });
+    console.log(`Navigating to /product/${item._id}/${categorySlug}`);
+    if (!item._id) {
+      console.error("Item _id is missing:", item);
+      return;
+    }
+    navigate(`/product/${item._id}/${categorySlug}`); // Điều hướng đến chi tiết
+  };
+
   return (
     <div className="list-product_camera">
       <div className="owt-stage">
@@ -88,7 +104,14 @@ const LoudspeakerProductList = ({ accessories = [], soldQuantities = {} }) => {
             visibleAccessories.map((item, index) => (
               <div className="owt-item" key={item._id || index}>
                 <li className="item__cate">
-                  <a href="#" className="item__cate-link">
+                  <a
+                    href="#"
+                    className="item__cate-link"
+                    onClick={(e) => {
+                      e.preventDefault(); // Ngăn chặn hành vi mặc định của <a>
+                      handleProductClick(item);
+                    }}
+                  >
                     <div className="item-label"></div>
                     <div className="item-img">
                       <img

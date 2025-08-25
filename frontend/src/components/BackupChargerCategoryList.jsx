@@ -25,6 +25,10 @@ const BackupChargerCategoryList = ({
     setSelectedFilter(categoryName);
   };
 
+  const defaultFunctionType = (event) => {
+    event.preventDefault();
+  };
+
   const getAllText = () => {
     const filterKey = selectedFilter?.toLowerCase() || "nổi bật";
     return categoryNameMap[filterKey] || "Xem tất cả phụ kiện Pin sạc";
@@ -95,7 +99,11 @@ const BackupChargerCategoryList = ({
         <p>Không có danh mục con để hiển thị</p>
       )}
       <div className="sell-all-1">
-        <a href="#" className="accessory-all_products">
+        <a
+          href="#"
+          className="accessory-all_products"
+          onClick={defaultFunctionType}
+        >
           {/* Xem tất cả phụ kiện Pin sạc */}
           {getAllText()}
         </a>

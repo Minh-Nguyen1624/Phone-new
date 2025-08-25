@@ -16,6 +16,7 @@ import AddressTag from "./components/AddressTag"; // Import AddressTag
 import Tablets from "./components/Tablets";
 import Accessory from "./components/Accessory"; // Import Accessory component
 import CategoryPage from "./components/CategoryPage";
+import ProductDetail from "./components/ProductDetail";
 import {
   BrowserRouter as Router,
   Route,
@@ -143,6 +144,10 @@ function App() {
         <Route path="/tablets" element={<Tablets />} />
         <Route path="/accessories" element={<Accessory />} />
         <Route path="/category/:categorySlug" element={<CategoryPage />} />
+        <Route
+          path="/product/:productId/:categorySlug"
+          element={<ProductDetail />}
+        />
       </Routes>
     </Router>
   );

@@ -25,6 +25,10 @@ const ChargingCableCategoryList = ({
     "adapter type-c",
   ];
 
+  const defaultFunctionType = (event) => {
+    event.preventDefault();
+  };
+
   const handleFilterClick = (event, categoryName) => {
     event.preventDefault();
     setSelectedFilter(categoryName);
@@ -101,7 +105,11 @@ const ChargingCableCategoryList = ({
         <p>Không có danh mục con để hiển thị</p>
       )}
       <div className="sell-all-2">
-        <a href="#" className="accessory-all_products">
+        <a
+          href="#"
+          className="accessory-all_products"
+          onClick={defaultFunctionType}
+        >
           {/* Xem tất cả phụ kiện Camera */}
           {getAllText()}
         </a>

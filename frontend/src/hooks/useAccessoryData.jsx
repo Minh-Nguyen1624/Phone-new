@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import slugify from "slugify";
 
 const API_URL = "http://localhost:8080/api";
 const Limit = 10;
@@ -107,14 +108,32 @@ const useAccessoryData = () => {
             _id: a._id,
             category: a.category?.name,
             slug: a.category?.slug,
+            imageUrl: a.category?.imageUrl,
           }))
         );
 
         // let filteredAccessories = rawAccessories;
-        let filteredAccessories = rawAccessories.map((accessory) => ({
-          ...accessory,
-          categorySlug: accessory.category?.slug || null, // Sử dụng slug từ API
-        }));
+        // let filteredAccessories = rawAccessories.map((accessory) => ({
+        //   ...accessory,
+        //   categorySlug: accessory.category?.slug || null, // Sử dụng slug từ API
+        //   imageUrl: accessory.category?.imageUrl || "path/to/default-image.jpg", // Sử dụng URL từ API
+        // }));
+        let filteredAccessories = rawAccessories.map((accessory) => {
+          console.log("Processing accessory:", accessory);
+          return {
+            ...accessory,
+            categorySlug:
+              accessory.category?.slug ||
+              (accessory.category?.name
+                ? slugify(accessory.category.name, {
+                    lower: true,
+                    strict: true,
+                  })
+                : null),
+            imageUrl:
+              accessory.category?.imageUrl || "https://via.placeholder.com/64",
+          };
+        });
 
         if (!filter && !categoryId) {
           filteredAccessories = rawAccessories.filter((accessory) => {
@@ -171,10 +190,13 @@ const useAccessoryData = () => {
           });
         }
         console.log(
-          "Filtered Accessories:",
+          "Filtered Accessories with slugs and imageUrl:",
           filteredAccessories.map((a) => ({
             _id: a._id,
+            name: a.name,
             category: a.category?.name,
+            slug: a.category?.slug,
+            imageUrl: a.category?.imageUrl,
           }))
         );
         setAccessories(filteredAccessories);

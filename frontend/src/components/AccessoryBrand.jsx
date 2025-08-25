@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import BrandModal from "./BrandModal";
+import { useNavigate } from "react-router-dom";
 
 const AccessoryBrand = ({
   isCategorySelected,
@@ -19,6 +20,14 @@ const AccessoryBrand = ({
     return str ? str.charAt(0).toUpperCase() + str.slice(1).toUpperCase() : str;
   };
   console.log("Accessories: ", accessories);
+
+  const navigate = useNavigate();
+
+  const handleClick = (brandName) => {
+    const safeBrandName = brandName.replace(/\s+/g, "-").toLowerCase(); // Thay khoảng trắng bằng dấu gạch nối
+    console.log(`Navigating to /accessories/${safeBrandName}`);
+    navigate(`/accessories/${safeBrandName}`); // Chuyển trang
+  };
 
   const childCategories = getChildCategories();
   console.log(
@@ -47,7 +56,10 @@ const AccessoryBrand = ({
               href="#"
               className="category-all-brand"
               style={{ color: "#007bff" }}
-              onClick={() => setShowModal(true)}
+              onClick={(event) => {
+                event.preventDefault();
+                setShowModal(true);
+              }}
             >
               Xem tất cả
             </a>
@@ -65,6 +77,7 @@ const AccessoryBrand = ({
                   onClick={() => {
                     console.log("Filtering by brand:", cat.name.toLowerCase());
                     filterByBrand(cat.name.toLowerCase());
+                    handleClick(cat.name.toLowerCase());
                   }}
                   style={{
                     backgroundColor:
