@@ -122,6 +122,12 @@ const userSchema = new mongoose.Schema(
     isVerified: { type: Boolean, default: false }, // Trạng thái xác minh
     verificationToken: { type: String }, // Token xác minh
     verificationTokenExpires: { type: Date }, // Thời gian hết hạn token
+    // 🔹 Thêm trường tích điểm
+    loyaltyPoints: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
   },
   {
     timestamps: true, // auto-create createdAt and updatedAt fields

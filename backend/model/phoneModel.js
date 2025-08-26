@@ -20,7 +20,11 @@ const phoneSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-    match: [/^https?:\/\/.*\.(jpg|jpeg|png|gif)$/, "Invalid image URL format"],
+    // match: [/^https?:\/\/.*\.(jpg|jpeg|png|gif)$/, "Invalid image URL format"],
+    validate: {
+      validator: (v) => /^https?:\/\/.*\.(jpg|jpeg|png|gif)$/.test(v),
+      message: "Invalid image URL format",
+    },
   },
   description: {
     type: String,
@@ -257,7 +261,8 @@ const phoneSchema = new mongoose.Schema({
 
 // Virtual field for dynamic final price calculation
 phoneSchema.virtual("calculatedFinalPrice").get(function () {
-  return this.price - this.discountValue;
+  // return this.price - this.discountValue;
+  return this.price - this.specifications.discountAmount;
 });
 
 // Middleware để xóa discountAmount ở root level nếu tồn tại

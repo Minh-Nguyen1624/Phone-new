@@ -144,7 +144,8 @@ const protect = asyncHandler(async (req, res, next) => {
       next();
     } catch (error) {
       console.log("Token verification failed:", error.message); // Log để debug
-      return res.status(401).json({ message: "Not authorized, token failed" });
+      // return res.status(401).json({ message: "Not authorized, token failed" });
+      return res.status(401).json({ message: "Bạn cần đăng nhập để tiếp tục" });
     }
   } else {
     return res.status(401).json({ message: "Not authorized, no token" });

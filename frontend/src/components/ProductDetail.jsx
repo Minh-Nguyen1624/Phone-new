@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import ProductDetailInfo from "./ProductDetailInfo";
+import Header from "./Header";
 
 const API_URL = "http://localhost:8080/api";
 
@@ -49,74 +51,15 @@ const ProductDetail = () => {
   if (!product)
     return <p className="text-center text-gray-600">Không có sản phẩm.</p>;
 
-  const imageUrl = product?.image
-    ? product?.image.startsWith("https")
-      ? product?.image
-      : `${API_URL}${product?.image || ""}` // Điều chỉnh đường dẫn
-    : "https://via.placeholder.com/200";
-  const name = product?.name || "Tên sản phẩm";
-  const categoryName = product?.category?.name || "Danh mục không xác định";
-  const price = product?.price
-    ? `${product.price.toLocaleString()} VNĐ`
-    : "Giá không có";
-  const finalPrice = product?.finalPrice
-    ? `${product.finalPrice.toLocaleString()} VNĐ`
-    : price;
-  const description = product?.description || "Không có mô tả.";
-  const discountCode = product?.discount?.code || "No discount";
-  const discountValue = product?.discount?.discountValue || 0;
-  const specifications = product?.specifications || {};
-
   return (
-    <div className="product-detail">
-      <h2>{topCapitalize(name)}</h2>
-      <img
-        src={imageUrl}
-        alt={name}
-        style={{ width: "200px", height: "200px" }}
+    <>
+      <Header />
+      <ProductDetailInfo
+        product={product}
+        topCapitalize={topCapitalize}
+        navigate={navigate}
       />
-      <p>
-        <strong>Danh mục:</strong> {topCapitalize(categoryName)}
-      </p>
-      <p>
-        <strong>Giá gốc:</strong> {price}
-      </p>
-      <p>
-        <strong>Giá sau giảm:</strong> {finalPrice}
-      </p>
-      <p>
-        <strong>Giảm giá:</strong> {discountCode} ({discountValue}%)
-      </p>
-      <p>
-        <strong>Mô tả:</strong> {description}
-      </p>
-      <p>
-        <strong>Màn hình:</strong> {specifications.screen}
-      </p>
-      <p>
-        <strong>Pin:</strong> {specifications.battery}
-      </p>
-      <p>
-        <strong>Camera trước:</strong> {specifications.camera?.front}
-      </p>
-      <p>
-        <strong>Camera sau:</strong> {specifications.camera?.rear}
-      </p>
-      <button
-        onClick={() => navigate(-1)}
-        style={{
-          padding: "5px 10px",
-          backgroundColor: "#007bff",
-          color: "#fff",
-          border: "none",
-          borderRadius: "5px",
-          cursor: "pointer",
-          marginTop: "10px",
-        }}
-      >
-        Quay lại
-      </button>
-    </div>
+    </>
   );
 };
 
