@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import "../css/ProductDetailInfo.css";
-import { FaRegStar, FaCircle, FaCartPlus, FaPhoneAlt } from "react-icons/fa";
+import {
+  FaRegStar,
+  FaCircle,
+  FaCartPlus,
+  FaPhoneAlt,
+  FaAngleDown,
+} from "react-icons/fa";
 
 const ProductDetailInfo = ({ product, topCapitalize, navigate }) => {
   const imageUrl = product?.image
@@ -20,6 +26,15 @@ const ProductDetailInfo = ({ product, topCapitalize, navigate }) => {
   const discountCode = product?.discount?.code || "No discount";
   const discountValue = product?.discount?.discountValue || 0;
   const specifications = product?.specifications || {};
+  const color = product?.colors || [];
+  const images = product?.images || {};
+
+  console.log("Specifications: ", specifications);
+
+  const [isActive, setIsActive] = useState("specification");
+  const toggleIsActive = (tabs) => {
+    setIsActive(tabs);
+  };
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const itemsPerPage = 1;
@@ -45,7 +60,7 @@ const ProductDetailInfo = ({ product, topCapitalize, navigate }) => {
     };
 
     cancelAnimationFrame(animationRef.current);
-    animateRef.current = requestAnimationFrame(animateScroll);
+    animationRef.current = requestAnimationFrame(animateScroll);
   };
 
   const handlePrev = () => {
@@ -68,6 +83,9 @@ const ProductDetailInfo = ({ product, topCapitalize, navigate }) => {
     }
   }, [currentIndex]);
 
+  const deletedDefalutEvent = (e) => {
+    e.preventdefault();
+  };
   // Dọn dẹp animation khi component unmount
   useEffect(() => {
     return () => {
@@ -155,7 +173,7 @@ const ProductDetailInfo = ({ product, topCapitalize, navigate }) => {
               <button
                 type="button"
                 aria-label="button"
-                className="owl-prev"
+                className="owl-prev prev"
                 onClick={handlePrev}
                 disabled={currentIndex === 0}
               >
@@ -164,7 +182,7 @@ const ProductDetailInfo = ({ product, topCapitalize, navigate }) => {
               <button
                 type="button"
                 aria-label="button"
-                className="owl-next"
+                className="owl-next next"
                 onClick={handleNext}
                 disabled={
                   currentIndex >=
@@ -174,7 +192,89 @@ const ProductDetailInfo = ({ product, topCapitalize, navigate }) => {
                 <span>›</span>
               </button>
             </div>
+            {/* {images.map((image) => console.log(image.url))} */}
+            <div className="owl-dots">
+              {images.map((image, index) => {
+                return (
+                  <button key={index} className={`owl-dot dotnumber${index}`}>
+                    <img
+                      className="theImg"
+                      src={image?.url}
+                      alt={image?.alt}
+                      // style={{ height: "25%" }}
+                    />
+                  </button>
+                );
+              })}
+            </div>
           </aside>
+          <div className="policy policy-vs">
+            <h2>NamPhuong-Store</h2>
+            <ul className="policy__list">
+              <li>
+                <div className="pl-icon"></div>
+                <div className="pl-txt">
+                  <p>
+                    1 đổi 1 trong vòng <b>12 tháng</b> đối với sản phẩm lỗi do
+                    nhà sản xuất
+                  </p>
+                </div>
+              </li>
+              <li>
+                <div className="pl-icon"></div>
+                <div className="pl-txt">
+                  <p>
+                    Trong hộp có: Ốc vít, Tấm gắn, Sách hướng dẫn, Mẫu khoan,
+                    Dây cáp, Camera, Bộ chuyển đổi nguồn DC
+                  </p>
+                </div>
+              </li>
+              <li>
+                <div className="pl-icon"></div>
+                <div className="pl-txt">
+                  <p>
+                    Bảo hành có cam kết <b>12 tháng</b>
+                  </p>
+                </div>
+              </li>
+              <li>
+                <div className="pl-icon"></div>
+                <div className="pl-txt">
+                  <p>
+                    Bảo hành <b> chính hãng camera giám sát 2 năm</b> tại các
+                    trung tâm bảo hành hãng
+                  </p>
+                </div>
+              </li>
+            </ul>
+          </div>
+          <div id="tab-spec" className="tabs col2">
+            <h2
+              id="specification-tabs"
+              className={`tab-link ${
+                isActive === "specification" ? "current" : ""
+              }`}
+              onClick={() => toggleIsActive("specification")}
+            >
+              Thông số kỹ thuật
+            </h2>
+            <h2
+              id="info-tabs"
+              className={`tab-link ${isActive === "info" ? "current" : ""}`}
+              onClick={() => toggleIsActive("info")}
+            >
+              Thông tin sản phẩm
+            </h2>
+          </div>
+          <div className="specifications tab-content">
+            <div id="specification-item" className="specification-item">
+              <div className="box-specifi">
+                <a href="#" onClick={deletedDefalutEvent}>
+                  <h3>Camera tiện ích</h3>
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
         <div className="box_right">
           <div className="banner-detail _bannerdetail__top">
@@ -207,7 +307,7 @@ const ProductDetailInfo = ({ product, topCapitalize, navigate }) => {
                       backgroundColor: "#FBF7F4",
                     }}
                   />
-                  <span>Trắng</span>
+                  <span>{color}</span>
                 </a>
               </div>
             </div>
@@ -228,7 +328,7 @@ const ProductDetailInfo = ({ product, topCapitalize, navigate }) => {
           <p className="callorder">
             <FaPhoneAlt className="icondetail-hotline" />
             <span className="call">Gọi đặt mua</span>
-            <a href="#">0368800168</a>
+            <a href="#">0368 800 168</a>
             <span>(8:00 - 21:00)</span>
           </p>
         </div>

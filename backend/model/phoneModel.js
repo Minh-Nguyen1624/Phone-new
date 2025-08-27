@@ -140,6 +140,38 @@ const phoneSchema = new mongoose.Schema({
           "Rear camera specification cannot exceed 50 characters",
         ],
       },
+      fieldOfView: {
+        type: String,
+        required: false,
+        default: "N/A",
+        maxlength: [50, "Field of view cannot exceed 50 characters"],
+      },
+      rotation: {
+        horizontal: { type: String, default: "N/A" },
+        vertical: { type: String, default: "N/A" },
+      },
+      infraredRange: {
+        type: String,
+        required: false,
+        default: "N/A",
+        maxlength: [50, "Infrared range cannot exceed 50 characters"],
+      },
+      utilities: {
+        type: [String],
+        required: false,
+        default: [],
+        enum: [
+          "Phát hiện chuyển động",
+          "Phát hiện con người",
+          "Chế độ tuần tra",
+          "Cảnh báo âm thanh bất thường",
+          "Chế độ quan sát ban đêm có màu",
+          "Chế độ riêng tư",
+          "Đàm thoại 2 chiều",
+          "Cuộc gọi 1 chạm",
+          "Cài đặt tối đa 4 khung hình theo dõi",
+        ],
+      },
     },
     os: {
       type: String,
@@ -148,11 +180,12 @@ const phoneSchema = new mongoose.Schema({
       maxlength: [50, "OS specification cannot exceed 50 characters"],
     },
     network: {
-      type: String,
+      // type: String,
+      type: [String],
       required: false,
       default: "N/A",
       maxlength: [50, "Network specification cannot exceed 50 characters"],
-      enum: ["2G", "3G", "4G", "5G", "N/A"], // Giới hạn giá trị hợp lệ
+      enum: ["2G", "3G", "4G", "5G", "Wifi", "LAN", "2.4 GHz", "N/A"], // Giới hạn giá trị hợp lệ
     },
     discountAmount: {
       type: Number,
@@ -162,6 +195,45 @@ const phoneSchema = new mongoose.Schema({
         message:
           "Discount amount must be a valid number and greater than or equal to 0",
       },
+    },
+    simultaneousConnections: {
+      type: Number,
+      required: false,
+      default: 0,
+      min: [0, "Simultaneous connections cannot be negative"],
+    }, // Kết nối cùng lúc
+    power: {
+      inputVoltage: { type: String, default: "N/A" },
+      portType: { type: String, default: "N/A" },
+      adapterIncluded: { type: Boolean, default: false },
+    }, // Nguồn điện
+    operatingConditions: {
+      temperatureRange: { type: String, default: "N/A" },
+      humidity: { type: String, default: "N/A" },
+    }, // Nhiệt độ hoạt động
+    installationLocation: {
+      type: String,
+      required: false,
+      default: "N/A",
+      enum: ["Trong nhà", "Ngoài trời", "N/A"],
+    }, // Vị trí lắp đặt
+    supportedDevices: {
+      type: [String],
+      required: false,
+      default: [],
+      enum: ["Android", "iOS", "iPadOS", "N/A"],
+    }, // Hỗ trợ thiết bị
+    controlApp: {
+      type: String,
+      required: false,
+      default: "N/A",
+      maxlength: [50, "Control app name cannot exceed 50 characters"],
+    }, // Ứng dụng điều khiển
+    dimensions: {
+      length: { type: Number, default: 0 },
+      width: { type: Number, default: 0 },
+      height: { type: Number, default: 0 },
+      weight: { type: Number, default: 0 },
     },
   },
   releaseDate: {

@@ -345,35 +345,37 @@ const addPhones = async (req, res) => {
       camera: {
         front: specifications.camera?.front || "N/A",
         rear: specifications.camera?.rear || "N/A",
+        fieldOfView: specifications.camera?.fieldOfView || "N/A",
+        rotation: {
+          horizontal: specifications.camera?.rotation?.horizontal || "N/A",
+          vertical: specifications.camera?.rotation?.vertical || "N/A",
+        },
+        infraredRange: specifications.camera?.infraredRange || "N/A",
+        utilities: specifications.camera?.utilities || [],
+        simultaneousConnections:
+          specifications.camera?.simultaneousConnections || 0,
+        power: {
+          inputVoltage: specifications.camera?.power?.inputVoltage || "N/A",
+          portType: specifications.camera?.power?.portType || "N/A",
+          adapterIncluded:
+            specifications.camera?.power?.adapterIncluded || false,
+        },
+        installationLocation:
+          specifications.camera?.installationLocation || "N/A",
+        supportedDevices: specifications.camera?.supportedDevices || [],
+        controlApp: specifications.camera?.controlApp || "N/A",
+        dimensions: {
+          length: specifications.camera?.dimensions?.length || 0,
+          width: specifications.camera?.dimensions?.width || 0,
+          height: specifications.camera?.dimensions?.height || 0,
+          weight: specifications.camera?.dimensions?.weight || 0,
+        },
       },
       os: specifications.os || "N/A",
       network: specifications.network || "N/A",
       discountAmount: calculatedDiscountAmount, // Thêm discountAmount vào specifications
     };
 
-    // Tạo đối tượng Phone mới
-    // const phone = new Phone({
-    //   name: name.trim(),
-    //   price,
-    //   image: image.trim(),
-    //   description: description.trim(),
-    //   brand: brand.trim(),
-    //   stock,
-    //   category: category.trim(),
-    //   specifications,
-    //   releaseDate,
-    //   images,
-    //   rating,
-    //   discount: validatedDiscount,
-    //   warrantyPeriod,
-    //   isFeatured,
-    //   likes,
-    //   likedBy,
-    //   discountValue,
-    //   warehouseLocation,
-    //   quantity,
-    //   reserved,
-    // });
     const phone = new Phone({
       name: name.trim(),
       price,
@@ -531,7 +533,7 @@ const updatePhones = async (req, res) => {
 
     if (req.body.specifications) {
       phone.specifications = {
-        ...phone.specifications,
+        ...phone.specifications.toObject(),
         ...req.body.specifications,
         discountAmount:
           req.body.specifications.discountAmount !== undefined
@@ -540,7 +542,28 @@ const updatePhones = async (req, res) => {
       };
     }
 
+    Object.assign(phone, req.body);
+
     await phone.save();
+
+    // Synchronize with Inventory
+    const inventory = await Inventory.findOne({
+      warehouseLocation: phone.warehouseLocation,
+    });
+
+    if (inventory) {
+      const product = inventory.products.find(
+        (p) => p.phoneId.toString() === phone._id.toString()
+      );
+      if (product) {
+        product.stock = phone.stock;
+        product.quantity = phone.quantity;
+        product.reserved = phone.reserved;
+        // product.colors = phone.colors;
+        inventory.lastUpdated = Date.now();
+        await inventory.save();
+      }
+    }
 
     const populatedPhone = await Phone.findById(phone._id)
       .populate("likedBy", "username email")
