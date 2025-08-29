@@ -29,6 +29,10 @@ const ProductDetailInfo = ({ product, topCapitalize, navigate }) => {
   const color = product?.colors || [];
   const images = product?.images || {};
 
+  let myObjects = specifications;
+  let keys = Object.keys(myObjects);
+  console.log("Keys: ", keys);
+
   console.log("Specifications: ", specifications);
 
   const [isActive, setIsActive] = useState("specification");
@@ -272,6 +276,83 @@ const ProductDetailInfo = ({ product, topCapitalize, navigate }) => {
                 <a href="#" onClick={deletedDefalutEvent}>
                   <h3>Camera tiện ích</h3>
                 </a>
+                <ul className="text-specifi">
+                  <li>
+                    <aside>
+                      <strong>Độ phân giải:</strong>
+                    </aside>
+                    <aside>
+                      <span>{specifications?.camera.rear}</span>
+                    </aside>
+                  </li>
+                  <li>
+                    {" "}
+                    <aside>
+                      <strong>Góc nhìn:</strong>
+                    </aside>
+                    <aside>
+                      <span>{specifications?.camera.rear}</span>
+                    </aside>
+                  </li>
+                  <li>
+                    {" "}
+                    <aside>
+                      <strong>Góc xoay:</strong>
+                    </aside>
+                    <div>
+                      <aside>
+                        <span>
+                          {specifications?.camera.rotation.horizontal}
+                        </span>
+                      </aside>
+                      <aside>
+                        <span>{specifications?.camera.rotation.vertical}</span>
+                      </aside>
+                    </div>
+                  </li>
+                  <li>
+                    {" "}
+                    <aside>
+                      <strong>Tầm nhìn xa hông ngoại:</strong>
+                    </aside>
+                    <aside>
+                      <span>{specifications?.camera.infraredRange}</span>
+                    </aside>
+                  </li>
+                  <li>
+                    {" "}
+                    <aside>
+                      <strong>Tiện ích:</strong>
+                    </aside>
+                    <div className="utilities">
+                      {/* <aside>
+                        <span>{specifications?.camera.rear}</span>
+                      </aside>
+                      <aside>
+                        <span>
+                          {specifications?.camera.rotation.horizontal}
+                        </span>
+                      </aside>
+                      <aside>
+                        <span>{specifications?.camera.rotation.vertical}</span>
+                      </aside> */}
+                      {specifications?.camera.utilities.map((s) => (
+                        <div>
+                          <span key={s._id}>{s}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </li>
+                  <li>
+                    {" "}
+                    <aside>
+                      <strong>Độ phân giải:</strong>
+                    </aside>
+                    <aside>
+                      <span>{specifications?.camera.rear}</span>
+                    </aside>
+                  </li>
+                </ul>
               </div>
             </div>
           </div>
