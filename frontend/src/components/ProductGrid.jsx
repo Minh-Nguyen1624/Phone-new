@@ -11,7 +11,7 @@ const ProductGrid = ({
 }) => {
   return (
     <>
-      <div
+      {/* <div
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
         style={{ paddingTop: "40px", paddingBottom: "40px" }}
       >
@@ -23,7 +23,17 @@ const ProductGrid = ({
             purchasePhone={purchasePhone}
           />
         ))}
-      </div>
+      </div> */}
+      <ul className="listproduct">
+        {monitors.slice(0, displayLimit).map((monitor) => (
+          <MainProduct
+            key={monitor._id}
+            phone={monitor}
+            soldQuantities={soldQuantities[monitor._id] || 0}
+            purchasePhone={purchasePhone}
+          />
+        ))}
+      </ul>
       {displayLimit < monitors.length && (
         <div
           className="text-center mt-4 flex justify-content-center"

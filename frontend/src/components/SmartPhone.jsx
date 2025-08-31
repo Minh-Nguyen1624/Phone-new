@@ -426,10 +426,7 @@ const SmartPhone = () => {
             ))}
           </div>
 
-          <div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-            style={{ paddingTop: "40px", paddingBottom: "40px" }}
-          >
+          <ul className="listproduct">
             {phones.slice(0, displayLimit).map((phone) => (
               <MainProduct
                 key={phone._id}
@@ -439,7 +436,7 @@ const SmartPhone = () => {
                 purchasePhone={purchasePhone}
               />
             ))}
-          </div>
+          </ul>
 
           {displayLimit < phones.length && (
             <div

@@ -289,7 +289,7 @@ const LapTop = () => {
 
       <Header onSearch={handleSearch} />
 
-      <section className="block">
+      <section className="block" style={{ margin: "auto" }}>
         <ul className="breadcrumb-block">
           <li className="title_category">
             <Link to="/">Trang chủ</Link>
@@ -389,7 +389,7 @@ const LapTop = () => {
             ))}
           </div>
 
-          <div
+          {/* <div
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
             style={{ paddingTop: "40px", paddingBottom: "40px" }}
           >
@@ -402,7 +402,18 @@ const LapTop = () => {
                 purchasePhone={purchasePhone}
               />
             ))}
-          </div>
+          </div> */}
+          <ul className="listproduct">
+            {phones.slice(0, displayLimit).map((phone) => (
+              <MainProduct
+                key={phone._id}
+                phone={phone}
+                soldQuantities={soldQuantities}
+                toggleLike={toggleLike}
+                purchasePhone={purchasePhone}
+              />
+            ))}
+          </ul>
 
           {displayLimit < phones.length && (
             <div

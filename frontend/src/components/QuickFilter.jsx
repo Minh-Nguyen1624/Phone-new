@@ -7,7 +7,7 @@ const QuickFilter = ({
   category,
 }) => {
   return (
-    <div className="quickfilter">
+    <div className="quickfilter" style={{ marginBottom: "20px" }}>
       <a
         href="#"
         className={`quickfilter_desktop-computer ${

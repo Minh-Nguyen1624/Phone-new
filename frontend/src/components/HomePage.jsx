@@ -466,7 +466,7 @@ const HomePage = () => {
               paddingRight: "2.5rem",
             }}
           >
-            <div
+            {/* <div
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
               style={{ paddingTop: "40px", paddingBottom: "40px" }}
             >
@@ -493,7 +493,30 @@ const HomePage = () => {
                         purchasePhone={purchasePhone}
                       />
                     ))}
-            </div>
+            </div> */}
+            {searchMode
+              ? matchedProducts
+                  .slice(0, displayLimit)
+                  .map((phone) => (
+                    <MainProduct
+                      key={phone._id}
+                      phone={phone}
+                      soldQuantities={soldQuantities}
+                      toggleLike={toggleLike}
+                      purchasePhone={purchasePhone}
+                    />
+                  ))
+              : phones
+                  .slice(0, displayLimit)
+                  .map((phone) => (
+                    <MainProduct
+                      key={phone._id}
+                      phone={phone}
+                      soldQuantities={soldQuantities}
+                      toggleLike={toggleLike}
+                      purchasePhone={purchasePhone}
+                    />
+                  ))}
 
             {displayLimit <
               (searchMode ? matchedProducts.length : phones.length) && (

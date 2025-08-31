@@ -84,7 +84,7 @@ const Monitor = () => {
         </div>
       </div>
       <Header onSearch={handleSearch} onFilterByCategory={filterByCategory} />
-      <section className="block">
+      <section className="block" style={{ margin: "auto", padding: "20px 0" }}>
         <ul className="breadcrumb-block">
           <li className="title_category">
             <Link to="/">Trang chủ</Link>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, use } from "react";
 import "../css/ProductDetailInfo.css";
 import {
   FaRegStar,
@@ -29,16 +29,12 @@ const ProductDetailInfo = ({ product, topCapitalize, navigate }) => {
   const color = product?.colors || [];
   const images = product?.images || {};
 
-  let myObjects = specifications;
-  let keys = Object.keys(myObjects);
-  console.log("Keys: ", keys);
-
-  console.log("Specifications: ", specifications);
-
   const [isActive, setIsActive] = useState("specification");
   const toggleIsActive = (tabs) => {
     setIsActive(tabs);
   };
+
+  const [show, setShow] = useState(false);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const itemsPerPage = 1;
@@ -87,9 +83,6 @@ const ProductDetailInfo = ({ product, topCapitalize, navigate }) => {
     }
   }, [currentIndex]);
 
-  const deletedDefalutEvent = (e) => {
-    e.preventdefault();
-  };
   // Dọn dẹp animation khi component unmount
   useEffect(() => {
     return () => {
@@ -98,7 +91,8 @@ const ProductDetailInfo = ({ product, topCapitalize, navigate }) => {
   }, []);
 
   const handleClickEvent = (event) => {
-    event.preventdefault();
+    event.preventDefault();
+    setShow(!show);
   };
   return (
     <section className="product-detail">
@@ -273,86 +267,88 @@ const ProductDetailInfo = ({ product, topCapitalize, navigate }) => {
           <div className="specifications tab-content">
             <div id="specification-item" className="specification-item">
               <div className="box-specifi">
-                <a href="#" onClick={deletedDefalutEvent}>
+                <a href="#" onClick={handleClickEvent}>
                   <h3>Camera tiện ích</h3>
                 </a>
-                <ul className="text-specifi">
-                  <li>
-                    <aside>
-                      <strong>Độ phân giải:</strong>
-                    </aside>
-                    <aside>
-                      <span>{specifications?.camera.rear}</span>
-                    </aside>
-                  </li>
-                  <li>
-                    {" "}
-                    <aside>
-                      <strong>Góc nhìn:</strong>
-                    </aside>
-                    <aside>
-                      <span>{specifications?.camera.rear}</span>
-                    </aside>
-                  </li>
-                  <li>
-                    {" "}
-                    <aside>
-                      <strong>Góc xoay:</strong>
-                    </aside>
-                    <div>
+                {show && (
+                  <ul className="text-specifi">
+                    <li>
                       <aside>
-                        <span>
-                          {specifications?.camera.rotation.horizontal}
-                        </span>
+                        <strong>Độ phân giải:</strong>
                       </aside>
                       <aside>
-                        <span>{specifications?.camera.rotation.vertical}</span>
-                      </aside>
-                    </div>
-                  </li>
-                  <li>
-                    {" "}
-                    <aside>
-                      <strong>Tầm nhìn xa hông ngoại:</strong>
-                    </aside>
-                    <aside>
-                      <span>{specifications?.camera.infraredRange}</span>
-                    </aside>
-                  </li>
-                  <li>
-                    {" "}
-                    <aside>
-                      <strong>Tiện ích:</strong>
-                    </aside>
-                    <div className="utilities">
-                      {/* <aside>
                         <span>{specifications?.camera.rear}</span>
                       </aside>
+                    </li>
+                    <li>
+                      {" "}
                       <aside>
-                        <span>
-                          {specifications?.camera.rotation.horizontal}
-                        </span>
+                        <strong>Góc nhìn:</strong>
                       </aside>
                       <aside>
-                        <span>{specifications?.camera.rotation.vertical}</span>
-                      </aside> */}
-                      {specifications?.camera.utilities.map((s) => (
-                        <div>
-                          <span key={s._id}>{s}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </li>
-                  <li>
-                    {" "}
-                    <aside>
-                      <strong>Độ phân giải:</strong>
-                    </aside>
-                    <aside>
-                      <span>{specifications?.camera.rear}</span>
-                    </aside>
-                  </li>
-                </ul>
+                        <span>{specifications?.camera.rear}</span>
+                      </aside>
+                    </li>
+                    <li>
+                      {" "}
+                      <aside>
+                        <strong>Góc xoay:</strong>
+                      </aside>
+                      <div>
+                        <aside>
+                          <span>
+                            {specifications?.camera.rotation.horizontal}
+                          </span>
+                        </aside>
+                        <aside>
+                          <span>
+                            {specifications?.camera.rotation.vertical}
+                          </span>
+                        </aside>
+                      </div>
+                    </li>
+                    <li>
+                      {" "}
+                      <aside>
+                        <strong>Tầm nhìn xa hông ngoại:</strong>
+                      </aside>
+                      <aside>
+                        <span>{specifications?.camera.infraredRange}</span>
+                      </aside>
+                    </li>
+                    <li>
+                      {" "}
+                      <aside>
+                        <strong>Tiện ích:</strong>
+                      </aside>
+                      <div className="utilities">
+                        {specifications?.camera.utilities.map((s, index) => (
+                          <div key={s._id || index}>
+                            <span key={s._id}>{s}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </li>
+                    <li>
+                      {" "}
+                      <aside>
+                        <strong>Độ phân giải:</strong>
+                      </aside>
+                      <aside>
+                        <span>{specifications?.camera.rear}</span>
+                      </aside>
+                    </li>
+                    <li>
+                      {" "}
+                      <aside>
+                        <strong>Đàm thoại 2 chiều:</strong>
+                      </aside>
+                      <aside>
+                        <span>{specifications?.camera.rear}</span>
+                      </aside>
+                    </li>
+                  </ul>
+                )}
               </div>
             </div>
           </div>

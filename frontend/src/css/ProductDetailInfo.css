@@ -510,3 +510,22 @@
   border-bottom-left-radius: 12px;
   border-bottom-right-radius: 12px;
 }
+
+.box-specifi > a {
+  display: block;
+}
+
+.box-specifi .text-specifi {
+  /* display: none; */
+  /* overflow: hidden; */
+}
+
+.box-specifi .text-specifi li {
+  display: flex;
+  /* flex-direction: row; */
+  justify-content: space-around;
+}
+
+.box-specifi .text-specifi aside:nth-child(1) {
+  flex: 1;
+}
