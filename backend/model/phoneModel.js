@@ -115,8 +115,14 @@ const phoneSchema = new mongoose.Schema({
       default: "N/A",
       maxlength: [50, "RAM specification cannot exceed 50 characters"],
     },
+    // storage: {
+    //   type: String,
+    //   required: false,
+    //   default: "N/A",
+    //   maxlength: [50, "Storage specification cannot exceed 50 characters"],
+    // },
     storage: {
-      type: String,
+      type: [String],
       required: false,
       default: "N/A",
       maxlength: [50, "Storage specification cannot exceed 50 characters"],

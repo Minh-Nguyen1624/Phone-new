@@ -513,6 +513,21 @@
 
 .box-specifi > a {
   display: block;
+  font-weight: 500;
+  line-height: 20px;
+  padding: 15px 10px;
+  background-color: #f2f4f7;
+  color: #000;
+  border-radius: 8px;
+}
+
+.box-specifi > a h3 {
+  display: block;
+  margin-top: 10px;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 20px;
+  color: #000;
 }
 
 .box-specifi .text-specifi {
@@ -523,9 +538,46 @@
 .box-specifi .text-specifi li {
   display: flex;
   /* flex-direction: row; */
-  justify-content: space-around;
+  /* justify-content: space-around; */
 }
 
 .box-specifi .text-specifi aside:nth-child(1) {
   flex: 1;
+}
+
+.text-specifi li {
+  display: block;
+  overflow: hidden;
+  padding: 10px;
+  border-bottom: 1px solid #eaecf0;
+}
+
+.text-specifi li aside:first-child {
+  width: 300px;
+  float: left;
+  margin-right: 30px;
+  max-width: 30%;
+}
+
+.text-specifi li aside:last-child {
+  display: block;
+  overflow: hidden;
+}
+
+.text-specifi li aside strong {
+  display: block;
+  overflow: hidden;
+  line-height: 20px;
+  font-weight: 600;
+  color: #344054;
+}
+
+.text-specifi li aside span {
+  display: block;
+  overflow: hidden;
+  line-height: 20px;
+  color: #344054;
+  width: auto;
+  font-weight: 400;
+  font-size: 14px;
 }

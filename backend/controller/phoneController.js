@@ -129,7 +129,10 @@ const addMultiplePhones = async (req, res) => {
       phone.specifications.battery = phone.specifications.battery || "N/A";
       phone.specifications.processor = phone.specifications.processor || "N/A";
       phone.specifications.ram = phone.specifications.ram || "N/A";
-      phone.specifications.storage = phone.specifications.storage || "N/A";
+      // phone.specifications.storage = phone.specifications.storage || "N/A";
+      phone.specifications.storage = Array.isArray(phone.specifications.storage)
+        ? phone.specifications.storage
+        : [phone.specifications.storage || "N/A"];
       phone.specifications.camera = phone.specifications.camera || {
         front: "N/A",
         rear: "N/A",
@@ -341,7 +344,10 @@ const addPhones = async (req, res) => {
       battery: specifications.battery || "N/A",
       processor: specifications.processor || "N/A",
       ram: specifications.ram || "N/A",
-      storage: specifications.storage || "N/A",
+      // storage: specifications.storage || "N/A",
+      storage: Array.isArray(specifications.storage)
+        ? specifications.storage
+        : [specifications.storage || "N/A"],
       camera: {
         front: specifications.camera?.front || "N/A",
         rear: specifications.camera?.rear || "N/A",
@@ -535,6 +541,9 @@ const updatePhones = async (req, res) => {
       phone.specifications = {
         ...phone.specifications.toObject(),
         ...req.body.specifications,
+        storage: Array.isArray(req.body.specifications.storage)
+          ? req.body.specifications.storage
+          : [req.body.specifications.storage || "N/A"],
         discountAmount:
           req.body.specifications.discountAmount !== undefined
             ? req.body.specifications.discountAmount

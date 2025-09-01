@@ -51,9 +51,7 @@ const MainProduct = ({ phone, soldQuantities, toggleLike, purchasePhone }) => {
     <li className=" item ajaxed __cate_42" key={phone._id}>
       <a href="#" className="main-contain ">
         <div className="item-label">
-          <span className="ln-new">
-            {discountPercentage > 0 && `-${discountPercentage}%`}
-          </span>
+          <span className="ln-new"></span>
         </div>
         <div className="item-img item-img_42">
           <img
@@ -67,12 +65,6 @@ const MainProduct = ({ phone, soldQuantities, toggleLike, purchasePhone }) => {
           />
         </div>
         <p className="result-label temp1">
-          {/* <img
-                src={discountImage}
-                alt={discountCode}
-                width="20px"
-                height="20px"
-              /> */}
           {discountImage && (
             <img
               src={discountImage}
@@ -88,19 +80,27 @@ const MainProduct = ({ phone, soldQuantities, toggleLike, purchasePhone }) => {
           <span></span>
         </h3>
         <div className="item-compare gray-bg">
-          <span>{finalPrice.toLocaleString()}đ</span>
-          <span>
-            {" "}
-            {originalPrice > finalPrice && originalPrice.toLocaleString()}đ
-          </span>
+          <span></span>
+          <span>{phone?.specifications?.screen.slice(0, 8)}</span>
         </div>
         <div className="prods-group">
           <ul>
-            <li className="merge__item item act"></li>
-            <li className="merge__item item"></li>
+            <li className="merge__item item act">
+              {phone?.specifications?.storage[0]}
+            </li>
+            <li className="merge__item item merge">
+              {phone?.specifications?.storage[1]}
+            </li>
           </ul>
         </div>
-        <strong className="price"></strong>
+        <strong className="price">
+          {" "}
+          {originalPrice > finalPrice && originalPrice.toLocaleString()}đ
+        </strong>
+        <div class="box-p">
+          <p class="price-old black">{finalPrice}</p>
+          <span class="percent">{-discountPercentage}%</span>
+        </div>
         <p className="item-gift">
           <b></b>
         </p>
@@ -112,7 +112,7 @@ const MainProduct = ({ phone, soldQuantities, toggleLike, purchasePhone }) => {
             <FaRegStar />
             <b></b>
           </div>
-          <span>Đã bán</span>
+          <span>Đã bán {soldQuantities[phone._id || 0]}</span>
         </div>
       </a>
     </li>

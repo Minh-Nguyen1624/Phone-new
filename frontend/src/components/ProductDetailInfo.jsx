@@ -6,6 +6,7 @@ import {
   FaCartPlus,
   FaPhoneAlt,
   FaAngleDown,
+  FaAngleUp,
 } from "react-icons/fa";
 
 const ProductDetailInfo = ({ product, topCapitalize, navigate }) => {
@@ -34,7 +35,10 @@ const ProductDetailInfo = ({ product, topCapitalize, navigate }) => {
     setIsActive(tabs);
   };
 
-  const [show, setShow] = useState(false);
+  const initialIsOpen = [false, false, false]; // Hoặc dựa trên số section từ props nếu có
+  const [isOpen, setIsOpen] = useState(initialIsOpen);
+  // const [isOpen, setIsOpen] = useState([false, false, false]);
+  const [show, setIsShow] = useState(false);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const itemsPerPage = 1;
@@ -90,9 +94,21 @@ const ProductDetailInfo = ({ product, topCapitalize, navigate }) => {
     };
   }, []);
 
-  const handleClickEvent = (event) => {
+  const handleClickEvent = (index, event) => {
     event.preventDefault();
-    setShow(!show);
+    // setShow(!show);
+    setIsOpen((prev) => {
+      if (!Array.isArray(prev)) {
+        console.error(
+          "isOpen is not an array, resetting to initial state:",
+          initialIsOpen
+        );
+        return [...initialIsOpen]; // Reset về trạng thái ban đầu nếu lỗi
+      }
+      const newIsOpen = [...prev];
+      newIsOpen[index] = !newIsOpen[index];
+      return newIsOpen;
+    });
   };
   return (
     <section className="product-detail">
@@ -267,10 +283,27 @@ const ProductDetailInfo = ({ product, topCapitalize, navigate }) => {
           <div className="specifications tab-content">
             <div id="specification-item" className="specification-item">
               <div className="box-specifi">
-                <a href="#" onClick={handleClickEvent}>
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    handleClickEvent(0, e);
+                    setIsShow(!show);
+                  }}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    height: "60px",
+                  }}
+                >
                   <h3>Camera tiện ích</h3>
+                  {isOpen[0] ? (
+                    <FaAngleUp style={{ marginRight: "10px" }} />
+                  ) : (
+                    <FaAngleDown style={{ marginRight: "10px" }} />
+                  )}
                 </a>
-                {show && (
+                {isOpen[0] && (
                   <ul className="text-specifi">
                     <li>
                       <aside>
@@ -294,18 +327,15 @@ const ProductDetailInfo = ({ product, topCapitalize, navigate }) => {
                       <aside>
                         <strong>Góc xoay:</strong>
                       </aside>
-                      <div>
-                        <aside>
-                          <span>
-                            {specifications?.camera.rotation.horizontal}
-                          </span>
-                        </aside>
-                        <aside>
-                          <span>
-                            {specifications?.camera.rotation.vertical}
-                          </span>
-                        </aside>
-                      </div>
+                      <aside>
+                        <span>
+                          Xoay ngang{" "}
+                          {specifications?.camera.rotation.horizontal}
+                        </span>
+                        <span>
+                          Xoay dọc {specifications?.camera.rotation.vertical}
+                        </span>
+                      </aside>
                     </li>
                     <li>
                       {" "}
@@ -324,7 +354,9 @@ const ProductDetailInfo = ({ product, topCapitalize, navigate }) => {
                       <div className="utilities">
                         {specifications?.camera.utilities.map((s, index) => (
                           <div key={s._id || index}>
-                            <span key={s._id}>{s}</span>
+                            <span key={s._id} style={{ fontSize: "14px" }}>
+                              {s}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -345,6 +377,153 @@ const ProductDetailInfo = ({ product, topCapitalize, navigate }) => {
                       </aside>
                       <aside>
                         <span>{specifications?.camera.rear}</span>
+                      </aside>
+                    </li>
+                  </ul>
+                )}
+              </div>
+              <div className="box-specifi" style={{ marginTop: "20px" }}>
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    handleClickEvent(1, e);
+                    setIsShow(!show);
+                  }}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    height: "60px",
+                  }}
+                >
+                  <h3>Kết nối & Lưu trữ</h3>
+                  {isOpen[1] ? (
+                    <FaAngleUp style={{ marginRight: "10px" }} />
+                  ) : (
+                    <FaAngleDown style={{ marginRight: "10px" }} />
+                  )}
+                </a>
+                {isOpen[1] && (
+                  <ul className="text-specifi">
+                    {/* <li>
+                      <aside>
+                        <strong>Kết nối: </strong>
+                      </aside>
+                      <aside>
+                        <span>{specifications?.camera.rear}</span>
+                      </aside>
+                    </li>
+                    <li>
+                      {" "}
+                      <aside>
+                        <strong>Góc nhìn:</strong>
+                      </aside>
+                      <aside>
+                        <span>{specifications?.camera.rear}</span>
+                      </aside>
+                    </li> */}
+                    <li>
+                      {" "}
+                      <aside>
+                        <strong>Kết nối:</strong>
+                      </aside>
+                      <aside>
+                        <span> {specifications?.network[0]}</span>
+                        <span>{specifications?.network[1]}</span>
+                      </aside>
+                    </li>
+                    <li>
+                      {" "}
+                      <aside>
+                        <strong>Băng tần WiFi:</strong>
+                      </aside>
+                      <aside>
+                        <span>{specifications?.network[3]}</span>
+                      </aside>
+                    </li>
+                    <li>
+                      {" "}
+                      <aside>
+                        <strong>Kết nối cùng lúc:</strong>
+                      </aside>
+                      <aside>
+                        <span>
+                          {specifications?.simultaneousConnections} người
+                        </span>
+                      </aside>
+                    </li>
+                    <li>
+                      {" "}
+                      <aside>
+                        <strong>Lưu trữ:</strong>
+                      </aside>
+                      <aside>
+                        <span>{specifications?.storage}</span>
+                      </aside>
+                    </li>
+                  </ul>
+                )}
+              </div>
+              <div className="box-specifi" style={{ marginTop: "20px" }}>
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    handleClickEvent(2, e);
+                    setIsShow(!show);
+                  }}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    height: "60px",
+                  }}
+                >
+                  <h3>Kết nối & Lưu trữ</h3>
+                  {isOpen[2] ? (
+                    <FaAngleUp style={{ marginRight: "10px" }} />
+                  ) : (
+                    <FaAngleDown style={{ marginRight: "10px" }} />
+                  )}
+                </a>
+                {isOpen[2] && (
+                  <ul className="text-specifi">
+                    <li>
+                      {" "}
+                      <aside>
+                        <strong>Kết nối:</strong>
+                      </aside>
+                      <aside>
+                        <span> {specifications?.network[0]}</span>
+                        <span>{specifications?.network[1]}</span>
+                      </aside>
+                    </li>
+                    <li>
+                      {" "}
+                      <aside>
+                        <strong>Băng tần WiFi:</strong>
+                      </aside>
+                      <aside>
+                        <span>{specifications?.network[3]}</span>
+                      </aside>
+                    </li>
+                    <li>
+                      {" "}
+                      <aside>
+                        <strong>Kết nối cùng lúc:</strong>
+                      </aside>
+                      <aside>
+                        <span>
+                          {specifications?.simultaneousConnections} người
+                        </span>
+                      </aside>
+                    </li>
+                    <li>
+                      {" "}
+                      <aside>
+                        <strong>Lưu trữ:</strong>
+                      </aside>
+                      <aside>
+                        <span>{specifications?.storage}</span>
                       </aside>
                     </li>
                   </ul>

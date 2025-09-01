@@ -853,6 +853,7 @@ p {
   color: #667085;
   white-space: nowrap;
   font-weight: normal;
+  padding-top: 3px;
 }
 
 .item-label {

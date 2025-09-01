@@ -329,7 +329,7 @@ const SmartPhone = () => {
 
       <Header onSearch={handleSearch} />
 
-      <section className="block">
+      <section className="block" style={{ margin: "auto" }}>
         <ul className="breadcrumb-block">
           <li className="title_category">
             <Link to="/">Trang chủ</Link>

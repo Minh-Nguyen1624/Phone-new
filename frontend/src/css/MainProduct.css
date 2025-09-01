@@ -28,7 +28,7 @@ ul {
   border-radius: 8px;
   margin: 5px 10px 5px 0;
   padding: 10px;
-  display: block;
+  /* display: block; */
 }
 
 .listproduct li.item {
@@ -180,11 +180,38 @@ ul {
 .prods-group ul li:hover {
   border-color: #2f80ed !important;
   color: #2f80ed !important;
+  width: auto;
+  height: 27.6px;
+  overflow: hidden;
+  font-size: 12px;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  display: flex;
 }
 
 .prods-group ul li {
   margin-right: 4px !important;
   margin-bottom: 0 !important;
+  width: 54.96px;
+  height: 27.6px;
+  overflow: hidden;
+  font-size: 12px;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+}
+
+.merge {
+  width: 54.96px;
+  height: 27.6px;
+  overflow: hidden;
+  font-size: 12px;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  display: flex;
 }
 
 .listproduct .price {
@@ -198,6 +225,7 @@ ul {
 
 .listproduct .item-gift {
   color: #1d2939;
+  text-decoration-line: line-through;
 }
 
 .listproduct .item-gift,
@@ -208,6 +236,7 @@ ul {
 
 .listproduct .item-gift b {
   font-weight: normal;
+  padding-left: 10px;
 }
 
 .item-bottom {
