@@ -95,6 +95,7 @@ const AccessoryBrand = ({
                     borderRadius: "5px",
                     cursor: "pointer",
                     transition: "all 0.3s ease",
+                    width: "auto",
                   }}
                 >
                   {toCapitalize(cat.name)}

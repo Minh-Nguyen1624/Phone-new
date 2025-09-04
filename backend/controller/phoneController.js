@@ -4,10 +4,12 @@ const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 const User = require("../model/userModel");
 const Category = require("../model/categoryModel");
+const { v4: uuidv4 } = require("uuid");
 const Review = require("../model/reviewModel");
 const Cart = require("../model/cartModel");
 const Order = require("../model/orderModel");
 const Inventory = require("../model/inventoryModel");
+const ViewHistory = require("../model/viewHistoryModel");
 const asyncHandler = require("express-async-handler");
 
 const getPhones = async (req, res) => {
@@ -29,7 +31,11 @@ const getPhones = async (req, res) => {
         "discount",
         "code description discountType discountValue minimumOrderAmount"
       )
-      .populate("likedBy", "username email");
+      .populate("likedBy", "username email")
+      .populate(
+        "category",
+        "name specificationFields slug imageUrl" // Thêm specificationFields
+      );
 
     // Đếm tổng số điện thoại
     const total = await Phone.countDocuments();
@@ -339,47 +345,61 @@ const addPhones = async (req, res) => {
     }
 
     // Kiểm tra và chuẩn bị specifications
+    // const validatedSpecifications = {
+    //   screen: specifications.screen || "N/A",
+    //   battery: specifications.battery || "N/A",
+    //   processor: specifications.processor || "N/A",
+    //   ram: specifications.ram || "N/A",
+    //   // storage: specifications.storage || "N/A",
+    //   storage: Array.isArray(specifications.storage)
+    //     ? specifications.storage
+    //     : [specifications.storage || "N/A"],
+    //   camera: {
+    //     front: specifications.camera?.front || "N/A",
+    //     rear: specifications.camera?.rear || "N/A",
+    //     fieldOfView: specifications.camera?.fieldOfView || "N/A",
+    //     rotation: {
+    //       horizontal: specifications.camera?.rotation?.horizontal || "N/A",
+    //       vertical: specifications.camera?.rotation?.vertical || "N/A",
+    //     },
+    //     infraredRange: specifications.camera?.infraredRange || "N/A",
+    //     utilities: specifications.camera?.utilities || [],
+    //     simultaneousConnections:
+    //       specifications.camera?.simultaneousConnections || 0,
+    //     power: {
+    //       inputVoltage: specifications.camera?.power?.inputVoltage || "N/A",
+    //       portType: specifications.camera?.power?.portType || "N/A",
+    //       adapterIncluded:
+    //         specifications.camera?.power?.adapterIncluded || false,
+    //     },
+    //     installationLocation:
+    //       specifications.camera?.installationLocation || "N/A",
+    //     supportedDevices: specifications.camera?.supportedDevices || [],
+    //     controlApp: specifications.camera?.controlApp || "N/A",
+    //     dimensions: {
+    //       length: specifications.camera?.dimensions?.length || 0,
+    //       width: specifications.camera?.dimensions?.width || 0,
+    //       height: specifications.camera?.dimensions?.height || 0,
+    //       weight: specifications.camera?.dimensions?.weight || 0,
+    //     },
+    //   },
+    //   os: specifications.os || "N/A",
+    //   network: specifications.network || "N/A",
+    //   discountAmount: calculatedDiscountAmount, // Thêm discountAmount vào specifications
+    // };
     const validatedSpecifications = {
+      ...specifications,
+      discountAmount: calculatedDiscountAmount,
       screen: specifications.screen || "N/A",
       battery: specifications.battery || "N/A",
       processor: specifications.processor || "N/A",
       ram: specifications.ram || "N/A",
-      // storage: specifications.storage || "N/A",
       storage: Array.isArray(specifications.storage)
         ? specifications.storage
         : [specifications.storage || "N/A"],
-      camera: {
-        front: specifications.camera?.front || "N/A",
-        rear: specifications.camera?.rear || "N/A",
-        fieldOfView: specifications.camera?.fieldOfView || "N/A",
-        rotation: {
-          horizontal: specifications.camera?.rotation?.horizontal || "N/A",
-          vertical: specifications.camera?.rotation?.vertical || "N/A",
-        },
-        infraredRange: specifications.camera?.infraredRange || "N/A",
-        utilities: specifications.camera?.utilities || [],
-        simultaneousConnections:
-          specifications.camera?.simultaneousConnections || 0,
-        power: {
-          inputVoltage: specifications.camera?.power?.inputVoltage || "N/A",
-          portType: specifications.camera?.power?.portType || "N/A",
-          adapterIncluded:
-            specifications.camera?.power?.adapterIncluded || false,
-        },
-        installationLocation:
-          specifications.camera?.installationLocation || "N/A",
-        supportedDevices: specifications.camera?.supportedDevices || [],
-        controlApp: specifications.camera?.controlApp || "N/A",
-        dimensions: {
-          length: specifications.camera?.dimensions?.length || 0,
-          width: specifications.camera?.dimensions?.width || 0,
-          height: specifications.camera?.dimensions?.height || 0,
-          weight: specifications.camera?.dimensions?.weight || 0,
-        },
-      },
+      camera: specifications.camera || { front: "N/A", rear: "N/A" },
       os: specifications.os || "N/A",
       network: specifications.network || "N/A",
-      discountAmount: calculatedDiscountAmount, // Thêm discountAmount vào specifications
     };
 
     const phone = new Phone({
@@ -451,7 +471,8 @@ const getPhoneById = async (req, res) => {
       .populate("likedBy", "username email")
       .populate(
         "category",
-        "name description" // Populate category fields (you can adjust according to your Category model schema)
+        // "name description" // Populate category fields (you can adjust according to your Category model schema)
+        "name specificationFields slug imageUrl"
       )
       .populate("reviews", "rating comment") // If your Review model has rating and comment
       .populate("cart", "totalAmount") // If Cart model has a field like totalAmount, adjust accordingly
@@ -539,7 +560,8 @@ const updatePhones = async (req, res) => {
 
     if (req.body.specifications) {
       phone.specifications = {
-        ...phone.specifications.toObject(),
+        // ...phone.specifications.toObject(),
+        ...phone.specifications,
         ...req.body.specifications,
         storage: Array.isArray(req.body.specifications.storage)
           ? req.body.specifications.storage
@@ -547,7 +569,7 @@ const updatePhones = async (req, res) => {
         discountAmount:
           req.body.specifications.discountAmount !== undefined
             ? req.body.specifications.discountAmount
-            : phone.specifications.discountAmount,
+            : phone.specifications.discountAmount || 0,
       };
     }
 
@@ -692,7 +714,10 @@ const searchPhones = async (req, res) => {
     // Lấy danh sách sản phẩm với phân trang
     const phones = await Phone.find(filter)
       // .populate("category")
-      .populate("category", "_id name parentCategory imageUrl slug") // Thêm _id và parentCategory
+      .populate(
+        "category",
+        "_id name parentCategory imageUrl specificationFields slug"
+      ) // Thêm _id và parentCategory
       .populate(
         "discount",
         "code description discountType discountValue minimumOrderAmount discountImage"
@@ -746,7 +771,11 @@ const filterByCategory = async (req, res) => {
 
     const total = await Phone.countDocuments(filter);
     const phones = await Phone.find(filter)
-      .populate("category", "name")
+      // .populate("category", "name specificationFields ")
+      .populate(
+        "category",
+        "_id name parentCategory imageUrl specificationFields slug"
+      )
       .populate(
         "discount",
         "code description discountType discountValue minimumOrderAmount"
@@ -1012,6 +1041,259 @@ const getSoldQuantity = async (req, res) => {
   }
 };
 
+const getRelatedProducts = asyncHandler(async (req, res) => {
+  try {
+    const { phoneId } = req.params;
+
+    // Kiểm tra xem phoneId có hợp lệ không
+    if (!mongoose.Types.ObjectId.isValid(phoneId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid phoneId",
+      });
+    }
+
+    const currentPhone = await Phone.findById(phoneId).select("category brand");
+    if (!currentPhone) {
+      return res.status(404).json({
+        success: false,
+        message: "Phone not found",
+      });
+    }
+
+    // Cập nhật hoặc tạo view history
+    const cookies = req.cookies || {}; // Đảm bảo req.cookies không undefined
+    const identifier = req.user?.id || cookies.anonymousId || uuidv4();
+    if (!cookies.anonymousId && !req.user?.id) {
+      res.cookie("anonymousId", identifier, {
+        maxAge: 90 * 24 * 60 * 60 * 1000,
+        httpOnly: true,
+      }); // Cookie tồn tại 90 ngày
+    }
+
+    let viewRecord = await ViewHistory.findOne({
+      product: phoneId,
+      $or: [
+        {
+          user: req.user?.id ? new mongoose.Types.ObjectId(req.user.id) : null,
+        },
+        { anonymousId: req.user?.id ? undefined : identifier },
+      ].filter(Boolean), // Loại bỏ undefined/null
+    });
+    if (viewRecord) {
+      viewRecord.viewCount += 1;
+      viewRecord.lastViewed = new Date();
+      await viewRecord.save();
+    } else {
+      await ViewHistory.create({
+        product: phoneId,
+        user: req.user?.id,
+        anonymousId: req.user?.id ? undefined : identifier,
+      });
+    }
+
+    // Bước 1: Lấy sản phẩm liên quan dựa trên category và brand
+    const baseRelatedProducts = await Phone.aggregate([
+      {
+        $match: {
+          _id: { $ne: new mongoose.Types.ObjectId(phoneId) },
+          $or: [
+            { category: currentPhone.category },
+            { brand: currentPhone.brand },
+          ],
+        },
+      },
+      {
+        $lookup: {
+          from: "categories",
+          localField: "category",
+          foreignField: "_id",
+          as: "categoryDetails",
+        },
+      },
+      {
+        $unwind: { path: "$categoryDetails", preserveNullAndEmptyArrays: true },
+      },
+      {
+        $project: {
+          name: 1,
+          price: 1,
+          finalPrice: 1,
+          image: 1,
+          "categoryDetails.name": 1,
+          brand: 1,
+          images: { $arrayElemAt: ["$images", 0] },
+          reserved: 1,
+          rating: 1,
+        },
+      },
+      { $sort: { reserved: -1, rating: -1 } },
+      { $limit: 10 },
+    ]);
+
+    // Bước 2: Phân tích sản phẩm thường mua cùng từ Order
+    const frequentlyBoughtTogether = await Order.aggregate([
+      {
+        $match: { orderStatus: "Completed" },
+      },
+      { $unwind: "$items" },
+      {
+        $match: { "items.phone": new mongoose.Types.ObjectId(phoneId) },
+      },
+      {
+        $group: {
+          _id: "$items.phone",
+          relatedProducts: { $push: "$items.phone" },
+        },
+      },
+      {
+        $unwind: "$relatedProducts",
+      },
+      {
+        $match: {
+          relatedProducts: { $ne: new mongoose.Types.ObjectId(phoneId) },
+        },
+      },
+      {
+        $group: {
+          _id: "$relatedProducts",
+          frequency: { $sum: 1 },
+        },
+      },
+      {
+        $lookup: {
+          from: "phones",
+          localField: "_id",
+          foreignField: "_id",
+          as: "productDetails",
+        },
+      },
+      {
+        $unwind: "$productDetails",
+      },
+      {
+        $project: {
+          _id: 1,
+          frequency: 1,
+          name: "$productDetails.name",
+          price: "$productDetails.price",
+          finalPrice: "$productDetails.finalPrice",
+          image: "$productDetails.image",
+          category: "$productDetails.category",
+          brand: "$productDetails.brand",
+          images: { $arrayElemAt: ["$productDetails.images", 0] },
+          reserved: "$productDetails.reserved",
+          rating: "$productDetails.rating",
+        },
+      },
+      { $sort: { frequency: -1, reserved: -1 } },
+      { $limit: 5 },
+    ]);
+
+    let popularViewedProducts = [];
+    if (identifier) {
+      const viewHistory = await ViewHistory.aggregate([
+        {
+          $match: {
+            $or: [
+              {
+                user: req.user?.id
+                  ? new mongoose.Types.ObjectId(req.user.id)
+                  : null,
+              },
+              { anonymousId: identifier },
+            ].filter(Boolean),
+            viewCount: { $gt: 2 },
+          },
+        },
+        {
+          $lookup: {
+            from: "phones",
+            localField: "product",
+            foreignField: "_id",
+            as: "productDetails",
+          },
+        },
+        {
+          $unwind: "$productDetails",
+        },
+        {
+          $match: {
+            "productDetails._id": { $ne: new mongoose.Types.ObjectId(phoneId) },
+          },
+        },
+        {
+          $project: {
+            _id: "$productDetails._id",
+            name: "$productDetails.name",
+            price: "$productDetails.price",
+            finalPrice: "$productDetails.finalPrice",
+            image: "$productDetails.image",
+            category: "$productDetails.category",
+            brand: "$productDetails.brand",
+            images: { $arrayElemAt: ["$productDetails.images", 0] },
+            reserved: "$productDetails.reserved",
+            rating: "$productDetails.rating",
+            viewCount: 1,
+          },
+        },
+        { $sort: { viewCount: -1 } },
+        { $limit: 5 },
+      ]);
+      popularViewedProducts = viewHistory;
+    }
+
+    const allRelatedPhones = [
+      ...baseRelatedProducts,
+      ...frequentlyBoughtTogether,
+      ...popularViewedProducts,
+    ]
+      .reduce((unique, phone) => {
+        if (!unique.some((p) => p._id.toString() === phone._id.toString())) {
+          unique.push(phone);
+        }
+        return unique;
+      }, [])
+      .slice(0, 5);
+
+    // Định dạng dữ liệu
+    const formattedProducts = await Promise.all(
+      allRelatedPhones.map(async (phone) => ({
+        _id: phone._id,
+        name: phone.name,
+        price: phone.price,
+        finalPrice: phone.finalPrice,
+        image:
+          phone.image ||
+          (phone.images && phone.images[0]?.url) ||
+          "https://via.placeholder.com/100",
+        category:
+          phone.categoryDetails?.name ||
+          (
+            await Category.findById(phone.category)
+          )?.name ||
+          "Unknown",
+        brand: phone.brand,
+        reserved: phone.reserved,
+        rating: phone.rating,
+      }))
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Related products retrieved successfully",
+      data: formattedProducts,
+    });
+  } catch (error) {
+    console.error("Error fetching related products:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching related products",
+      error: error.message,
+    });
+  }
+});
+
 module.exports = {
   getPhones,
   addMultiplePhones,
@@ -1027,4 +1309,5 @@ module.exports = {
   toggleLikePhone,
   purchasePhone,
   getSoldQuantity,
+  getRelatedProducts,
 };

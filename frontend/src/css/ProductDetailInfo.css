@@ -581,3 +581,22 @@
   font-weight: 400;
   font-size: 14px;
 }
+
+.dropdown .dropdown-menu {
+  -webkit-transition: all 0.3s;
+  -moz-transition: all 0.3s;
+  -ms-transition: all 0.3s;
+  -o-transition: all 0.3s;
+  transition: all 0.3s;
+
+  max-height: 0;
+  display: block;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.dropdown.open .dropdown-menu {
+  /* For Bootstrap 4, use .dropdown.show instead of .dropdown.open */
+  max-height: 300px;
+  opacity: 1;
+}

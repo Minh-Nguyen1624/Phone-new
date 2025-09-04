@@ -20,7 +20,10 @@ const getAllCategory = async (req, res) => {
     }
     const categories = await Category.find(filter)
       .populate("parentCategory", "name slug imageUrl")
-      .populate("discount", "code discountValue");
+      .populate("discount", "code discountValue")
+      .select(
+        "name slug description parentCategory discount imageUrl isActive specificationFields createAt updatedAt"
+      );
     res.status(200).json({ success: true, data: categories });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -38,7 +41,10 @@ const getCategoryById = async (req, res) => {
 
     const category = await Category.findById(id)
       .populate("parentCategory", "name slug imageUrl")
-      .populate("discount", "code discountValue");
+      .populate("discount", "code discountValue")
+      .select(
+        "name slug description parentCategory discount imageUrl isActive specificationFields createAt updatedAt"
+      );
     if (!category) {
       return res
         .status(404)

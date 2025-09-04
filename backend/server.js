@@ -23,6 +23,7 @@ const zaloPayConfig = require("../backend/config/zalopayConfig");
 const { setIo } = require("../backend/controller/chatBoxController");
 const http = require("http");
 const { v4: uuidv4 } = require("uuid");
+const cookieParser = require("cookie-parser");
 
 // Initialize Express app
 const app = express();
@@ -45,6 +46,8 @@ i18n.configure({
   defaultLocale: "vi",
   objectNotation: true,
 });
+
+app.use(cookieParser());
 
 app.use(i18n.init);
 

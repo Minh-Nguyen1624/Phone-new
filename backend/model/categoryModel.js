@@ -81,6 +81,22 @@ const categorySchema = new mongoose.Schema({
     //   message: (props) => `${props.value} is not a valid image URL.`,
     // },
   },
+  specificationFields: [
+    {
+      sectionTitle: { type: String },
+      fields: [
+        {
+          label: { type: String },
+          key: { type: String },
+          type: {
+            type: String,
+            enum: ["string", "array", "object", "boolean", "number"],
+            default: "string",
+          },
+        },
+      ],
+    },
+  ],
   isActive: {
     type: Boolean,
     default: true,

@@ -17,6 +17,7 @@ const {
   toggleLikePhone,
   purchasePhone,
   getSoldQuantity,
+  getRelatedProducts,
 } = require("../controller/phoneController");
 const {
   authMiddleware,
@@ -92,5 +93,7 @@ router.post("/:id/purchase", protect, purchasePhone);
 
 // router.get("/:id/sold", protect, getSoldQuantity);
 router.get("/:id/sold", getSoldQuantity);
+
+router.get("/related/:phoneId", getRelatedProducts);
 
 module.exports = router;
