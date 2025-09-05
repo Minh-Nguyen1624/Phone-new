@@ -600,3 +600,33 @@
   max-height: 300px;
   opacity: 1;
 }
+
+.description .text-detail {
+  display: block;
+  overflow: hidden;
+  position: relative;
+  padding: 0 10px;
+  background-color: #fff;
+}
+
+.description .text-detail .expand {
+  max-height: 100%;
+}
+
+.text-detail > h3 {
+  font-size: 20px;
+  font-weight: bold;
+  line-height: 28px;
+  padding: 20px 0 15px 0;
+  display: block;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.text-detail > * {
+  display: block;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #101010;
+  margin-bottom: 15px;
+}

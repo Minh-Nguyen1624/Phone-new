@@ -44,32 +44,47 @@ const ProductMain = ({
     product?.category?.specificationFields
   );
 
-  const policySection = sections.find((section) => {
-    section.sectionTitle === "Chính sách";
-  });
+  // Tìm section "Chính sách" (sửa lỗi cú pháp)
+  const policySection = sections.find(
+    (section) => section.sectionTitle === "Chính sách"
+  );
 
-  const policyItems = policySection
-    ? policySection.fields
-        .map((field) => {
-          const value = specifications[field.key];
-          if (value === undefined || value === null || value === "")
-            return null;
+  // Tạo policyItems động dựa trên fields của section "Chính sách"
+  const policyItems = [];
+  if (policySection) {
+    policySection.fields.forEach((field) => {
+      const value = specifications[field.key];
 
-          if (field.key === "inBox" && Array.isArray(value)) {
-            return {
+      if (value !== undefined && value !== null && value !== "") {
+        let displayValue;
+        if (field.key === "inBox" && Array.isArray(value)) {
+          displayValue = value.join(", ");
+        } else if (typeof value === "object" && value !== null) {
+          displayValue = Object.entries(value)
+            .map(([key, val]) => `${key}: ${val}`)
+            .join(", ");
+        } else {
+          displayValue = value;
+        }
+
+        if (displayValue) {
+          if (field.key === "inBox") {
+            policyItems.push({
               title: field.label,
               description: "Trong hộp có: ",
-              extra: value.join(", "),
-            };
+              extra: displayValue,
+            });
+          } else {
+            policyItems.push({
+              title: field.label,
+              description: "",
+              highlight: displayValue,
+            });
           }
-          return {
-            title: field.label,
-            description: "",
-            highlight: value,
-          };
-        })
-        .filter((item) => item !== null)
-    : [];
+        }
+      }
+    });
+  }
 
   return (
     <div className="box-main">
@@ -154,41 +169,6 @@ const ProductMain = ({
         <div className="policy policy-vs">
           <h2>{product?.name || "NamPhuong-Store"}</h2>
           <ul className="policy__list">
-            {/* <li>
-              <div className="pl-icon"></div>
-              <div className="pl-txt">
-                <p>
-                  1 đổi 1 trong vòng <b>12 tháng</b> đối với sản phẩm lỗi do nhà
-                  sản xuất
-                </p>
-              </div>
-            </li>
-            <li>
-              <div className="pl-icon"></div>
-              <div className="pl-txt">
-                <p>
-                  Trong hộp có: Ốc vít, Tấm gắn, Sách hướng dẫn, Mẫu khoan, Dây
-                  cáp, Camera, Bộ chuyển đổi nguồn DC
-                </p>
-              </div>
-            </li>
-            <li>
-              <div className="pl-icon"></div>
-              <div className="pl-txt">
-                <p>
-                  Bảo hành có cam kết <b>12 tháng</b>
-                </p>
-              </div>
-            </li>
-            <li>
-              <div className="pl-icon"></div>
-              <div className="pl-txt">
-                <p>
-                  Bảo hành <b>chính hãng camera giám sát 2 năm</b> tại các trung
-                  tâm bảo hành hãng
-                </p>
-              </div>
-            </li> */}
             {policyItems.map((item, index) => (
               <PolicyItem
                 key={index}
@@ -220,40 +200,100 @@ const ProductMain = ({
           </h2>
         </div>
 
-        <div className="specifications tab-content">
-          <div id="specification-item" className="specification-item">
-            {sections.length > 0 && (
-              <div>
-                {sections.map((section, sectionIndex) => (
-                  <div
-                    key={section._id}
-                    className="box-specifi"
-                    style={{ marginTop: "0", paddingTop: "20px" }}
-                  >
-                    <a
-                      href="#"
-                      onClick={(e) => handleClickEvent(sectionIndex, e)}
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        height: "60px",
-                      }}
+        {isActive === "specification" && (
+          <div className="specifications tab-content">
+            <div id="specification-item" className="specification-item">
+              {sections.length > 0 && (
+                <div>
+                  {sections.map((section, sectionIndex) => (
+                    <div
+                      key={section._id}
+                      className="box-specifi"
+                      style={{ marginTop: "0", paddingTop: "20px" }}
                     >
                       {section.sectionTitle &&
-                        section.sectionTitle.trim() !== "" && (
-                          <h3>{section.sectionTitle}</h3>
+                        section.sectionTitle.trim() !== "" &&
+                        section.sectionTitle !== "Chính sách" && (
+                          <a
+                            href="#"
+                            onClick={(e) => handleClickEvent(sectionIndex, e)}
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              height: "60px",
+                            }}
+                          >
+                            <h3>{section.sectionTitle}</h3>
+                            {isOpen[sectionIndex] ? (
+                              <FaAngleUp style={{ marginRight: "10px" }} />
+                            ) : (
+                              <FaAngleDown style={{ marginRight: "10px" }} />
+                            )}
+                          </a>
                         )}
-                      {isOpen[sectionIndex] ? (
-                        <FaAngleUp style={{ marginRight: "10px" }} />
-                      ) : (
-                        <FaAngleDown style={{ marginRight: "10px" }} />
-                      )}
-                    </a>
-                    {isOpen[sectionIndex] && (
-                      <ul className="text-specifi">
-                        {section.fields
-                          .filter((field) => {
+
+                      {/* {isOpen[sectionIndex] && (
+                        <ul className="text-specifi">
+                          {section.fields
+                            .filter((field) => {
+                              const keys = field.key.split(".");
+                              let value = specifications;
+                              for (let key of keys) {
+                                value =
+                                  value && typeof value === "object"
+                                    ? value[key]
+                                    : undefined;
+                                if (value === undefined) break;
+                              }
+                              return (
+                                value !== undefined &&
+                                value !== null &&
+                                value !== ""
+                              );
+                            })
+                            .map((field, fieldIndex) => {
+                              const keys = field.key.split(".");
+                              let value = specifications;
+                              for (let key of keys) {
+                                value =
+                                  value && typeof value === "object"
+                                    ? value[key]
+                                    : undefined;
+                              }
+                              let displayValue;
+                              if (
+                                field.key === "utilities" &&
+                                Array.isArray(value)
+                              ) {
+                                displayValue = value.map((item, idx) => (
+                                  <span key={idx} style={{ display: "block" }}>
+                                    {item}
+                                  </span>
+                                ));
+                              } else {
+                                displayValue = Array.isArray(value)
+                                  ? value.join(", ")
+                                  : typeof value === "object" && value !== null
+                                  ? Object.entries(value)
+                                      .map(
+                                        ([subKey, subValue]) =>
+                                          `${subKey}: ${subValue}`
+                                      )
+                                      .join(", ")
+                                  : value || "N/A";
+                              }
+
+                              return (
+                                <li key={fieldIndex}>
+                                  <aside>
+                                    <strong>{field.label}:</strong>
+                                  </aside>
+                                  <aside>{displayValue}</aside>
+                                </li>
+                              );
+                            })}
+                          {section.fields.every((field) => {
                             const keys = field.key.split(".");
                             let value = specifications;
                             for (let key of keys) {
@@ -264,12 +304,84 @@ const ProductMain = ({
                               if (value === undefined) break;
                             }
                             return (
-                              value !== undefined &&
-                              value !== null &&
-                              value !== ""
+                              value === undefined ||
+                              value === null ||
+                              value === ""
                             );
-                          })
-                          .map((field, fieldIndex) => {
+                          }) && (
+                            <li>
+                              <aside>
+                                <strong>Không có thông số phù hợp</strong>
+                              </aside>
+                            </li>
+                          )}
+                        </ul>
+                      )} */}
+                      {(!section.sectionTitle ||
+                        section.sectionTitle.trim() === "") &&
+                      section.fields.length > 0 ? (
+                        <ul className="text-specifi">
+                          {section.fields
+                            .filter((field) => {
+                              const keys = field.key.split(".");
+                              let value = specifications;
+                              for (let key of keys) {
+                                value =
+                                  value && typeof value === "object"
+                                    ? value[key]
+                                    : undefined;
+                                if (value === undefined) break;
+                              }
+                              return (
+                                value !== undefined &&
+                                value !== null &&
+                                value !== ""
+                              );
+                            })
+                            .map((field, fieldIndex) => {
+                              const keys = field.key.split(".");
+                              let value = specifications;
+                              for (let key of keys) {
+                                value =
+                                  value && typeof value === "object"
+                                    ? value[key]
+                                    : undefined;
+                              }
+                              let displayValue;
+                              if (Array.isArray(value)) {
+                                displayValue = value.map((item, idx) => (
+                                  <span key={idx} style={{ display: "block" }}>
+                                    {item}
+                                  </span>
+                                ));
+                              } else if (
+                                typeof value === "object" &&
+                                value !== null
+                              ) {
+                                displayValue = Object.entries(value).map(
+                                  ([subKey, subValue]) => (
+                                    <span
+                                      key={subKey}
+                                      style={{ display: "block" }}
+                                    >
+                                      {`${subKey}: ${subValue}`}
+                                    </span>
+                                  )
+                                );
+                              } else {
+                                displayValue = value || "N/A";
+                              }
+
+                              return (
+                                <li key={fieldIndex}>
+                                  <aside>
+                                    <strong>{field.label}:</strong>
+                                  </aside>
+                                  <aside>{displayValue}</aside>
+                                </li>
+                              );
+                            })}
+                          {section.fields.every((field) => {
                             const keys = field.key.split(".");
                             let value = specifications;
                             for (let key of keys) {
@@ -277,69 +389,148 @@ const ProductMain = ({
                                 value && typeof value === "object"
                                   ? value[key]
                                   : undefined;
+                              if (value === undefined) break;
                             }
-                            let displayValue;
-                            if (
-                              field.key === "utilities" &&
-                              Array.isArray(value)
-                            ) {
-                              displayValue = value.map((item, idx) => (
-                                <span key={idx} style={{ display: "block" }}>
-                                  {item}
-                                </span>
-                              ));
-                            } else {
-                              displayValue = Array.isArray(value)
-                                ? value.join(", ")
-                                : typeof value === "object" && value !== null
-                                ? Object.entries(value)
-                                    .map(
-                                      ([subKey, subValue]) =>
-                                        `${subKey}: ${subValue}`
-                                    )
-                                    .join(", ")
-                                : value || "N/A";
-                            }
-
                             return (
-                              <li key={fieldIndex}>
-                                <aside>
-                                  <strong>{field.label}:</strong>
-                                </aside>
-                                <aside>{displayValue}</aside>
-                              </li>
+                              value === undefined ||
+                              value === null ||
+                              value === ""
                             );
-                          })}
-                        {section.fields.every((field) => {
-                          const keys = field.key.split(".");
-                          let value = specifications;
-                          for (let key of keys) {
-                            value =
-                              value && typeof value === "object"
-                                ? value[key]
-                                : undefined;
-                            if (value === undefined) break;
-                          }
-                          return (
-                            value === undefined ||
-                            value === null ||
-                            value === ""
-                          );
-                        }) && (
-                          <li>
-                            <aside>
-                              <strong>Không có thông số phù hợp</strong>
-                            </aside>
-                          </li>
-                        )}
-                      </ul>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+                          }) && (
+                            <li>
+                              <aside>
+                                <strong>Không có thông số phù hợp</strong>
+                              </aside>
+                            </li>
+                          )}
+                        </ul>
+                      ) : (
+                        isOpen[sectionIndex] && (
+                          <ul className="text-specifi">
+                            {section.fields
+                              .filter((field) => {
+                                const keys = field.key.split(".");
+                                let value = specifications;
+                                for (let key of keys) {
+                                  value =
+                                    value && typeof value === "object"
+                                      ? value[key]
+                                      : undefined;
+                                  if (value === undefined) break;
+                                }
+                                return (
+                                  value !== undefined &&
+                                  value !== null &&
+                                  value !== ""
+                                );
+                              })
+                              .map((field, fieldIndex) => {
+                                const keys = field.key.split(".");
+                                let value = specifications;
+                                for (let key of keys) {
+                                  value =
+                                    value && typeof value === "object"
+                                      ? value[key]
+                                      : undefined;
+                                }
+                                let displayValue;
+                                if (Array.isArray(value)) {
+                                  displayValue = value.map((item, idx) => (
+                                    <span
+                                      key={idx}
+                                      style={{ display: "block" }}
+                                    >
+                                      {item}
+                                    </span>
+                                  ));
+                                } else if (
+                                  typeof value === "object" &&
+                                  value !== null
+                                ) {
+                                  displayValue = Object.entries(value).map(
+                                    ([subKey, subValue]) => (
+                                      <span
+                                        key={subKey}
+                                        style={{ display: "block" }}
+                                      >
+                                        {`${subKey}: ${subValue}`}
+                                      </span>
+                                    )
+                                  );
+                                } else {
+                                  displayValue = value || "N/A";
+                                }
+
+                                return (
+                                  <li key={fieldIndex}>
+                                    <aside>
+                                      <strong>{field.label}:</strong>
+                                    </aside>
+                                    <aside>{displayValue}</aside>
+                                  </li>
+                                );
+                              })}
+                            {section.fields.every((field) => {
+                              const keys = field.key.split(".");
+                              let value = specifications;
+                              for (let key of keys) {
+                                value =
+                                  value && typeof value === "object"
+                                    ? value[key]
+                                    : undefined;
+                                if (value === undefined) break;
+                              }
+                              return (
+                                value === undefined ||
+                                value === null ||
+                                value === ""
+                              );
+                            }) && (
+                              <li>
+                                <aside>
+                                  <strong>Không có thông số phù hợp</strong>
+                                </aside>
+                              </li>
+                            )}
+                          </ul>
+                        )
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
+
+        {isActive === "info" && (
+          <div className="description tab-content">
+            <div className="text-detail expand">
+              <h3>{product.description}</h3>
+              <h3>{product.description}</h3>
+              <p></p>
+              <p></p>
+              <p></p>
+              <h3></h3>
+              <p></p>
+              <p></p>
+              <p></p>
+              <p></p>
+              <h3></h3>
+              <p></p>
+              <p></p>
+              <p></p>
+              <h3></h3>
+              <p></p>
+              <p></p>
+              <h3></h3>
+              <p></p>
+              <p></p>
+              <p></p>
+              <p></p>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="box_right">
