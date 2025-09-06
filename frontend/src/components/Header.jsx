@@ -6,6 +6,7 @@ import {
   FaHeadphones,
   FaCartPlus,
   FaCaretDown,
+  FaCaretUp,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -21,6 +22,7 @@ const Header = ({ onSearch, onFilterByCategory, user: propUser }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState([]);
   const [totalPhones, setTotalPhones] = useState(0); // Tổng số điện thoại
+  const [isHover, setIsHover] = useState("monitors");
 
   const navigate = useNavigate();
 
@@ -195,6 +197,8 @@ const Header = ({ onSearch, onFilterByCategory, user: propUser }) => {
                   navigate("/monitors");
                   handleClickReload();
                 }}
+                onMouseEnter={() => setIsHover("monitors")}
+                onMouseLeave={() => setIsHover(false)}
               >
                 <i>
                   <img
@@ -203,7 +207,12 @@ const Header = ({ onSearch, onFilterByCategory, user: propUser }) => {
                   />
                 </i>
                 <span>Màn hình</span>
-                <FaCaretDown style={{ marginLeft: "5px" }} />
+                {isHover === "monitors" ? (
+                  <FaCaretUp style={{ marginLeft: "5px" }} />
+                ) : (
+                  <FaCaretDown style={{ marginLeft: "5px" }} />
+                )}
+                {/* <FaCaretDown style={{ marginLeft: "5px" }} /> */}
               </a>
             </li>
             <li className="item">
@@ -234,6 +243,8 @@ const Header = ({ onSearch, onFilterByCategory, user: propUser }) => {
                   navigate("/accessories");
                   handleClickReload();
                 }}
+                onMouseEnter={() => setIsHover("accessories")}
+                onMouseLeave={() => setIsHover(false)}
               >
                 <i>
                   <img
@@ -242,7 +253,12 @@ const Header = ({ onSearch, onFilterByCategory, user: propUser }) => {
                   />
                 </i>
                 <span>Phụ kiện</span>
-                <FaCaretDown style={{ marginLeft: "5px" }} />
+                {isHover === "accessories" ? (
+                  <FaCaretUp style={{ marginLeft: "5px" }} />
+                ) : (
+                  <FaCaretDown style={{ marginLeft: "5px" }} />
+                )}
+                {/* <FaCaretDown style={{ marginLeft: "5px" }} /> */}
               </a>
             </li>
           </ul>

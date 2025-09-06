@@ -290,10 +290,16 @@ const updateCategory = async (req, res) => {
     updateData.updatedAt = new Date();
 
     // Cập nhật category
-    const category = await Category.findByIdAndUpdate(id, updateData, {
-      new: true,
-      runValidators: true,
-    });
+    // const category = await Category.findByIdAndUpdate(id, updateData, {
+    //   new: true,
+    //   runValidators: true,
+    // });
+
+    const category = await Category.findByIdAndUpdate(
+      id,
+      { $set: updateData },
+      { new: true, runValidators: true }
+    );
 
     if (!category) {
       return res

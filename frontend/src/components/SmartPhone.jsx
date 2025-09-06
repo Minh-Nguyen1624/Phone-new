@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation, useParams } from "react-router-dom";
 import { FaFilter, FaCaretDown } from "react-icons/fa";
 import axios from "axios";
 import Header from "../components/Header";
@@ -109,16 +109,6 @@ const SmartPhone = () => {
               category: catId,
             },
           })
-        );
-
-        console.log(
-          "API Requests:",
-          allRelevantCategoryIds.map(
-            (catId) =>
-              `${API_URL}/phones/search?limit=${
-                Limit * 10
-              }&isActive=true&page=1&category=${catId}`
-          )
         );
 
         const phoneResponses = await Promise.all(phonePromises);

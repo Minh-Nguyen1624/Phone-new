@@ -5,6 +5,7 @@ import {
   FaPhoneAlt,
   FaAngleDown,
   FaAngleUp,
+  FaStar,
 } from "react-icons/fa";
 
 const PolicyItem = ({ title, description, highlight, extra }) => {
@@ -233,90 +234,6 @@ const ProductMain = ({
                           </a>
                         )}
 
-                      {/* {isOpen[sectionIndex] && (
-                        <ul className="text-specifi">
-                          {section.fields
-                            .filter((field) => {
-                              const keys = field.key.split(".");
-                              let value = specifications;
-                              for (let key of keys) {
-                                value =
-                                  value && typeof value === "object"
-                                    ? value[key]
-                                    : undefined;
-                                if (value === undefined) break;
-                              }
-                              return (
-                                value !== undefined &&
-                                value !== null &&
-                                value !== ""
-                              );
-                            })
-                            .map((field, fieldIndex) => {
-                              const keys = field.key.split(".");
-                              let value = specifications;
-                              for (let key of keys) {
-                                value =
-                                  value && typeof value === "object"
-                                    ? value[key]
-                                    : undefined;
-                              }
-                              let displayValue;
-                              if (
-                                field.key === "utilities" &&
-                                Array.isArray(value)
-                              ) {
-                                displayValue = value.map((item, idx) => (
-                                  <span key={idx} style={{ display: "block" }}>
-                                    {item}
-                                  </span>
-                                ));
-                              } else {
-                                displayValue = Array.isArray(value)
-                                  ? value.join(", ")
-                                  : typeof value === "object" && value !== null
-                                  ? Object.entries(value)
-                                      .map(
-                                        ([subKey, subValue]) =>
-                                          `${subKey}: ${subValue}`
-                                      )
-                                      .join(", ")
-                                  : value || "N/A";
-                              }
-
-                              return (
-                                <li key={fieldIndex}>
-                                  <aside>
-                                    <strong>{field.label}:</strong>
-                                  </aside>
-                                  <aside>{displayValue}</aside>
-                                </li>
-                              );
-                            })}
-                          {section.fields.every((field) => {
-                            const keys = field.key.split(".");
-                            let value = specifications;
-                            for (let key of keys) {
-                              value =
-                                value && typeof value === "object"
-                                  ? value[key]
-                                  : undefined;
-                              if (value === undefined) break;
-                            }
-                            return (
-                              value === undefined ||
-                              value === null ||
-                              value === ""
-                            );
-                          }) && (
-                            <li>
-                              <aside>
-                                <strong>Không có thông số phù hợp</strong>
-                              </aside>
-                            </li>
-                          )}
-                        </ul>
-                      )} */}
                       {(!section.sectionTitle ||
                         section.sectionTitle.trim() === "") &&
                       section.fields.length > 0 ? (
@@ -375,9 +292,13 @@ const ProductMain = ({
                               return (
                                 <li key={fieldIndex}>
                                   <aside>
-                                    <strong>{field.label}:</strong>
+                                    <strong style={{ fontSize: 14 }}>
+                                      {field.label}:
+                                    </strong>
                                   </aside>
-                                  <aside>{displayValue}</aside>
+                                  <aside style={{ fontSize: 14, width: 435 }}>
+                                    {displayValue}
+                                  </aside>
                                 </li>
                               );
                             })}
@@ -531,6 +452,43 @@ const ProductMain = ({
             </div>
           </div>
         )}
+
+        <div className="wrap_rating wrap_border">
+          <div className="bg_caoverrate"></div>
+          <div className="rating-topzone">
+            <div className="rating-topzonecmt-hascmt">
+              <div className="boxrate rate-topzone">
+                <h2>Đánh giá {product.name}</h2>
+                <div className="boxrate__top">
+                  <div className="box-star v2 not-has-gallery">
+                    <div className="point">
+                      <div className="point-average">
+                        <FaStar />
+                        <div className="point-average-container">
+                          <p className="point-average-score">
+                            {product.rating}
+                          </p>
+                          <p className="point-average-total">/5</p>
+                        </div>
+                      </div>
+                      <div className="point-satisfied-container">
+                        <p className="point-satisfied"></p>
+                        <div class="point-explain">
+                          <b>Ai là Khách hàng hài lòng?</b>
+                          <span>
+                            Gồm các khách hàng đã đánh giá 5 sao và khách hàng
+                            mua hàng nhưng chưa đánh giá từ 01/2022.
+                          </span>
+                        </div>
+                        <span className="point-alltimerate"></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="box_right">
