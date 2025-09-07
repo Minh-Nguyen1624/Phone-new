@@ -18,6 +18,7 @@ const {
   createPayPalPayment,
   getPayPalAccessToken,
   capturePayPalPayment,
+  verifyPaypalWebhook,
 } = require("../services/paypalService");
 const { convertVNDToUSD } = require("../utils/currencyConverter");
 const { convertOrderToUSD } = require("../utils/orderConverter");
@@ -988,6 +989,88 @@ const capturePayPalOrder = asyncHandler(async (req, res) => {
       error: error.message,
       details: error.response?.data || error.stack,
     });
+  }
+});
+
+const handlePayPalWebhook = asyncHandler(async (req, res) => {
+  try {
+    const isValid = await verifyPaypalWebhook(req.headers, res.body);
+
+    if (!isValid) {
+      console.error("❌ PayPal Webhook - Invalid signature");
+      return res.status(400).json({ message: "Invalid signature" });
+    }
+
+    const event = req.body;
+    console.log("🔹 PayPal Webhook Event:", event);
+
+    // Lấy event type (ví dụ: CHECKOUT.ORDER.APPROVED, PAYMENT.CAPTURE.COMPLETED)
+    const eventType = event.event_type;
+
+    // Lấy orderId / resourceId
+    const resource = event.resource;
+    const orderId =
+      resource?.id || resource?.supplementary_data?.related_ids?.order_id;
+
+    const payment = await Payment.findOne({ transactionId: orderId }).populate(
+      "user order"
+    );
+    if (!payment) {
+      console.error(`❌ Payment not found for orderId: ${orderId}`);
+      return res.status(404).json({ message: "Payment not found" });
+    }
+
+    let newStatus = payment.paymentStatus;
+
+    if (eventType === "CHECKOUT.ORDER.APPROVED") {
+      newStatus = "Pending";
+    } else if (eventType === "PAYMENT.CAPTURE.COMPLETED") {
+      newStatus = "Completed";
+    } else if (
+      eventType === "PAYMENT.CAPTURE.DENIED" ||
+      eventType === "PAYMENT.CAPTURE.REFUNDED"
+    ) {
+      newStatus = "Failed";
+    }
+
+    // Tạo transaction mới
+    const transaction = new Transaction({
+      user: payment.user._id,
+      order: payment.order._id,
+      paymentId: payment._id,
+      amount: parseFloat(resource?.amount?.value || payment.amount),
+      status: newStatus,
+      paymentMethod: "PayPal",
+      transactionDate: new Date(),
+      description: `PayPal Webhook Event: ${eventType}`,
+      transactionRef: resource?.id || orderId,
+      currency: resource?.amount?.currency_code || "USD",
+      initiator: "system",
+    });
+    await transaction.save();
+
+    await Payment.updateOne(
+      {
+        _id: payment._id,
+      },
+      {
+        $set: {
+          paymentStatus: newStatus,
+          gatewayResponse: resource,
+        },
+        $push: {
+          transactions: transaction._id,
+        },
+      }
+    );
+
+    console.log(`✅ Updated PayPal payment ${orderId} -> ${newStatus}`);
+
+    // Phản hồi thành công cho PayPal
+    res.status(200).json({ message: "Webhook processed successfully" });
+  } catch (error) {
+    console.error("❌ Error handling PayPal Webhook:", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
@@ -2980,7 +3063,7 @@ module.exports = {
   // checkMomoTransaction,
   // initiateMomoPayment,
   handleMomoWebhook,
-  // handlePayPalWebhook,
+  handlePayPalWebhook,
   processPayment,
   createZaloPayPayment,
   handleZaloPayNotify,

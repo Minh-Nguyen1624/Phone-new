@@ -2,6 +2,7 @@ const Review = require("../model/reviewModel");
 const rateLimit = require("express-rate-limit");
 const Phone = require("../model/phoneModel");
 const User = require("../model/userModel");
+const mongoose = require("mongoose");
 
 // Rate limiter to prevent spamming (maximum 5 requests per hour per IP)
 const reviewRateLimiter = rateLimit({
@@ -16,10 +17,28 @@ const createReview = async (req, res) => {
   try {
     const { phone, user, rating, content } = req.body;
 
+    // Kiểm tra và chuyển đổi phone và user thành ObjectId
+    if (!mongoose.Types.ObjectId.isValid(phone)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid phone ID",
+      });
+    }
+    if (!mongoose.Types.ObjectId.isValid(user)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid user ID",
+      });
+    }
+
+    // Chuyển đổi phone và user thành ObjectId
+    const phoneId = new mongoose.Types.ObjectId(phone);
+    const userId = new mongoose.Types.ObjectId(user);
+
     // Kiểm tra xem user đã review sản phẩm này chưa
     const existingReview = await Review.findOne({
-      phone,
-      user,
+      phone: phoneId,
+      user: userId,
       isDeleted: false,
     });
     if (existingReview) {
@@ -30,7 +49,7 @@ const createReview = async (req, res) => {
     }
 
     // Kiểm tra nội dung review có quá giống nhau không
-    const similarReview = await Review.findOne({ user, content });
+    const similarReview = await Review.findOne({ user: userId, content });
     if (similarReview) {
       return res.status(400).json({
         success: false,
@@ -38,8 +57,8 @@ const createReview = async (req, res) => {
       });
     }
     const newReview = await Review.create({
-      phone,
-      user,
+      phone: phoneId,
+      user: userId,
       rating,
       content,
     });

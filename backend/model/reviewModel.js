@@ -79,17 +79,45 @@ reviewSchema.pre("save", function (next) {
 });
 
 reviewSchema.pre("save", async function (next) {
-  const phone = await mongoose.model("Phone").findById(this.phone);
-  if (!phone) {
-    return next(new Error("Phone not found"));
-  }
+  try {
+    // Kiểm tra và cast ObjectId
+    if (!mongoose.Types.ObjectId.isValid(this.phone)) {
+      return next(new Error("Invalid phone ID"));
+    }
+    if (!mongoose.Types.ObjectId.isValid(this.user)) {
+      return next(new Error("Invalid user ID"));
+    }
 
-  const user = await mongoose.model("User").findById(this.user);
-  if (!user) {
-    return next(new Error("User not found"));
-  }
+    const phone = await mongoose.model("Phone").findById(this.phone);
+    if (!phone) {
+      return next(new Error("Phone not found"));
+    }
 
-  next();
+    const user = await mongoose.model("User").findById(this.user);
+    if (!user) {
+      return next(new Error("User not found"));
+    }
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+reviewSchema.post("save", async function (doc) {
+  console.log("Post-save: Review saved with ID:", doc._id);
+  const phone = await mongoose.model("Phone").findById(doc.phone);
+  if (phone) {
+    console.log("Found phone:", phone._id);
+    const avgRating = await mongoose
+      .model("Review")
+      .getAverageRating(doc.phone);
+    phone.averageRating = avgRating;
+    await phone.save();
+    console.log("Updated phone averageRating:", phone.averageRating);
+  } else {
+    console.log("Phone not found for update");
+  }
 });
 
 // Lọc các review chưa bị xóa khi tìm kiếm

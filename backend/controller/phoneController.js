@@ -474,7 +474,8 @@ const getPhoneById = async (req, res) => {
         // "name description" // Populate category fields (you can adjust according to your Category model schema)
         "name specificationFields slug imageUrl"
       )
-      .populate("reviews", "rating comment") // If your Review model has rating and comment
+      // .populate("reviews", "rating comment") // If your Review model has rating and comment
+      .populate("reviews", "rating content user createdAt")
       .populate("cart", "totalAmount") // If Cart model has a field like totalAmount, adjust accordingly
       .populate("order", "orderStatus paymentMethod"); // If Order model has relevant fields;
     if (!phone) {

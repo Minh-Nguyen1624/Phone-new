@@ -7,6 +7,7 @@ import {
   FaAngleUp,
   FaStar,
 } from "react-icons/fa";
+import ProductRating from "../components/ProductRating";
 
 const PolicyItem = ({ title, description, highlight, extra }) => {
   return (
@@ -452,19 +453,38 @@ const ProductMain = ({
             </div>
           </div>
         )}
-
+        {/* 
         <div className="wrap_rating wrap_border">
           <div className="bg_caoverrate"></div>
           <div className="rating-topzone">
             <div className="rating-topzonecmt-hascmt">
               <div className="boxrate rate-topzone">
-                <h2>Đánh giá {product.name}</h2>
-                <div className="boxrate__top">
-                  <div className="box-star v2 not-has-gallery">
+                <h2 className="boxrate__title">Đánh giá {product.name}</h2>
+                <div className="boxrate__top" style={{ marginTop: "30px" }}>
+                  <div
+                    className="box-star v2 not-has-gallery"
+                    style={{
+                      display: "flex",
+                      width: "100%",
+                      flexWrap: "wrap",
+                      justifyContent: "space-between",
+                      borderRight: "unset",
+                      borderLeft: "unset",
+                      margin: "unset",
+                      padding: "unset",
+                      alignItems: "center",
+                    }}
+                  >
                     <div className="point">
                       <div className="point-average">
-                        <FaStar />
-                        <div className="point-average-container">
+                        <FaStar
+                          className="iconcmt-allstar"
+                          style={{ color: "yellow" }}
+                        />
+                        <div
+                          className="point-average-container"
+                          style={{ display: "flex", paddingLeft: "10px" }}
+                        >
                           <p className="point-average-score">
                             {product.rating}
                           </p>
@@ -483,12 +503,95 @@ const ProductMain = ({
                         <span className="point-alltimerate"></span>
                       </div>
                     </div>
+                    <ul className="rate-list">
+                      <li>
+                        <div className="number-star">
+                          5
+                          <FaStar
+                            style={{
+                              margin: "0 4px",
+                              marginBottom: 4,
+                              color: "yellow",
+                            }}
+                          />
+                        </div>
+                        <div className="timeline-star">
+                          <p className="timing" style={{ width: "99.9%" }}></p>
+                        </div>
+                        <span className="number-percent">99.9%</span>
+                      </li>
+                      <li>
+                        <div className="number-star">
+                          4
+                          <FaStar
+                            style={{
+                              margin: "0 4px",
+                              marginBottom: 4,
+                              color: "yellow",
+                            }}
+                          />
+                        </div>
+                        <div className="timeline-star">
+                          <p className="timing" style={{ width: "99.9%" }}></p>
+                        </div>
+                        <span className="number-percent">0%</span>
+                      </li>
+                      <li>
+                        <div className="number-star">
+                          3
+                          <FaStar
+                            style={{
+                              margin: "0 4px",
+                              marginBottom: 4,
+                              color: "yellow",
+                            }}
+                          />
+                        </div>
+                        <div className="timeline-star">
+                          <p className="timing" style={{ width: "99.9%" }}></p>
+                        </div>
+                        <span className="number-percent">0%</span>
+                      </li>
+                      <li>
+                        <div className="number-star">
+                          2
+                          <FaStar
+                            style={{
+                              margin: "0 4px",
+                              marginBottom: 4,
+                              color: "yellow",
+                            }}
+                          />
+                        </div>
+                        <div className="timeline-star">
+                          <p className="timing" style={{ width: "99.9%" }}></p>
+                        </div>
+                        <span className="number-percent">0%</span>
+                      </li>
+                      <li>
+                        <div className="number-star">
+                          1
+                          <FaStar
+                            style={{
+                              margin: "0 4px",
+                              marginBottom: 4,
+                              color: "yellow",
+                            }}
+                          />
+                        </div>
+                        <div className="timeline-star">
+                          <p className="timing" style={{ width: "99.9%" }}></p>
+                        </div>
+                        <span className="number-percent">0%</span>
+                      </li>
+                    </ul>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
+        <ProductRating name={product.name} rating={product.rating} />
       </div>
 
       <div className="box_right">

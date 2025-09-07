@@ -129,7 +129,7 @@ const createdTransaction = async (req, res) => {
       order,
       paymentId,
       amount,
-      status,
+      status: "Pending",
       paymentMethod,
       description,
       currency: currency || "VND", // Mặc định là VND nếu không cung cấp

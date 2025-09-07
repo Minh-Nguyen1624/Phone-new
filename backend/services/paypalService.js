@@ -201,8 +201,41 @@ getPayPalAccessToken()
     console.error("❌ Lỗi khi lấy PayPal Access Token:", error.message);
   });
 
+const verifyPaypalWebhook = async (headers, body) => {
+  try {
+    const accessToken = await getPayPalAccessToken();
+
+    const response = await axios.post(
+      `${PAYPAL_API_URL}/v1/notifications/verify-webhook-signature`,
+      {
+        auth_algo: headers["paypal-auth-algo"],
+        cert_url: headers["paypal-cert-url"],
+        transmission_id: headers["paypal-transmission-id"],
+        transmission_sig: headers["paypal-transmission-sig"],
+        transmission_time: headers["paypal-transmission-time"],
+        webhook_id: process.env.PAYPAL_WEBHOOK_ID, // Bạn tạo trong PayPal dashboard
+        webhook_event: body,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return response.data.verification_status === "SUCCESS";
+  } catch (error) {
+    console.error(
+      "❌ PayPal Webhook verify error:",
+      error.response?.data || error.message
+    );
+    return false;
+  }
+};
 module.exports = {
   getPayPalAccessToken,
   createPayPalPayment,
   capturePayPalPayment,
+  verifyPaypalWebhook,
 };

@@ -40,6 +40,7 @@ const {
   checkTransactionStatus,
   confirmPayment,
   handleZaloPayReturn,
+  handlePayPalWebhook,
 } = require("../controller/paymentController");
 
 // const app = express();
@@ -273,5 +274,11 @@ router.post("/payment/:paymentId/process", protect, processPayment);
 // router.post("/payment/:paymentId/process", processPayment);
 
 router.post("/payment/:paymentId/confirm", confirmPayment);
+
+router.post(
+  "/paypal/webhook",
+  express.json({ type: "*/*" }),
+  handlePayPalWebhook
+);
 
 module.exports = router;
