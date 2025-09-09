@@ -9,6 +9,8 @@ import {
   FaAngleDown,
 } from "react-icons/fa";
 import slugify from "slugify";
+import "../css/MainProduct.css";
+// import "../css/ProductDetailInfo.css";
 
 const MainProduct = ({ phone, soldQuantities, toggleLike, purchasePhone }) => {
   const originalPrice = phone.price || 0;
@@ -108,15 +110,15 @@ const MainProduct = ({ phone, soldQuantities, toggleLike, purchasePhone }) => {
         </h3>
         <div className="item-compare gray-bg">
           <span></span>
-          <span>{phone?.specifications?.screen.slice(0, 8)}</span>
+          {/* <span>{phone?.specifications?.screen.slice(0, 8)}</span> */}
         </div>
         <div className="prods-group">
           <ul>
             <li className="merge__item item act">
-              {phone?.specifications?.storage[0]}
+              {/* {phone?.specifications?.storage[0]} */}
             </li>
             <li className="merge__item item merge">
-              {phone?.specifications?.storage[1]}
+              {/* {phone?.specifications?.storage[1]} */}
             </li>
           </ul>
         </div>

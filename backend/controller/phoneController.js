@@ -11,6 +11,10 @@ const Order = require("../model/orderModel");
 const Inventory = require("../model/inventoryModel");
 const ViewHistory = require("../model/viewHistoryModel");
 const asyncHandler = require("express-async-handler");
+const {
+  recalcPhoneRating,
+  getReviewSummary,
+} = require("../services/ratingService");
 
 const getPhones = async (req, res) => {
   try {
@@ -475,7 +479,7 @@ const getPhoneById = async (req, res) => {
         "name specificationFields slug imageUrl"
       )
       // .populate("reviews", "rating comment") // If your Review model has rating and comment
-      .populate("reviews", "rating content user createdAt")
+      .populate("reviews", "phone rating content user createdAt")
       .populate("cart", "totalAmount") // If Cart model has a field like totalAmount, adjust accordingly
       .populate("order", "orderStatus paymentMethod"); // If Order model has relevant fields;
     if (!phone) {
@@ -484,6 +488,26 @@ const getPhoneById = async (req, res) => {
         message: "Phone not found",
       });
     }
+
+    // const summary = await getReviewSummary(id);
+    const summary = await getReviewSummary(phone);
+    const data = { ...phone, ...summary.data };
+
+    // Tính lại averageRating từ reviews để xác nhận (tùy chọn)
+    const reviews = phone.reviews || [];
+    const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+    const calculatedAverageRating =
+      reviews.length > 0
+        ? Number((totalRating / reviews.length).toFixed(1))
+        : 0;
+
+    // So sánh với averageRating đã lưu (debug)
+    if (phone.averageRating !== calculatedAverageRating) {
+      console.log(
+        `Warning: Saved averageRating (${phone.averageRating}) differs from calculated (${calculatedAverageRating}) for phone ${phone._id}`
+      );
+    }
+
     res.status(200).json({
       success: true,
       message: "Phone retrieved successfully",

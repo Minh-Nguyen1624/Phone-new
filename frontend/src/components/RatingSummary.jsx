@@ -1,9 +1,9 @@
 import React from "react";
 import { FaStar } from "react-icons/fa";
 
-const RatingSummary = ({ name, rating, reviewCount }) => {
+const RatingSummary = ({ name, averageRating, reviewCount }) => {
   console.log("Name: ", name);
-  console.log("Rating: ", rating);
+  console.log("Rating: ", averageRating);
   console.log("Review Count: ", reviewCount);
   return (
     <div className="point">
@@ -13,7 +13,7 @@ const RatingSummary = ({ name, rating, reviewCount }) => {
           className="point-average-container"
           style={{ display: "flex", paddingLeft: "10px" }}
         >
-          <p className="point-average-score">{reviewCount || 0}</p>
+          <p className="point-average-score">{averageRating || 0}</p>
           <p className="point-average-total">/5</p>
         </div>
       </div>

@@ -235,6 +235,26 @@ body {
   overflow: hidden;
 }
 
+.pagination-button {
+  background-color: #1f1f1f; /* màu mặc định */
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+.pagination-button:hover {
+  background-color: #333; /* hover */
+}
+
+.pagination-button.active {
+  background-color: #007bff; /* màu xanh cho nút đang active */
+  color: white;
+  font-weight: bold;
+}
+
 .product-card__progress-bar {
   background: #ffd600;
   height: 100%;
@@ -705,12 +725,12 @@ body {
 }
 
 /* Product Card Styles */
-.product-card {
+/* .product-card {
   border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
   overflow: hidden;
   transition: box-shadow 0.3s ease;
-}
+} */
 
 .product-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);

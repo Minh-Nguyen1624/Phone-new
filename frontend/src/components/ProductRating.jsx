@@ -56,6 +56,7 @@ const ProductRating = () => {
               >
                 <RatingSummary
                   name={product.name}
+                  // averageRating={product.averageRating}
                   averageRating={product.averageRating}
                   reviewCount={product.reviews?.length || 0}
                 />

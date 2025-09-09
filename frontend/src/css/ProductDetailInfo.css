@@ -692,7 +692,7 @@
 
 .wrap_rating .box-star .point {
   align-items: center;
-  display: flex;
+  /* display: flex; */
   justify-content: left;
 }
 
@@ -734,13 +734,17 @@
 
 .box-star.v2 .point .point-average-total {
   color: #98a2b3;
-  font-size: 14px;
+  font-size: 15px;
+  padding-top: 6px;
 }
 
 .box-star.v2 .point .point-satisfied-container {
   position: relative;
-  display: flex;
+  /* display: flex; */
   align-items: center;
+  text-align: center;
+  margin-top: 18px;
+  margin-left: 23px;
 }
 
 .box-star.v2 .point .point-satisfied {

@@ -12,6 +12,8 @@ import Header from "../components/Header";
 import MainProduct from "../components/MainProduct";
 import { fetchPhones, fetchSoldQuantities } from "../services/api";
 import "../css/HomePage.css";
+// import "../css/ProductDetailInfo.css";
+// import "../css/MainProduct.css";
 
 const API_URL = "http://localhost:8080/api";
 const Limit = 8;
@@ -466,10 +468,7 @@ const HomePage = () => {
               paddingRight: "2.5rem",
             }}
           >
-            {/* <div
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-              style={{ paddingTop: "40px", paddingBottom: "40px" }}
-            >
+            <ul className="listproduct">
               {searchMode
                 ? matchedProducts
                     .slice(0, displayLimit)
@@ -493,30 +492,7 @@ const HomePage = () => {
                         purchasePhone={purchasePhone}
                       />
                     ))}
-            </div> */}
-            {searchMode
-              ? matchedProducts
-                  .slice(0, displayLimit)
-                  .map((phone) => (
-                    <MainProduct
-                      key={phone._id}
-                      phone={phone}
-                      soldQuantities={soldQuantities}
-                      toggleLike={toggleLike}
-                      purchasePhone={purchasePhone}
-                    />
-                  ))
-              : phones
-                  .slice(0, displayLimit)
-                  .map((phone) => (
-                    <MainProduct
-                      key={phone._id}
-                      phone={phone}
-                      soldQuantities={soldQuantities}
-                      toggleLike={toggleLike}
-                      purchasePhone={purchasePhone}
-                    />
-                  ))}
+            </ul>
 
             {displayLimit <
               (searchMode ? matchedProducts.length : phones.length) && (
@@ -539,23 +515,88 @@ const HomePage = () => {
                 <button
                   className="pagination-button"
                   onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
+                  // disabled={currentPage === 1}
                 >
                   Trước
                 </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                  (page) => (
+
+                {(() => {
+                  const pages = [];
+                  const maxVisible = 3; // số trang hiển thị liên tiếp
+                  let start = Math.max(2, currentPage - 1);
+                  let end = Math.min(totalPages - 1, currentPage + 1);
+
+                  if (currentPage <= 2) {
+                    start = 2;
+                    end = Math.min(totalPages - 1, maxVisible);
+                  }
+                  if (currentPage >= totalPages - 2) {
+                    start = Math.max(2, totalPages - (maxVisible - 1));
+                    end = totalPages - 1;
+                  }
+
+                  // Trang đầu tiên
+                  pages.push(
                     <button
-                      key={page}
+                      key={1}
                       className={`pagination-button ${
-                        currentPage === page ? "active" : ""
+                        currentPage === 1 ? "active" : ""
                       }`}
-                      onClick={() => handlePageChange(page)}
+                      onClick={() => handlePageChange(1)}
                     >
-                      {page}
+                      1
                     </button>
-                  )
-                )}
+                  );
+
+                  // Dấu ...
+                  if (start > 2) {
+                    pages.push(<span key="start-ellipsis">...</span>);
+                  }
+
+                  // Các trang ở giữa
+                  for (let i = start; i <= end; i++) {
+                    pages.push(
+                      <button
+                        key={i}
+                        className={`pagination-button ${
+                          currentPage === i ? "active" : ""
+                        }`}
+                        onClick={() => handlePageChange(i)}
+                      >
+                        {i}
+                      </button>
+                    );
+                  }
+
+                  // Dấu ...
+                  if (end < totalPages - 1) {
+                    pages.push(<span key="end-ellipsis">...</span>);
+                  }
+
+                  // Trang cuối
+                  if (totalPages > 1) {
+                    pages.push(
+                      <button
+                        key={totalPages}
+                        className={`pagination-button ${
+                          currentPage === totalPages ? "active" : ""
+                        }`}
+                        style={{
+                          backgroundColor:
+                            !currentPage && !totalPages ? "white" : "black",
+                          color:
+                            !currentPage && !totalPages ? "black" : "white",
+                        }}
+                        onClick={() => handlePageChange(totalPages)}
+                      >
+                        {totalPages}
+                      </button>
+                    );
+                  }
+
+                  return pages;
+                })()}
+
                 <button
                   className="pagination-button"
                   onClick={() => handlePageChange(currentPage + 1)}

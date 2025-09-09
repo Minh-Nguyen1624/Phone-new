@@ -35,6 +35,11 @@ const io = new Server(server, {
   },
 });
 
+console.log(
+  "OPENAI_API_KEY:",
+  process.env.OPENAI_API_KEY ? "Loaded ✅" : "Missing ❌"
+);
+
 // Import Passport config
 const passport = require("passport");
 require("./config/passportConfig");
