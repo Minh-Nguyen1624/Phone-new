@@ -479,9 +479,19 @@ const getPhoneById = async (req, res) => {
         "name specificationFields slug imageUrl"
       )
       // .populate("reviews", "rating comment") // If your Review model has rating and comment
-      .populate("reviews", "phone rating content user createdAt")
+      // .populate("reviews", "phone rating content user createdAt")
+
       .populate("cart", "totalAmount") // If Cart model has a field like totalAmount, adjust accordingly
-      .populate("order", "orderStatus paymentMethod"); // If Order model has relevant fields;
+      .populate("order", "orderStatus paymentMethod") // If Order model has relevant fields;
+      .populate({
+        path: "reviews",
+        select: "phone rating content user createdAt",
+        populate: {
+          path: "user",
+          select: "username email avatar", // lấy thêm field cụ thể từ user
+        },
+      })
+      .exec();
     if (!phone) {
       return res.status(404).json({
         success: false,

@@ -8,6 +8,7 @@ import {
   FaStar,
 } from "react-icons/fa";
 import ProductRating from "../components/ProductRating";
+import ReviewModal from "../modals/ReviewModal";
 
 const PolicyItem = ({ title, description, highlight, extra }) => {
   return (

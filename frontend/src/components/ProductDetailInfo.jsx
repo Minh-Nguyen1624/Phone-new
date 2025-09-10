@@ -39,8 +39,8 @@ const ProductDetailInfo = ({ product, topCapitalize, navigate }) => {
   };
 
   const specificationFields = product?.category.specificationFields;
-  const fields = specificationFields?.[0]?.fields; 
-  
+  const fields = specificationFields?.[0]?.fields;
+
   const initialIsOpen = [false, false, false, false];
   const [isOpen, setIsOpen] = useState(initialIsOpen);
   const [show, setIsShow] = useState(false);
@@ -120,24 +120,26 @@ const ProductDetailInfo = ({ product, topCapitalize, navigate }) => {
   };
 
   return (
-    <section className="product-detail">
-      <ProductDetailLink product={product} />
-      <ProductName name={name} product={product} />
-      <ProductMain
-        product={product}
-        handlePrev={handlePrev}
-        handleNext={handleNext}
-        handleClickEvent={handleClickEvent}
-        isOpen={isOpen}
-        specifications={specifications}
-        images={images}
-        handAddToCart={handAddToCart}
-        // handleClickEvent={handleClickEvent}
-        isActive={isActive}
-        toggleIsActive={toggleIsActive}
-        color={color}
-      />
-    </section>
+    <>
+      <section className="product-detail">
+        <ProductDetailLink product={product} />
+        <ProductName name={name} product={product} />
+        <ProductMain
+          product={product}
+          handlePrev={handlePrev}
+          handleNext={handleNext}
+          handleClickEvent={handleClickEvent}
+          isOpen={isOpen}
+          specifications={specifications}
+          images={images}
+          handAddToCart={handAddToCart}
+          // handleClickEvent={handleClickEvent}
+          isActive={isActive}
+          toggleIsActive={toggleIsActive}
+          color={color}
+        />
+      </section>
+    </>
   );
 };
 
