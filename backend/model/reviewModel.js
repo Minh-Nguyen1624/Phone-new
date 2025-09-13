@@ -64,11 +64,6 @@ const reviewSchema = new mongoose.Schema(
       min: 1,
       max: 5, // Đánh giá theo thang điểm từ 1 đến 5 sao
     },
-    // content: {
-    //   type: String,
-    //   required: true,
-    //   maxlength: [1000, "Content cannot exceed 1000 characters"], // Nội dung đánh giá có nhiều nhất 1000 ký tự
-    // },
     content: {
       type: String,
       required: true,
@@ -80,7 +75,6 @@ const reviewSchema = new mongoose.Schema(
         message: "Content cannot be empty or just spaces",
       },
     },
-
     consent: {
       type: Boolean,
       required: true,
@@ -92,6 +86,32 @@ const reviewSchema = new mongoose.Schema(
         message: "Consent must be a boolean value",
       },
     },
+    images: {
+      type: [String], // Mảng các URL hoặc đường dẫn ảnh
+      required: false,
+      default: [], // Mặc định là mảng rỗng nếu không có ảnh
+    },
+    agreeRecommend: {
+      type: Boolean,
+      required: false, // Tùy chọn
+      default: false,
+      validate: {
+        validator: function (value) {
+          return typeof value === "boolean";
+        },
+        message: "agreeRecommend must be a boolean value",
+      },
+    },
+    likes: {
+      type: Number,
+      defautl: 0,
+    },
+    likedBy: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
     createdAt: {
       type: Date,
       default: Date.now, // Thời gian tạo review
@@ -111,6 +131,7 @@ const reviewSchema = new mongoose.Schema(
 reviewSchema.index({ phone: 1 });
 reviewSchema.index({ user: 1 });
 reviewSchema.index({ phone: 1, user: 1 }, { unique: true });
+reviewSchema.index({ likedBy: 1 });
 
 // Tự động cập nhật updatedAt mỗi khi review được thay đổi
 reviewSchema.pre("save", function (next) {

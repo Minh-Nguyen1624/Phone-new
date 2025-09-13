@@ -881,6 +881,7 @@
   display: block; /* Đảm bảo hiển thị */
   opacity: 1; /* Đảm bảo không bị ẩn */
   visibility: visible; /* Đảm bảo không bị ẩn */
+  /* height: 100%; */
 }
 
 .comment-list {
@@ -1177,9 +1178,11 @@
 .wrap_rating .inputrating__group {
   padding: 5px;
   position: relative;
-  padding-bottom: 20px;
-  border: 1px solid #e5e5e5;
+  /* padding-bottom: 20px; */
+  /* border: 1px solid #e5e5e5;
   border-radius: 12px;
+   */
+  border: none;
 }
 
 .form-rate textarea {
@@ -1191,6 +1194,13 @@
   padding: 10px;
   resize: none;
   width: 100%;
+  border-radius: 12px;
+  height: 110px;
+  padding-left: 15px;
+  padding-top: 10px;
+  background: white;
+  color: black;
+  border: 1px solid #eeeeee;
 }
 
 .wrap_rating .txtcount__box {
@@ -1216,15 +1226,53 @@
   display: flex;
 }
 
+.btn-buynow:hover {
+  background-color: #fff;
+  color: #0071e3;
+  animation-name: identifier;
+  animation-duration: 1s;
+}
+
+.btn-view-all:hover {
+  background-color: #000;
+  color: #fff;
+  animation-name: identifier1;
+  animation-duration: 1s;
+}
+
+@keyframes identifier {
+  from {
+    background-color: blue;
+  }
+  to {
+    background-color: #fff;
+  }
+}
+
+@keyframes identifier1 {
+  from {
+    background-color: #fff;
+  }
+  to {
+    background-color: #000;
+  }
+}
+
 .form-rate input {
   border: 1px solid #e5e5e5;
   border-radius: 12px;
   color: #757575;
   font-size: 14px;
-  height: 50px;
+  height: 16px;
   line-height: 17px;
   padding: 10px;
-  width: 100%;
+  width: 16px;
+  margin-right: 6px;
+}
+
+.checkbox_introduce {
+  width: 16px;
+  height: 16px;
 }
 
 .hide {
@@ -1276,31 +1324,12 @@
   margin: 0 6px;
   width: calc(50% - 12px);
 }
-.form-rate input {
-  border: 1px solid #e5e5e5;
-  border-radius: 12px;
-  color: #757575;
-  font-size: 14px;
-  height: 50px;
-  line-height: 17px;
-  padding: 10px;
-  width: 100%;
-}
+
 .form-rate .item input {
   margin: 0 6px;
   width: calc(50% - 12px);
 }
 
-.form-rate input {
-  border: 1px solid #e5e5e5;
-  border-radius: 12px;
-  color: #757575;
-  font-size: 14px;
-  height: 50px;
-  line-height: 17px;
-  padding: 10px;
-  width: 100%;
-}
 .form-rate .item input {
   margin: 0 6px;
   width: calc(50% - 12px);
@@ -1358,4 +1387,12 @@
 
 .form-rate .intro-txt a {
   color: #0071e3;
+}
+
+.inputrating__group {
+  padding: 5px;
+  position: relative;
+  padding-bottom: 20px;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
 }

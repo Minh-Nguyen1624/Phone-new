@@ -63,3 +63,26 @@ ViewHistorySchema.index(
 const ViewHistory = mongoose.model("ViewHistory", ViewHistorySchema);
 
 module.exports = ViewHistory;
+
+ViewHistory.updateViewHistory = async function (
+  productId,
+  userId = null,
+  anonymousId = null
+) {
+  const filter = {
+    product: productId,
+    ...(userId ? { user: userId } : { anonymousId }),
+  };
+
+  // Tìm record có sẵn
+  let record = await this.findOne(filter);
+
+  if (record) {
+    record.viewCount += 1;
+    record.lastViewed = new Date();
+    await record.save();
+  } else {
+    // Tạo mới an toàn
+    await this.create(filter);
+  }
+};

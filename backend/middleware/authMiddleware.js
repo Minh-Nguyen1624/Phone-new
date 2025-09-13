@@ -126,7 +126,8 @@ const protect = asyncHandler(async (req, res, next) => {
       return res.status(401).json({ message: "Bạn cần đăng nhập để tiếp tục" });
     }
   } else {
-    return res.status(401).json({ message: "Not authorized, no token" });
+    // return res.status(401).json({ message: "Not authorized, no token" });
+    return res.status(401).json({ message: "Bạn cần đăng nhập để tiếp tục" });
   }
 });
 

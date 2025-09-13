@@ -8,7 +8,7 @@ import {
   FaStar,
 } from "react-icons/fa";
 import ProductRating from "../components/ProductRating";
-import ReviewModal from "../modals/ReviewModal";
+import ProductOftenBoughtTogether from "../components/ProductsOftenBoughtTogether";
 
 const PolicyItem = ({ title, description, highlight, extra }) => {
   return (
@@ -593,6 +593,7 @@ const ProductMain = ({
           </div>
         </div> */}
         <ProductRating name={product.name} rating={product.rating} />
+        <ProductOftenBoughtTogether product={product} />
       </div>
 
       <div className="box_right">

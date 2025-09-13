@@ -1,32 +1,8 @@
-// import React from "react";
-
-// const RatingStars = ({ rating, setRating }) => {
-//   const stars = [1, 2, 3, 4, 5];
-//   const labels = ["Rất tệ", "Tệ", "Tạm ổn", "Tốt", "Rất tốt"];
-
-//   const handleStarClick = (star) => {
-//     setRating(star);
-//   };
-
-//   return (
-//     <ul className="rating-topzonecr-star">
-//       {stars.map((star) => (
-//         <li
-//           key={star}
-//           data-rate={star}
-//           onClick={() => handleStarClick(star)}
-//           className={star <= rating ? "active" : ""}
-//         >
-//           ★
-//         </li>
-//       ))}
-//     </ul>
-//   );
-// };
-
-// export default RatingStars;
-
 import React, { useState, useEffect } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faStar as farFaStar } from "@fortawesome/free-regular-svg-icons"; // Sao rỗng
+import { faStar as fasFaStar } from "@fortawesome/free-solid-svg-icons";
+import "../css/ProductDetailInfo.css";
 
 const RatingStars = ({ rating, setRating }) => {
   const stars = [1, 2, 3, 4, 5];
@@ -62,8 +38,19 @@ const RatingStars = ({ rating, setRating }) => {
             data-rate={star}
             onClick={() => handleStarClick(star)}
             className={star <= rating ? "active" : ""}
+            style={{
+              fontSize: "40px",
+              height: "38px",
+              color: "#ffbd52",
+              position: "relative",
+              top: 30,
+              paddingRight: "8px",
+            }}
           >
-            ★
+            <FontAwesomeIcon icon={star <= rating ? fasFaStar : farFaStar} />
+            <div style={{ fontSize: 14, color: "#C0C0C0" }}>
+              {labels[star - 1]}
+            </div>
           </li>
         ))}
       </ul>

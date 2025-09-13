@@ -26,61 +26,8 @@ const reviewRateLimiter = rateLimit({
 });
 
 // Tạo một review mới
-// const createReview = asyncHandler(async (req, res) => {
-//   const { phone, user, rating, content } = req.body;
-
-//   // Validate ObjectId
-//   if (!mongoose.isValidObjectId(phone)) {
-//     return res
-//       .status(400)
-//       .json({ success: false, message: "Invalid phone ID" });
-//   }
-//   if (!mongoose.isValidObjectId(user)) {
-//     return res.status(400).json({ success: false, message: "Invalid user ID" });
-//   }
-
-//   // Check existence
-//   const phoneExists = await Phone.exists({ _id: phone });
-//   if (!phoneExists) {
-//     return res.status(404).json({ success: false, message: "Phone not found" });
-//   }
-//   const userExists = await User.exists({ _id: user });
-//   if (!userExists) {
-//     return res.status(404).json({ success: false, message: "User not found" });
-//   }
-
-//   // Prevent duplicate review by same user for the same phone
-//   const existingReview = await Review.findOne({
-//     phone,
-//     user,
-//     isDeleted: false,
-//   });
-//   if (existingReview) {
-//     return res.status(400).json({
-//       success: false,
-//       message: "You have already reviewed this product",
-//     });
-//   }
-
-//   // try {
-//   //   await validateContent(content); // Kiểm tra ban đầu
-//   //   validateConsent(consent); // Kiểm tra đồng ý
-//   // } catch (error) {
-//   //   return res.status(400).json({ success: false, message: error.message });
-//   // }
-
-//   const newReview = await Review.create({ phone, user, rating, content });
-
-//   await recalcPhoneRating(phone);
-
-//   res.status(201).json({
-//     success: true,
-//     message: "Review created successfully",
-//     data: newReview,
-//   });
-// });
 const createReview = asyncHandler(async (req, res) => {
-  const { phone, user, rating, content, consent } = req.body;
+  const { phone, user, rating, content, consent, agreeRecommend } = req.body;
 
   if (!mongoose.isValidObjectId(phone) || !mongoose.isValidObjectId(user)) {
     return res
@@ -130,13 +77,26 @@ const createReview = asyncHandler(async (req, res) => {
     });
   }
 
-  const newReview = await Review.create({
+  const images = req.files ? req.files.map((file) => file.path) : [];
+
+  // const newReview = await Review.create({
+  //   phone,
+  //   user,
+  //   rating,
+  //   content,
+  //   consent,
+  //   images,
+  // }); // Lưu consent
+  const reviewData = {
     phone,
     user,
     rating,
     content,
     consent,
-  }); // Lưu consent
+    agreeRecommend: agreeRecommend !== undefined ? agreeRecommend : false, // Default to false if not provided
+    images,
+  };
+  const newReview = await Review.create(reviewData);
 
   queueModeration(newReview._id, user, phone);
 
@@ -238,7 +198,7 @@ const getReviewsByUser = asyncHandler(async (req, res) => {
 // Cập nhật một review
 const updateReview = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { rating, content } = req.body;
+  const { rating, content, consent, agreeRecommend, images } = req.body;
 
   const review = await Review.findById(id);
   if (!review) {
@@ -254,9 +214,23 @@ const updateReview = asyncHandler(async (req, res) => {
     });
   }
 
+  // Handle updated images
+  const updatedImages = images || review.images;
+
+  // Prepare update data
+  const updateData = {
+    rating,
+    content,
+    consent: consent !== undefined ? consent : review.consent, // Keep existing if not provided
+    agreeRecommend:
+      agreeRecommend !== undefined ? agreeRecommend : review.agreeRecommend, // Keep existing if not provided
+    images: updatedImages,
+    updatedAt: Date.now(),
+  };
+
   const updatedReview = await Review.findByIdAndUpdate(
     id,
-    { rating, content, updatedAt: Date.now() },
+    { $set: updateData },
     { new: true, runValidators: true }
   );
 
@@ -296,55 +270,6 @@ const deleteReview = asyncHandler(async (req, res) => {
 });
 
 // Lấy tóm tắt đánh giá của một sản phẩm
-// const getReviewSummary = asyncHandler(async (req, res) => {
-//   const { id } = req.params;
-
-//   if (!mongoose.isValidObjectId(id)) {
-//     return res.status(400).json({
-//       success: false,
-//       message: "Invalid phone ID",
-//     });
-//   }
-
-//   const stats = await Review.aggregate([
-//     { $match: { phone: new mongoose.Types.ObjectId(id), isDeleted: false } },
-//     {
-//       $group: {
-//         _id: "$rating",
-//         count: { $sum: 1 },
-//       },
-//     },
-//   ]);
-
-//   if (!stats || stats.length === 0) {
-//     return res.status(200).json({
-//       success: true,
-//       data: {
-//         averageRating: 0,
-//         totalReviews: 0,
-//         distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
-//       },
-//     });
-//   }
-
-//   const totalReviews = stats.reduce((acc, cur) => acc + cur.count, 0);
-//   const totalStars = stats.reduce((acc, cur) => acc + cur._id * cur.count, 0);
-//   const averageRating = (totalStars / totalReviews).toFixed(1);
-//   const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-//   stats.forEach((s) => {
-//     distribution[s._id] = s.count;
-//   });
-
-//   res.status(200).json({
-//     success: true,
-//     data: {
-//       averageRating: Number(averageRating),
-//       totalReviews,
-//       distribution,
-//     },
-//   });
-// });
-// Lấy tóm tắt đánh giá của một sản phẩm
 const getReviewsSummary = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
@@ -358,6 +283,63 @@ const getReviewsSummary = asyncHandler(async (req, res) => {
   res.status(200).json(summary);
 });
 
+const toggleLikeReview = asyncHandler(async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const review = await Review.findById(req.params.id);
+    if (!review) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Review not found" });
+    }
+
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+    const likeIndex = review.likedBy.indexOf(userId);
+    let message = "";
+
+    if (likeIndex > -1) {
+      review.likedBy.splice(likeIndex, 1);
+      review.likes -= 1;
+      message = "Toggled unlike on review successfully";
+    } else {
+      review.likedBy.push(userId);
+      review.likes += 1;
+      message = "Toggled like on review successfully";
+    }
+
+    review.likes = review.likedBy.length;
+
+    const savedReview = await review.save();
+
+    const populatedReview = await Review.findById(savedReview._id).populate(
+      "likedBy",
+      "username email"
+    );
+
+    res.status(200).json({
+      success: true,
+      message: message,
+      data: populatedReview,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error toggling like on review",
+      error: error.message,
+    });
+  }
+});
+
 module.exports = {
   createReview,
   getReviewsByPhone,
@@ -366,4 +348,5 @@ module.exports = {
   deleteReview,
   reviewRateLimiter,
   getReviewsSummary,
+  toggleLikeReview,
 };

@@ -394,6 +394,76 @@ phoneSchema.methods.updateStockAfterPurchase = async function (quantity) {
   await this.save();
 };
 
+// Này code đã đúng nhưng phải chuyển qua cluster mới sử dụng được
+// phoneSchema.methods.updateStockAfterPurchase = async function (
+//   quantity,
+//   options = {}
+// ) {
+//   const { session } = options;
+//   if (!session) throw new Error("Session required for transaction");
+
+//   console.log(
+//     `Updating stock for phone ${this._id}, warehouse: ${this.warehouseLocation}`
+//   ); // Log debug
+
+//   const inventory = await Inventory.findOne({
+//     warehouseLocation: this.warehouseLocation,
+//   }).session(session);
+//   if (!inventory) {
+//     throw new Error(
+//       `Inventory not found for warehouse: ${this.warehouseLocation}`
+//     );
+//   }
+
+//   console.log(
+//     `Inventory found: ${inventory._id}, products count: ${inventory.products.length}`
+//   ); // Log
+
+//   // Sửa: Tìm bằng phoneId thay vì id() (vì subdoc có thể có phoneId là ref, không _id của subdoc)
+//   let product = inventory.products.find(
+//     (p) => p.phoneId && p.phoneId.toString() === this._id.toString()
+//   );
+
+//   if (!product) {
+//     // Nếu không tìm thấy, tạo mới subdoc
+//     console.log(
+//       `Product ${this._id} not found in inventory, creating new entry`
+//     );
+//     product = {
+//       phoneId: this._id,
+//       stock: this.stock,
+//       quantity: this.quantity || 0,
+//       reserved: this.reserved || 0,
+//       colors: this.colors || [],
+//     };
+//     inventory.products.push(product);
+//   }
+
+//   const availableStock = product.stock - product.reserved;
+//   if (availableStock < quantity) {
+//     throw new Error(
+//       `Not enough stock for ${this.name}. Only ${availableStock} available (Stock: ${product.stock}, Reserved: ${product.reserved}).`
+//     );
+//   }
+
+//   product.stock -= quantity;
+//   console.log(`Updated stock for ${this.name}: ${product.stock}`); // Log
+
+//   // Gọi addHistory nếu có (giả định method tồn tại, thêm { session } nếu cần)
+//   if (typeof inventory.addHistory === "function") {
+//     await inventory.addHistory("purchase", quantity, this._id);
+//   }
+
+//   inventory.lastUpdated = Date.now();
+//   await inventory.save({ session });
+
+//   // Đồng bộ stock về Phone
+//   this.stock = product.stock;
+//   await this.save({ session });
+
+//   console.log(`Stock update completed for ${this.name}`);
+// };
+
 // Tính số lượng đã bán từ history
 phoneSchema.methods.getSoldQuantity = async function () {
   const inventory = await Inventory.findOne({

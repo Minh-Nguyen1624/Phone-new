@@ -1,6 +1,8 @@
 const Phone = require("./phoneModel");
 const Inventory = require("./inventoryModel");
 const mongoose = require("mongoose");
+const User = require("./userModel");
+const Discount = require("./discountModel");
 
 const orderSchema = new mongoose.Schema({
   user: {
@@ -238,63 +240,73 @@ const orderSchema = new mongoose.Schema({
 // Middleware: Kiểm tra giá sản phẩm trong items có khớp với giá trong Phone không
 // orderSchema.pre("save", async function (next) {
 //   try {
-//     // Kiểm tra và cập nhật tồn kho
+//     // Kiểm tra và lấy dữ liệu từ Phone bằng raw query
 //     for (const item of this.items) {
 //       console.log("Item:", item);
-//       const phone = await mongoose.model("Phone").findById(item.phone);
+
+//       const phone = await mongoose.connection.db.collection("phones").findOne(
+//         { _id: new mongoose.Types.ObjectId(item.phone) },
+//         {
+//           projection: {
+//             stock: 1,
+//             price: 1,
+//             name: 1,
+//             finalPrice: 1,
+//             image: 1, // Giữ để kiểm tra nhưng không validate
+//           },
+//         }
+//       );
 //       if (!phone) {
 //         return next(new Error(`Sản phẩm không tồn tại: ${item.phone}`));
 //       }
 
-//       console.log(`Phone ${item.phone} imageUrl:`, item.imageUrl); // Debug
+//       console.log(`Initial Phone ${item.phone} details:`, {
+//         stock: phone.stock,
+//         price: phone.price,
+//         finalPrice: phone.finalPrice,
+//         image: phone.image,
+//       });
+
+//       // Sử dụng finalPrice làm giá chuẩn
 //       const phonePrice = phone.finalPrice || phone.price;
-//       if (item.price !== phonePrice) {
-//         return next(
-//           new Error(
-//             `Giá sản phẩm không khớp: ${phone.name} có giá ${phonePrice}, nhưng trong đơn hàng là ${item.price}`
-//           )
-//         );
+//       let adjustedPrice = phonePrice;
+
+//       // Nếu có discountId, kiểm tra và áp dụng
+//       if (this.discount) {
+//         const Discount = mongoose.model("Discount");
+//         const discount = await Discount.findById(this.discount);
+//         if (discount && discount.isCurrentlyActive) {
+//           if (discount.discountType === "percentage") {
+//             const discountAmount = (phone.price * discount.discountValue) / 100;
+//             adjustedPrice = phone.price - Math.min(discountAmount, phone.price);
+//           } else {
+//             adjustedPrice =
+//               phone.price - Math.min(discount.discountValue, phone.price);
+//           }
+//           console.log(`Adjusted price with discount: ${adjustedPrice}`);
+//         }
 //       }
-//       item.originalPrice = phone.price; // Đảm bảo originalPrice từ Phone
+
+//       // Gán item.price từ adjustedPrice
+//       item.price = adjustedPrice;
+//       console.log(`Updated item ${item.phone} price: ${item.price}`);
+
+//       item.originalPrice = phone.price || phone.finalPrice;
+
 //       if (phone.stock < item.quantity) {
 //         return next(new Error(`Không đủ tồn kho cho sản phẩm: ${phone.name}`));
 //       }
-//       // phone.stock -= item.quantity;
-//       // await phone.save();
-//       // await mongoose
-//       //   .model("Phone")
-//       //   .updateOne(
-//       //     { _id: phone._id },
-//       //     { $inc: { stock: -item.quantity } },
-//       //     { runValidators: false }
-//       //   );
-//       await Phone.updateOne(
-//         { _id: phone._id },
-//         { $inc: { stock: -item.quantity } },
-//         { runValidators: false }
-//       );
 
-//       // Gán imageUrl từ Phone nếu chưa có hoặc không hợp lệ
-//       if (
-//         !item.imageUrl ||
-//         !/^https?:\/\/.*\.(jpg|jpeg|png|gif)$/.test(item.imageUrl)
-//       ) {
-//         item.imageUrl = phone.imageUrl;
-//         console.log(
-//           `Assigned imageUrl from Phone ${item.phone}:`,
-//           item.imageUrl
-//         ); // Debug
-//         if (
-//           !item.imageUrl ||
-//           !/^https?:\/\/.*\.(jpg|jpeg|png|gif)$/.test(item.imageUrl)
-//         ) {
-//           return next(
-//             new Error(
-//               `Invalid or missing image URL for phone ${item.phone}: ${item.imageUrl}`
-//             )
-//           );
-//         }
-//       }
+//       // Cập nhật stock bằng raw query, tự động xử lý image nếu cần
+//       console.log(
+//         `Updating stock for Phone ${item.phone} with quantity: ${item.quantity}`
+//       );
+//       await mongoose.connection.db.collection("phones").updateOne(
+//         { _id: new mongoose.Types.ObjectId(item.phone) },
+//         { $inc: { stock: -item.quantity } },
+//         { runValidators: false } // Vô hiệu hóa validate để tránh lỗi image
+//       );
+//       console.log(`Stock updated for Phone ${item.phone}`);
 //     }
 
 //     // Tính subTotal (dựa trên originalPrice)
@@ -320,7 +332,7 @@ const orderSchema = new mongoose.Schema({
 //     if (this.discount) {
 //       const Discount = mongoose.model("Discount");
 //       const discount = await Discount.findById(this.discount);
-//       console.log("Discount document:", discount); // Log để debug
+//       console.log("Discount document:", discount);
 //       if (
 //         discount &&
 //         discount.isCurrentlyActive &&
@@ -347,7 +359,7 @@ const orderSchema = new mongoose.Schema({
 //           this.discountAmount = Math.min(
 //             this.discountAmount,
 //             this.totalCartPrice
-//           ); // Đảm bảo không âm
+//           );
 //           this.totalCartPrice -= this.discountAmount;
 //           discount.usedCount = (discount.usedCount || 0) + 1;
 //           await discount.save();
@@ -374,17 +386,17 @@ const orderSchema = new mongoose.Schema({
 //       if (!user) {
 //         return next(new Error("User not found"));
 //       }
-//       const pointsToUse = Math.min(user.loyaltyPoints, this.totalCartPrice); // Sử dụng tối đa điểm có hoặc giá đơn hàng
+//       const pointsToUse = Math.min(user.loyaltyPoints, this.totalCartPrice);
 //       if (pointsToUse > 0) {
-//         this.discountAmount += pointsToUse; // Thêm điểm vào discountAmount
-//         this.totalCartPrice -= pointsToUse; // Giảm giá đơn hàng
-//         user.loyaltyPoints -= pointsToUse; // Trừ điểm từ user
+//         this.discountAmount += pointsToUse;
+//         this.totalCartPrice -= pointsToUse;
+//         user.loyaltyPoints -= pointsToUse;
 //         await user.save();
 //         console.log(
 //           `Used ${pointsToUse} loyalty points, remaining: ${user.loyaltyPoints}`
 //         );
 //       }
-//       this.useLoyaltyPoints = false; // Đặt lại sau khi sử dụng
+//       this.useLoyaltyPoints = false;
 //     }
 
 //     // Cộng phí vận chuyển vào totalAmount
@@ -413,173 +425,130 @@ const orderSchema = new mongoose.Schema({
 //     next(error);
 //   }
 // });
-
 orderSchema.pre("save", async function (next) {
   try {
-    // Kiểm tra và lấy dữ liệu từ Phone bằng raw query
     for (const item of this.items) {
-      console.log("Item:", item);
+      const phoneId = new mongoose.Types.ObjectId(item.phone);
 
-      const phone = await mongoose.connection.db.collection("phones").findOne(
-        { _id: new mongoose.Types.ObjectId(item.phone) },
-        {
-          projection: {
-            stock: 1,
-            price: 1,
-            name: 1,
-            finalPrice: 1,
-            image: 1, // Giữ để kiểm tra nhưng không validate
-          },
-        }
-      );
-      if (!phone) {
+      // Lấy phone mà không trigger validator
+      const phone = await mongoose.connection.db
+        .collection("phones")
+        .findOne(
+          { _id: phoneId },
+          {
+            projection: {
+              stock: 1,
+              price: 1,
+              finalPrice: 1,
+              image: 1,
+              name: 1,
+            },
+          }
+        );
+
+      if (!phone)
         return next(new Error(`Sản phẩm không tồn tại: ${item.phone}`));
-      }
 
-      console.log(`Initial Phone ${item.phone} details:`, {
-        stock: phone.stock,
-        price: phone.price,
-        finalPrice: phone.finalPrice,
-        image: phone.image,
-      });
-
-      // Sử dụng finalPrice làm giá chuẩn
+      // Giá chuẩn của sản phẩm
       const phonePrice = phone.finalPrice || phone.price;
       let adjustedPrice = phonePrice;
 
-      // Nếu có discountId, kiểm tra và áp dụng
-      if (this.discount) {
-        const Discount = mongoose.model("Discount");
-        const discount = await Discount.findById(this.discount);
-        if (discount && discount.isCurrentlyActive) {
-          if (discount.discountType === "percentage") {
-            const discountAmount = (phone.price * discount.discountValue) / 100;
-            adjustedPrice = phone.price - Math.min(discountAmount, phone.price);
-          } else {
-            adjustedPrice =
-              phone.price - Math.min(discount.discountValue, phone.price);
-          }
-          console.log(`Adjusted price with discount: ${adjustedPrice}`);
-        }
-      }
+      item.originalPrice = phonePrice;
 
-      // Gán item.price từ adjustedPrice
-      item.price = adjustedPrice;
-      console.log(`Updated item ${item.phone} price: ${item.price}`);
-
-      item.originalPrice = phone.price || phone.finalPrice;
-
+      // Kiểm tra tồn kho
       if (phone.stock < item.quantity) {
         return next(new Error(`Không đủ tồn kho cho sản phẩm: ${phone.name}`));
       }
 
-      // Cập nhật stock bằng raw query, tự động xử lý image nếu cần
-      console.log(
-        `Updating stock for Phone ${item.phone} with quantity: ${item.quantity}`
-      );
-      await mongoose.connection.db.collection("phones").updateOne(
-        { _id: new mongoose.Types.ObjectId(item.phone) },
-        { $inc: { stock: -item.quantity } },
-        { runValidators: false } // Vô hiệu hóa validate để tránh lỗi image
-      );
-      console.log(`Stock updated for Phone ${item.phone}`);
+      // Cập nhật stock trực tiếp, không validate image
+      await mongoose.connection.db
+        .collection("phones")
+        .updateOne(
+          { _id: phoneId },
+          { $inc: { stock: -item.quantity } },
+          { runValidators: false }
+        );
+
+      item.price = adjustedPrice; // Giá sẽ được áp dụng sau discount
     }
 
-    // Tính subTotal (dựa trên originalPrice)
+    // Tính subtotal và totalCartPrice
     this.subTotal = this.items.reduce(
-      (sum, item) => sum + item.originalPrice * item.quantity,
+      (sum, i) => sum + i.originalPrice * i.quantity,
       0
     );
-
-    // Tính totalCost
-    this.totalCost = this.items.reduce(
-      (sum, item) => sum + item.originalPrice * item.quantity,
-      0
-    );
-
-    // Tính totalCartPrice ban đầu (dựa trên price)
     this.totalCartPrice = this.items.reduce(
-      (sum, item) => sum + item.price * item.quantity,
+      (sum, i) => sum + i.price * i.quantity,
       0
     );
+    this.totalCost = this.subTotal;
 
-    // Áp dụng mã giảm giá từ discountId
-    const currentDate = new Date();
+    // Áp dụng discount
+    this.discountPercent = 0;
+    this.discountAmount = 0;
+
     if (this.discount) {
       const Discount = mongoose.model("Discount");
       const discount = await Discount.findById(this.discount);
-      console.log("Discount document:", discount);
+
       if (
         discount &&
         discount.isCurrentlyActive &&
-        new Date(discount.startDate) <= currentDate &&
-        (!discount.endDate || new Date(discount.endDate) >= currentDate)
+        new Date(discount.startDate) <= new Date() &&
+        (!discount.endDate || new Date(discount.endDate) >= new Date())
       ) {
         const minOrderValue = discount.minOrderValue || 0;
-        console.log(
-          "Min order value:",
-          minOrderValue,
-          "Subtotal:",
-          this.subTotal
-        );
+
         if (this.subTotal >= minOrderValue) {
           if (discount.discountType === "percentage") {
+            this.discountPercent = discount.discountValue;
             this.discountAmount =
               (this.subTotal * discount.discountValue) / 100;
           } else {
+            this.discountPercent = 0;
             this.discountAmount = Math.min(
               discount.discountValue,
               this.subTotal
             );
           }
-          this.discountAmount = Math.min(
-            this.discountAmount,
-            this.totalCartPrice
-          );
+
+          // Áp dụng vào totalCartPrice
           this.totalCartPrice -= this.discountAmount;
+
           discount.usedCount = (discount.usedCount || 0) + 1;
           await discount.save();
-          console.log("Discount applied:", this.discountAmount);
         } else {
+          // Nếu subtotal chưa đạt minOrderValue
           this.discount = null;
+          this.discountPercent = 0;
           this.discountAmount = 0;
-          console.log("Discount not applied: Subtotal below minOrderValue");
         }
       } else {
+        // Discount không hợp lệ hoặc hết hạn
         this.discount = null;
+        this.discountPercent = 0;
         this.discountAmount = 0;
-        console.log("Discount not active or invalid");
       }
-    } else {
-      this.discountAmount = 0;
-      console.log("No discount provided");
     }
 
-    // Kiểm tra và áp dụng loyalty points nếu dùng
+    // Cộng phí vận chuyển
+    this.totalAmount = this.totalCartPrice + (this.shippingFee || 0);
+
+    // Tính loyalty points (1đ = 2 điểm)
     if (this.useLoyaltyPoints) {
       const User = mongoose.model("User");
       const user = await User.findById(this.user);
-      if (!user) {
-        return next(new Error("User not found"));
-      }
+      if (!user) return next(new Error("User not found"));
+
       const pointsToUse = Math.min(user.loyaltyPoints, this.totalCartPrice);
       if (pointsToUse > 0) {
         this.discountAmount += pointsToUse;
         this.totalCartPrice -= pointsToUse;
         user.loyaltyPoints -= pointsToUse;
         await user.save();
-        console.log(
-          `Used ${pointsToUse} loyalty points, remaining: ${user.loyaltyPoints}`
-        );
       }
       this.useLoyaltyPoints = false;
     }
-
-    // Cộng phí vận chuyển vào totalAmount
-    this.totalAmount = this.totalCartPrice + (this.shippingFee || 0);
-
-    // Tính điểm tích lũy (1đ = 2 điểm)
-    this.loyaltyPoints = Math.floor(this.totalAmount * 2);
 
     // Cập nhật estimatedDeliveryDate
     if (!this.estimatedDeliveryDate) {
@@ -589,17 +558,23 @@ orderSchema.pre("save", async function (next) {
           : this.deliveryOption === "same-day"
           ? 1
           : 5;
+
       this.estimatedDeliveryDate = new Date(
         Date.now() + deliveryDays * 24 * 60 * 60 * 1000
       );
     }
 
+    this.loyaltyPoints = Math.floor(this.totalAmount * 2);
     this.updatedAt = new Date();
+
     next();
   } catch (error) {
     console.error("Error in orderSchema pre-save:", error.message);
     next(error);
   }
 });
+
+// Thêm chỉ mục cho orderStatus
+orderSchema.index({ orderStatus: 1, orderDate: -1 });
 
 module.exports = mongoose.model("Order", orderSchema);

@@ -10,6 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fortawesome/free-regular-svg-icons": "^7.0.1",
+    "@fortawesome/free-solid-svg-icons": "^7.0.1",
+    "@fortawesome/react-fontawesome": "^3.0.2",
     "@geoapify/leaflet-address-search-plugin": "^1.0.2",
     "axios": "^1.10.0",
     "bootstrap": "^5.3.7",

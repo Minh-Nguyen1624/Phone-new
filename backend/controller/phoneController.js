@@ -485,7 +485,7 @@ const getPhoneById = async (req, res) => {
       .populate("order", "orderStatus paymentMethod") // If Order model has relevant fields;
       .populate({
         path: "reviews",
-        select: "phone rating content user createdAt",
+        select: "phone rating content user createdAt likes",
         populate: {
           path: "user",
           select: "username email avatar", // lấy thêm field cụ thể từ user
@@ -1076,257 +1076,815 @@ const getSoldQuantity = async (req, res) => {
   }
 };
 
+// const getRelatedProducts = asyncHandler(async (req, res) => {
+//   try {
+//     const { phoneId } = req.params;
+
+//     // Kiểm tra xem phoneId có hợp lệ không
+//     if (!mongoose.Types.ObjectId.isValid(phoneId)) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Invalid phoneId",
+//       });
+//     }
+
+//     const currentPhone = await Phone.findById(phoneId).select("category brand");
+//     if (!currentPhone) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Phone not found",
+//       });
+//     }
+
+//     // Cập nhật hoặc tạo view history
+//     const cookies = req.cookies || {}; // Đảm bảo req.cookies không undefined
+//     const identifier = req.user?.id || cookies.anonymousId || uuidv4();
+//     if (!cookies.anonymousId && !req.user?.id) {
+//       res.cookie("anonymousId", identifier, {
+//         maxAge: 90 * 24 * 60 * 60 * 1000,
+//         httpOnly: true,
+//       }); // Cookie tồn tại 90 ngày
+//     }
+
+//     let viewRecord = await ViewHistory.findOne({
+//       product: phoneId,
+//       $or: [
+//         {
+//           user: req.user?.id ? new mongoose.Types.ObjectId(req.user.id) : null,
+//         },
+//         { anonymousId: req.user?.id ? undefined : identifier },
+//       ].filter(Boolean), // Loại bỏ undefined/null
+//     });
+//     if (viewRecord) {
+//       viewRecord.viewCount += 1;
+//       viewRecord.lastViewed = new Date();
+//       await viewRecord.save();
+//     } else {
+//       await ViewHistory.create({
+//         product: phoneId,
+//         user: req.user?.id,
+//         anonymousId: req.user?.id ? undefined : identifier,
+//       });
+//     }
+
+//     // Bước 1: Lấy sản phẩm liên quan dựa trên category và brand
+//     const baseRelatedProducts = await Phone.aggregate([
+//       {
+//         $match: {
+//           _id: { $ne: new mongoose.Types.ObjectId(phoneId) },
+//           $or: [
+//             { category: currentPhone.category },
+//             { brand: currentPhone.brand },
+//           ],
+//         },
+//       },
+//       {
+//         $lookup: {
+//           from: "categories",
+//           localField: "category",
+//           foreignField: "_id",
+//           as: "categoryDetails",
+//         },
+//       },
+//       {
+//         $unwind: { path: "$categoryDetails", preserveNullAndEmptyArrays: true },
+//       },
+//       {
+//         $project: {
+//           name: 1,
+//           price: 1,
+//           finalPrice: 1,
+//           image: 1,
+//           "categoryDetails.name": 1,
+//           brand: 1,
+//           images: { $arrayElemAt: ["$images", 0] },
+//           reserved: 1,
+//           rating: 1,
+//         },
+//       },
+//       { $sort: { reserved: -1, rating: -1 } },
+//       { $limit: 10 },
+//     ]);
+
+//     // Bước 2: Phân tích sản phẩm thường mua cùng từ Order
+//     const frequentlyBoughtTogether = await Order.aggregate([
+//       {
+//         $match: { orderStatus: "Completed" },
+//       },
+//       { $unwind: "$items" },
+//       {
+//         $match: { "items.phone": new mongoose.Types.ObjectId(phoneId) },
+//       },
+//       {
+//         $group: {
+//           _id: "$items.phone",
+//           relatedProducts: { $push: "$items.phone" },
+//         },
+//       },
+//       {
+//         $unwind: "$relatedProducts",
+//       },
+//       {
+//         $match: {
+//           relatedProducts: { $ne: new mongoose.Types.ObjectId(phoneId) },
+//         },
+//       },
+//       {
+//         $group: {
+//           _id: "$relatedProducts",
+//           frequency: { $sum: 1 },
+//         },
+//       },
+//       {
+//         $lookup: {
+//           from: "phones",
+//           localField: "_id",
+//           foreignField: "_id",
+//           as: "productDetails",
+//         },
+//       },
+//       {
+//         $unwind: "$productDetails",
+//       },
+//       {
+//         $project: {
+//           _id: 1,
+//           frequency: 1,
+//           name: "$productDetails.name",
+//           price: "$productDetails.price",
+//           finalPrice: "$productDetails.finalPrice",
+//           image: "$productDetails.image",
+//           category: "$productDetails.category",
+//           brand: "$productDetails.brand",
+//           images: { $arrayElemAt: ["$productDetails.images", 0] },
+//           reserved: "$productDetails.reserved",
+//           rating: "$productDetails.rating",
+//         },
+//       },
+//       { $sort: { frequency: -1, reserved: -1 } },
+//       { $limit: 5 },
+//     ]);
+
+//     let popularViewedProducts = [];
+//     if (identifier) {
+//       const viewHistory = await ViewHistory.aggregate([
+//         {
+//           $match: {
+//             $or: [
+//               {
+//                 user: req.user?.id
+//                   ? new mongoose.Types.ObjectId(req.user.id)
+//                   : null,
+//               },
+//               { anonymousId: identifier },
+//             ].filter(Boolean),
+//             viewCount: { $gt: 2 },
+//           },
+//         },
+//         {
+//           $lookup: {
+//             from: "phones",
+//             localField: "product",
+//             foreignField: "_id",
+//             as: "productDetails",
+//           },
+//         },
+//         {
+//           $unwind: "$productDetails",
+//         },
+//         {
+//           $match: {
+//             "productDetails._id": { $ne: new mongoose.Types.ObjectId(phoneId) },
+//           },
+//         },
+//         {
+//           $project: {
+//             _id: "$productDetails._id",
+//             name: "$productDetails.name",
+//             price: "$productDetails.price",
+//             finalPrice: "$productDetails.finalPrice",
+//             image: "$productDetails.image",
+//             category: "$productDetails.category",
+//             brand: "$productDetails.brand",
+//             images: { $arrayElemAt: ["$productDetails.images", 0] },
+//             reserved: "$productDetails.reserved",
+//             rating: "$productDetails.rating",
+//             viewCount: 1,
+//           },
+//         },
+//         { $sort: { viewCount: -1 } },
+//         { $limit: 5 },
+//       ]);
+//       popularViewedProducts = viewHistory;
+//     }
+
+//     const allRelatedPhones = [
+//       ...baseRelatedProducts,
+//       ...frequentlyBoughtTogether,
+//       ...popularViewedProducts,
+//     ]
+//       .reduce((unique, phone) => {
+//         if (!unique.some((p) => p._id.toString() === phone._id.toString())) {
+//           unique.push(phone);
+//         }
+//         return unique;
+//       }, [])
+//       .slice(0, 5);
+
+//     // Định dạng dữ liệu
+//     const formattedProducts = await Promise.all(
+//       allRelatedPhones.map(async (phone) => ({
+//         _id: phone._id,
+//         name: phone.name,
+//         price: phone.price,
+//         finalPrice: phone.finalPrice,
+//         image:
+//           phone.image ||
+//           (phone.images && phone.images[0]?.url) ||
+//           "https://via.placeholder.com/100",
+//         category:
+//           phone.categoryDetails?.name ||
+//           (
+//             await Category.findById(phone.category)
+//           )?.name ||
+//           "Unknown",
+//         brand: phone.brand,
+//         reserved: phone.reserved,
+//         rating: phone.rating,
+//       }))
+//     );
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Related products retrieved successfully",
+//       data: formattedProducts,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching related products:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Error fetching related products",
+//       error: error.message,
+//     });
+//   }
+// });
+// const getRelatedProducts = asyncHandler(async (req, res) => {
+//   const { phoneId } = req.params;
+
+//   if (!mongoose.Types.ObjectId.isValid(phoneId)) {
+//     return res.status(400).json({
+//       success: false,
+//       message: "Invalid phoneId",
+//     });
+//   }
+
+//   const currentPhone = await Phone.findById(phoneId).select("category brand");
+//   if (!currentPhone) {
+//     return res.status(404).json({
+//       success: false,
+//       message: "Phone not found",
+//     });
+//   }
+
+//   // Xử lý lịch sử xem với logic riêng biệt cho user so với ẩn danh
+//   const cookies = req.cookies || {};
+//   let identifier = cookies.anonymousId || uuidv4();
+//   if (!cookies.anonymousId && !req.user?.id) {
+//     res.cookie("anonymousId", identifier, {
+//       maxAge: 90 * 24 * 60 * 60 * 1000,
+//       httpOnly: true,
+//     });
+//   }
+
+//   const isLoggedIn = !!req.user?.id;
+//   let viewRecord;
+//   if (isLoggedIn) {
+//     viewRecord = await ViewHistory.findOne({
+//       product: phoneId,
+//       user: new mongoose.Types.ObjectId(req.user.id),
+//     });
+//   } else {
+//     viewRecord = await ViewHistory.findOne({
+//       product: phoneId,
+//       anonymousId: identifier,
+//     });
+//   }
+
+//   if (viewRecord) {
+//     viewRecord.viewCount += 1;
+//     viewRecord.lastViewed = new Date();
+//     await viewRecord.save();
+//   } else {
+//     await ViewHistory.create({
+//       product: phoneId,
+//       ...(isLoggedIn ? { user: req.user.id } : { anonymousId: identifier }),
+//     });
+//   }
+
+//   // Tổng hợp tối ưu với $facet cho tất cả các loại liên quan
+//   const [relatedResults, categoryMap] = await Promise.all([
+//     Phone.aggregate([
+//       {
+//         $facet: {
+//           baseRelated: [
+//             {
+//               $match: {
+//                 _id: { $ne: new mongoose.Types.ObjectId(phoneId) },
+//                 $or: [
+//                   { category: currentPhone.category },
+//                   { brand: currentPhone.brand },
+//                 ],
+//               },
+//             },
+//             {
+//               $lookup: {
+//                 from: "categories",
+//                 localField: "category",
+//                 foreignField: "_id",
+//                 as: "categoryDetails",
+//               },
+//             },
+//             {
+//               $unwind: {
+//                 path: "$categoryDetails",
+//                 preserveNullAndEmptyArrays: true,
+//               },
+//             },
+//             {
+//               $project: {
+//                 name: 1,
+//                 price: 1,
+//                 finalPrice: 1,
+//                 image: 1,
+//                 "categoryDetails.name": 1,
+//                 brand: 1,
+//                 images: { $arrayElemAt: ["$images", 0] },
+//                 reserved: 1,
+//                 rating: 1,
+//               },
+//             },
+//             { $sort: { reserved: -1, rating: -1 } },
+//             { $limit: 10 },
+//           ],
+//           frequentlyBought: [
+//             {
+//               $lookup: {
+//                 from: "orders",
+//                 let: { phoneId: new mongoose.Types.ObjectId(phoneId) },
+//                 pipeline: [
+//                   { $match: { $expr: { $eq: ["$orderStatus", "Completed"] } } },
+//                   { $unwind: "$items" },
+//                   { $match: { $expr: { $eq: ["$items.phone", "$$phoneId"] } } },
+//                   {
+//                     $group: {
+//                       _id: "$items.phone",
+//                       relatedProducts: { $push: "$items.phone" },
+//                     },
+//                   },
+//                   { $unwind: "$relatedProducts" },
+//                   { $match: { relatedProducts: { $ne: "$$phoneId" } } },
+//                   {
+//                     $group: {
+//                       _id: "$relatedProducts",
+//                       frequency: { $sum: 1 },
+//                     },
+//                   },
+//                   {
+//                     $lookup: {
+//                       from: "phones",
+//                       localField: "_id",
+//                       foreignField: "_id",
+//                       as: "productDetails",
+//                     },
+//                   },
+//                   { $unwind: "$productDetails" },
+//                   {
+//                     $project: {
+//                       _id: 1,
+//                       frequency: 1,
+//                       name: "$productDetails.name",
+//                       price: "$productDetails.price",
+//                       finalPrice: "$productDetails.finalPrice",
+//                       image: "$productDetails.image",
+//                       category: "$productDetails.category",
+//                       brand: "$productDetails.brand",
+//                       images: { $arrayElemAt: ["$productDetails.images", 0] },
+//                       reserved: "$productDetails.reserved",
+//                       rating: "$productDetails.rating",
+//                     },
+//                   },
+//                   { $sort: { frequency: -1, reserved: -1 } },
+//                   { $limit: 5 },
+//                 ],
+//                 as: "frequentOrders",
+//               },
+//             },
+//             {
+//               $unwind: {
+//                 path: "$frequentOrders",
+//                 preserveNullAndEmptyArrays: true,
+//               },
+//             },
+//             { $replaceRoot: { newRoot: { $ifNull: ["$frequentOrders", {}] } } },
+//           ],
+//           popularViewed: identifier
+//             ? [
+//                 // Facet có điều kiện cho xem
+//                 {
+//                   $lookup: {
+//                     from: "viewhistories",
+//                     let: {
+//                       userId: isLoggedIn
+//                         ? new mongoose.Types.ObjectId(req.user.id)
+//                         : null,
+//                       anonId: isLoggedIn ? null : identifier,
+//                       phoneId: new mongoose.Types.ObjectId(phoneId),
+//                     },
+//                     pipeline: [
+//                       {
+//                         $match: {
+//                           $expr: {
+//                             $cond: {
+//                               if: { $eq: ["$$userId", null] },
+//                               then: {
+//                                 $and: [
+//                                   { anonymousId: "$$anonId" },
+//                                   { viewCount: { $gt: 2 } },
+//                                 ],
+//                               },
+//                               else: {
+//                                 $and: [
+//                                   { user: "$$userId" },
+//                                   { viewCount: { $gt: 2 } },
+//                                 ],
+//                               },
+//                             },
+//                           },
+//                           product: { $ne: "$$phoneId" },
+//                         },
+//                       },
+//                       {
+//                         $lookup: {
+//                           from: "phones",
+//                           localField: "product",
+//                           foreignField: "_id",
+//                           as: "productDetails",
+//                         },
+//                       },
+//                       { $unwind: "$productDetails" },
+//                       {
+//                         $project: {
+//                           _id: "$productDetails._id",
+//                           name: "$productDetails.name",
+//                           price: "$productDetails.price",
+//                           finalPrice: "$productDetails.finalPrice",
+//                           image: "$productDetails.image",
+//                           category: "$productDetails.category",
+//                           brand: "$productDetails.brand",
+//                           images: {
+//                             $arrayElemAt: ["$productDetails.images", 0],
+//                           },
+//                           reserved: "$productDetails.reserved",
+//                           rating: "$productDetails.rating",
+//                           viewCount: 1,
+//                         },
+//                       },
+//                       { $sort: { viewCount: -1 } },
+//                       { $limit: 5 },
+//                     ],
+//                     as: "viewedHistory",
+//                   },
+//                 },
+//                 {
+//                   $unwind: {
+//                     path: "$viewedHistory",
+//                     preserveNullAndEmptyArrays: true,
+//                   },
+//                 },
+//                 {
+//                   $replaceRoot: {
+//                     newRoot: { $ifNull: ["$viewedHistory", {}] },
+//                   },
+//                 },
+//               ]
+//             : [], // Rỗng nếu không có identifier
+//         },
+//       },
+//       {
+//         $project: {
+//           allRelated: {
+//             $setUnion: ["$baseRelated", "$frequentlyBought", "$popularViewed"],
+//           },
+//         },
+//       },
+//       { $unwind: "$allRelated" },
+//       { $replaceRoot: { newRoot: "$allRelated" } },
+//       { $limit: 5 },
+//     ]),
+
+//     // Pre-fetch tất cả danh mục duy nhất cho fallback
+//     Category.find({
+//       _id: { $in: [...new Set(relatedResults.map((p) => p.category || []))] },
+//     }).lean(),
+//   ]);
+
+//   const categoryMap1 = new Map(
+//     categoryMap.map((cat) => [cat._id.toString(), cat.name])
+//   );
+
+//   // Định dạng với fallback danh mục (không N+1)
+//   const formattedProducts = relatedResults.map((phone) => ({
+//     _id: phone._id,
+//     name: phone.name,
+//     price: phone.price,
+//     finalPrice: phone.finalPrice,
+//     image:
+//       phone.image ||
+//       phone.images?.[0]?.url ||
+//       "https://via.placeholder.com/100",
+//     category:
+//       phone.categoryDetails?.name ||
+//       categoryMap1.get(phone.category?.toString()) ||
+//       "Unknown",
+//     brand: phone.brand,
+//     reserved: phone.reserved,
+//     rating: phone.rating,
+//   }));
+
+//   res.status(200).json({
+//     success: true,
+//     message: "Related products retrieved successfully",
+//     data: formattedProducts,
+//   });
+// });
 const getRelatedProducts = asyncHandler(async (req, res) => {
-  try {
-    const { phoneId } = req.params;
+  const { phoneId } = req.params;
 
-    // Kiểm tra xem phoneId có hợp lệ không
-    if (!mongoose.Types.ObjectId.isValid(phoneId)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid phoneId",
-      });
-    }
-
-    const currentPhone = await Phone.findById(phoneId).select("category brand");
-    if (!currentPhone) {
-      return res.status(404).json({
-        success: false,
-        message: "Phone not found",
-      });
-    }
-
-    // Cập nhật hoặc tạo view history
-    const cookies = req.cookies || {}; // Đảm bảo req.cookies không undefined
-    const identifier = req.user?.id || cookies.anonymousId || uuidv4();
-    if (!cookies.anonymousId && !req.user?.id) {
-      res.cookie("anonymousId", identifier, {
-        maxAge: 90 * 24 * 60 * 60 * 1000,
-        httpOnly: true,
-      }); // Cookie tồn tại 90 ngày
-    }
-
-    let viewRecord = await ViewHistory.findOne({
-      product: phoneId,
-      $or: [
-        {
-          user: req.user?.id ? new mongoose.Types.ObjectId(req.user.id) : null,
-        },
-        { anonymousId: req.user?.id ? undefined : identifier },
-      ].filter(Boolean), // Loại bỏ undefined/null
-    });
-    if (viewRecord) {
-      viewRecord.viewCount += 1;
-      viewRecord.lastViewed = new Date();
-      await viewRecord.save();
-    } else {
-      await ViewHistory.create({
-        product: phoneId,
-        user: req.user?.id,
-        anonymousId: req.user?.id ? undefined : identifier,
-      });
-    }
-
-    // Bước 1: Lấy sản phẩm liên quan dựa trên category và brand
-    const baseRelatedProducts = await Phone.aggregate([
-      {
-        $match: {
-          _id: { $ne: new mongoose.Types.ObjectId(phoneId) },
-          $or: [
-            { category: currentPhone.category },
-            { brand: currentPhone.brand },
-          ],
-        },
-      },
-      {
-        $lookup: {
-          from: "categories",
-          localField: "category",
-          foreignField: "_id",
-          as: "categoryDetails",
-        },
-      },
-      {
-        $unwind: { path: "$categoryDetails", preserveNullAndEmptyArrays: true },
-      },
-      {
-        $project: {
-          name: 1,
-          price: 1,
-          finalPrice: 1,
-          image: 1,
-          "categoryDetails.name": 1,
-          brand: 1,
-          images: { $arrayElemAt: ["$images", 0] },
-          reserved: 1,
-          rating: 1,
-        },
-      },
-      { $sort: { reserved: -1, rating: -1 } },
-      { $limit: 10 },
-    ]);
-
-    // Bước 2: Phân tích sản phẩm thường mua cùng từ Order
-    const frequentlyBoughtTogether = await Order.aggregate([
-      {
-        $match: { orderStatus: "Completed" },
-      },
-      { $unwind: "$items" },
-      {
-        $match: { "items.phone": new mongoose.Types.ObjectId(phoneId) },
-      },
-      {
-        $group: {
-          _id: "$items.phone",
-          relatedProducts: { $push: "$items.phone" },
-        },
-      },
-      {
-        $unwind: "$relatedProducts",
-      },
-      {
-        $match: {
-          relatedProducts: { $ne: new mongoose.Types.ObjectId(phoneId) },
-        },
-      },
-      {
-        $group: {
-          _id: "$relatedProducts",
-          frequency: { $sum: 1 },
-        },
-      },
-      {
-        $lookup: {
-          from: "phones",
-          localField: "_id",
-          foreignField: "_id",
-          as: "productDetails",
-        },
-      },
-      {
-        $unwind: "$productDetails",
-      },
-      {
-        $project: {
-          _id: 1,
-          frequency: 1,
-          name: "$productDetails.name",
-          price: "$productDetails.price",
-          finalPrice: "$productDetails.finalPrice",
-          image: "$productDetails.image",
-          category: "$productDetails.category",
-          brand: "$productDetails.brand",
-          images: { $arrayElemAt: ["$productDetails.images", 0] },
-          reserved: "$productDetails.reserved",
-          rating: "$productDetails.rating",
-        },
-      },
-      { $sort: { frequency: -1, reserved: -1 } },
-      { $limit: 5 },
-    ]);
-
-    let popularViewedProducts = [];
-    if (identifier) {
-      const viewHistory = await ViewHistory.aggregate([
-        {
-          $match: {
-            $or: [
-              {
-                user: req.user?.id
-                  ? new mongoose.Types.ObjectId(req.user.id)
-                  : null,
-              },
-              { anonymousId: identifier },
-            ].filter(Boolean),
-            viewCount: { $gt: 2 },
-          },
-        },
-        {
-          $lookup: {
-            from: "phones",
-            localField: "product",
-            foreignField: "_id",
-            as: "productDetails",
-          },
-        },
-        {
-          $unwind: "$productDetails",
-        },
-        {
-          $match: {
-            "productDetails._id": { $ne: new mongoose.Types.ObjectId(phoneId) },
-          },
-        },
-        {
-          $project: {
-            _id: "$productDetails._id",
-            name: "$productDetails.name",
-            price: "$productDetails.price",
-            finalPrice: "$productDetails.finalPrice",
-            image: "$productDetails.image",
-            category: "$productDetails.category",
-            brand: "$productDetails.brand",
-            images: { $arrayElemAt: ["$productDetails.images", 0] },
-            reserved: "$productDetails.reserved",
-            rating: "$productDetails.rating",
-            viewCount: 1,
-          },
-        },
-        { $sort: { viewCount: -1 } },
-        { $limit: 5 },
-      ]);
-      popularViewedProducts = viewHistory;
-    }
-
-    const allRelatedPhones = [
-      ...baseRelatedProducts,
-      ...frequentlyBoughtTogether,
-      ...popularViewedProducts,
-    ]
-      .reduce((unique, phone) => {
-        if (!unique.some((p) => p._id.toString() === phone._id.toString())) {
-          unique.push(phone);
-        }
-        return unique;
-      }, [])
-      .slice(0, 5);
-
-    // Định dạng dữ liệu
-    const formattedProducts = await Promise.all(
-      allRelatedPhones.map(async (phone) => ({
-        _id: phone._id,
-        name: phone.name,
-        price: phone.price,
-        finalPrice: phone.finalPrice,
-        image:
-          phone.image ||
-          (phone.images && phone.images[0]?.url) ||
-          "https://via.placeholder.com/100",
-        category:
-          phone.categoryDetails?.name ||
-          (
-            await Category.findById(phone.category)
-          )?.name ||
-          "Unknown",
-        brand: phone.brand,
-        reserved: phone.reserved,
-        rating: phone.rating,
-      }))
-    );
-
-    res.status(200).json({
-      success: true,
-      message: "Related products retrieved successfully",
-      data: formattedProducts,
-    });
-  } catch (error) {
-    console.error("Error fetching related products:", error);
-    res.status(500).json({
+  if (!mongoose.Types.ObjectId.isValid(phoneId)) {
+    return res.status(400).json({
       success: false,
-      message: "Error fetching related products",
-      error: error.message,
+      message: "Invalid phoneId",
     });
   }
+
+  const currentPhone = await Phone.findById(phoneId).select("category brand");
+  if (!currentPhone) {
+    return res.status(404).json({
+      success: false,
+      message: "Phone not found",
+    });
+  }
+
+  // --- Xử lý identifier cho user ẩn danh ---
+  const cookies = req.cookies || {};
+  let identifier = cookies.anonymousId || uuidv4();
+
+  if (!cookies.anonymousId && !req.user?.id) {
+    res.cookie("anonymousId", identifier, {
+      maxAge: 90 * 24 * 60 * 60 * 1000, // 90 ngày
+      httpOnly: true,
+    });
+  }
+
+  const userId = req.user?.id || null;
+  const isLoggedIn = !!userId;
+
+  // --- Cập nhật view history an toàn ---
+  await ViewHistory.updateViewHistory(
+    phoneId,
+    userId,
+    isLoggedIn ? null : identifier
+  );
+
+  // --- Aggregation để lấy các sản phẩm liên quan ---
+  const relatedResults = await Phone.aggregate([
+    {
+      $facet: {
+        // 1. Sản phẩm cùng category hoặc brand
+        baseRelated: [
+          {
+            $match: {
+              _id: { $ne: new mongoose.Types.ObjectId(phoneId) },
+              $or: [
+                { category: currentPhone.category },
+                { brand: currentPhone.brand },
+              ],
+            },
+          },
+          {
+            $lookup: {
+              from: "categories",
+              localField: "category",
+              foreignField: "_id",
+              as: "categoryDetails",
+            },
+          },
+          {
+            $unwind: {
+              path: "$categoryDetails",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $project: {
+              name: 1,
+              price: 1,
+              finalPrice: 1,
+              image: 1,
+              "categoryDetails.name": 1,
+              brand: 1,
+              images: { $arrayElemAt: ["$images", 0] },
+              reserved: 1,
+              rating: 1,
+            },
+          },
+          { $sort: { reserved: -1, rating: -1 } },
+          { $limit: 10 },
+        ],
+
+        // 2. Sản phẩm thường mua cùng
+        frequentlyBought: [
+          {
+            $lookup: {
+              from: "orders",
+              let: { phoneId: new mongoose.Types.ObjectId(phoneId) },
+              pipeline: [
+                { $match: { orderStatus: "Completed" } },
+                { $unwind: "$items" },
+                { $match: { $expr: { $eq: ["$items.phone", "$$phoneId"] } } },
+                {
+                  $group: {
+                    _id: "$items.phone",
+                    relatedProducts: { $push: "$items.phone" },
+                  },
+                },
+                { $unwind: "$relatedProducts" },
+                { $match: { relatedProducts: { $ne: "$$phoneId" } } },
+                {
+                  $group: {
+                    _id: "$relatedProducts",
+                    frequency: { $sum: 1 },
+                  },
+                },
+                {
+                  $lookup: {
+                    from: "phones",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "productDetails",
+                  },
+                },
+                { $unwind: "$productDetails" },
+                {
+                  $project: {
+                    _id: 1,
+                    frequency: 1,
+                    name: "$productDetails.name",
+                    price: "$productDetails.price",
+                    finalPrice: "$productDetails.finalPrice",
+                    image: "$productDetails.image",
+                    category: "$productDetails.category",
+                    brand: "$productDetails.brand",
+                    images: { $arrayElemAt: ["$productDetails.images", 0] },
+                    reserved: "$productDetails.reserved",
+                    rating: "$productDetails.rating",
+                  },
+                },
+                { $sort: { frequency: -1, reserved: -1 } },
+                { $limit: 5 },
+              ],
+              as: "frequentOrders",
+            },
+          },
+          {
+            $unwind: {
+              path: "$frequentOrders",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          { $replaceRoot: { newRoot: { $ifNull: ["$frequentOrders", {}] } } },
+        ],
+
+        // 3. Sản phẩm được xem nhiều
+        popularViewed: [
+          {
+            $lookup: {
+              from: "viewhistories",
+              let: {
+                userId: isLoggedIn ? new mongoose.Types.ObjectId(userId) : null,
+                anonId: isLoggedIn ? null : identifier,
+                phoneId: new mongoose.Types.ObjectId(phoneId),
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $cond: {
+                        if: { $eq: ["$$userId", null] },
+                        then: {
+                          $and: [
+                            { anonymousId: "$$anonId" },
+                            { viewCount: { $gt: 2 } },
+                          ],
+                        },
+                        else: {
+                          $and: [
+                            { user: "$$userId" },
+                            { viewCount: { $gt: 2 } },
+                          ],
+                        },
+                      },
+                    },
+                    product: { $ne: "$$phoneId" },
+                  },
+                },
+                {
+                  $lookup: {
+                    from: "phones",
+                    localField: "product",
+                    foreignField: "_id",
+                    as: "productDetails",
+                  },
+                },
+                { $unwind: "$productDetails" },
+                {
+                  $project: {
+                    _id: "$productDetails._id",
+                    name: "$productDetails.name",
+                    price: "$productDetails.price",
+                    finalPrice: "$productDetails.finalPrice",
+                    image: "$productDetails.image",
+                    category: "$productDetails.category",
+                    brand: "$productDetails.brand",
+                    images: { $arrayElemAt: ["$productDetails.images", 0] },
+                    reserved: "$productDetails.reserved",
+                    rating: "$productDetails.rating",
+                    viewCount: 1,
+                  },
+                },
+                { $sort: { viewCount: -1 } },
+                { $limit: 5 },
+              ],
+              as: "viewedHistory",
+            },
+          },
+          {
+            $unwind: {
+              path: "$viewedHistory",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          { $replaceRoot: { newRoot: { $ifNull: ["$viewedHistory", {}] } } },
+        ],
+      },
+    },
+    {
+      $project: {
+        allRelated: {
+          $setUnion: ["$baseRelated", "$frequentlyBought", "$popularViewed"],
+        },
+      },
+    },
+    { $unwind: "$allRelated" },
+    { $replaceRoot: { newRoot: "$allRelated" } },
+    { $limit: 10 },
+  ]);
+
+  // --- Lấy tên category fallback
+  const categoryIds = [
+    ...new Set(
+      relatedResults.map((p) => p.category?.toString()).filter(Boolean)
+    ),
+  ];
+  const categoryMap = await Category.find({ _id: { $in: categoryIds } }).lean();
+  const categoryMap1 = new Map(
+    categoryMap.map((cat) => [cat._id.toString(), cat.name])
+  );
+
+  // --- Format kết quả
+  const formattedProducts = relatedResults.map((phone) => ({
+    _id: phone._id,
+    name: phone.name,
+    price: phone.price,
+    finalPrice: phone.finalPrice,
+    image:
+      phone.image ||
+      phone.images?.[0]?.url ||
+      "https://via.placeholder.com/100",
+    category:
+      phone.categoryDetails?.name ||
+      categoryMap1.get(phone.category?.toString()) ||
+      "Unknown",
+    brand: phone.brand,
+    reserved: phone.reserved,
+    rating: phone.rating,
+  }));
+
+  res.status(200).json({
+    success: true,
+    message: "Related products retrieved successfully",
+    data: formattedProducts,
+  });
 });
 
 module.exports = {
