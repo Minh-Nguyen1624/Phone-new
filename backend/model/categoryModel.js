@@ -97,6 +97,11 @@ const categorySchema = new mongoose.Schema({
       ],
     },
   ],
+  // accessoryFor: {
+  //   type: [mongoose.Schema.Types.ObjectId], // Thêm field để liên kết phụ kiện với danh mục cha
+  //   ref: "Category",
+  //   index: true,
+  // },
   isActive: {
     type: Boolean,
     default: true,

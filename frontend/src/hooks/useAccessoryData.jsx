@@ -80,16 +80,21 @@ const useAccessoryData = () => {
 
       const accessoriesCategory = categoriesData.find(
         (cat) =>
-          !cat.parentCategory ||
-          (Array.isArray(cat.parentCategory) &&
-            cat.parentCategory.length === 0 &&
-            cat.name.toLowerCase() === "phukien")
+          (!cat.parentCategory ||
+            (Array.isArray(cat.parentCategory) &&
+              cat.parentCategory.length === 0)) &&
+          cat.name.toLowerCase() === "phukien"
       );
       const accessoriesIdNew = accessoriesCategory
         ? accessoriesCategory._id
         : null;
+      console.log(
+        "Found Accessories Category:",
+        accessoriesCategory,
+        "ID:",
+        accessoriesIdNew
+      );
       setAccessoriesCategoryId(accessoriesIdNew);
-      console.log("Accessories Category ID:", accessoriesIdNew);
 
       const accessoriesResponse = await axios.get(`${API_URL}/phones/search`, {
         params: {
@@ -112,12 +117,6 @@ const useAccessoryData = () => {
           }))
         );
 
-        // let filteredAccessories = rawAccessories;
-        // let filteredAccessories = rawAccessories.map((accessory) => ({
-        //   ...accessory,
-        //   categorySlug: accessory.category?.slug || null, // Sử dụng slug từ API
-        //   imageUrl: accessory.category?.imageUrl || "path/to/default-image.jpg", // Sử dụng URL từ API
-        // }));
         let filteredAccessories = rawAccessories.map((accessory) => {
           console.log("Processing accessory:", accessory);
           return {
@@ -145,7 +144,6 @@ const useAccessoryData = () => {
             );
             return validCategories.includes(accessoryCategoryName);
           });
-          // Xóa giới hạn slice, hiển thị tất cả sản phẩm hợp lệ
         } else if (
           filter &&
           typeof filter === "string" &&
@@ -274,7 +272,9 @@ const useAccessoryData = () => {
 
       if (!newCategoryId || !validCategories.includes(normalizedCategoryName)) {
         setError(
-          `Danh mục '${categoryName}' không hợp lệ. Chỉ chấp nhận 'camera', 'thẻ nhớ', 'router', hoặc 'máy chiếu'.`
+          `Danh mục '${categoryName}' không hợp lệ. Chỉ chấp nhận ${validCategories.join(
+            ", "
+          )}.`
         );
         return;
       }
@@ -318,16 +318,35 @@ const useAccessoryData = () => {
 
   const getChildCategories = () => {
     if (!category || !accessoriesCategoryId) return [];
-    const baseCategoryId = accessoriesCategoryId;
+    const baseCategoryId = accessoriesCategoryId.toString();
 
     return category
       .filter((cat) => {
         const parentIds = Array.isArray(cat.parentCategory)
-          ? cat.parentCategory.map((p) => p._id || p)
-          : [cat.parentCategory?._id || cat.parentCategory];
-        return parentIds.includes(baseCategoryId);
+          ? cat.parentCategory.map((p) => p._id?.toString() || p.toString())
+          : [
+              cat.parentCategory?._id?.toString() ||
+                cat.parentCategory?.toString(),
+            ];
+        console.log(
+          "Category:",
+          cat.name,
+          "Parent IDs:",
+          parentIds,
+          "Base ID:",
+          baseCategoryId
+        );
+        return (
+          parentIds.includes(baseCategoryId) &&
+          cat._id.toString() !== baseCategoryId
+        );
       })
-      .filter((cat) => cat._id !== baseCategoryId);
+      .map((cat) => ({
+        _id: cat._id,
+        name: cat.name,
+        slug: cat.slug,
+        imageUrl: cat.imageUrl,
+      }));
   };
 
   const toggleLike = async (phoneId) => {

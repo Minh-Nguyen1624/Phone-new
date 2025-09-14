@@ -100,16 +100,26 @@ const SmartPhone = () => {
           ...childCategoryIds,
         ];
 
-        const phonePromises = allRelevantCategoryIds.map((catId) =>
-          axios.get(`${API_URL}/phones/search`, {
-            params: {
-              limit: Limit * 10,
-              isActive: true,
-              page: 1,
-              category: catId,
-            },
-          })
-        );
+        // const phonePromises = allRelevantCategoryIds.map((catId) =>
+        //   axios.get(`${API_URL}/phones/search`, {
+        //     params: {
+        //       limit: Limit * 10,
+        //       isActive: true,
+        //       page: 1,
+        //       category: catId,
+        //     },
+        //   })
+        // );
+        const phonePromises = allRelevantCategoryIds.map((catId) => {
+          const params = {
+            limit: Limit * 10,
+            isActive: true,
+            page: 1,
+            category: catId,
+          };
+          console.log("Request params for /phones/search:", params); // Log params
+          return axios.get(`${API_URL}/phones/search`, { params });
+        });
 
         const phoneResponses = await Promise.all(phonePromises);
         const allPhoneData = [].concat(
@@ -214,6 +224,21 @@ const SmartPhone = () => {
     }
   };
 
+  // const filterByCategory = async (categoryId) => {
+  //   try {
+  //     const newCategoryId =
+  //       categoryId === selectedCategoryId ? null : categoryId;
+  //     setSelectedCategoryId(newCategoryId);
+  //     setSearchMode(false);
+  //     setDisplayLimit(InitialDisplayLimit);
+  //     await fetchCategoriesAndPhones(newCategoryId);
+  //   } catch (error) {
+  //     console.error("Error filtering by category:", error);
+  //     setError("Lỗi khi lọc theo danh mục.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
   const filterByCategory = async (categoryId) => {
     try {
       const newCategoryId =
@@ -221,10 +246,27 @@ const SmartPhone = () => {
       setSelectedCategoryId(newCategoryId);
       setSearchMode(false);
       setDisplayLimit(InitialDisplayLimit);
-      await fetchCategoriesAndPhones(newCategoryId);
+
+      const params = {
+        limit: Limit,
+        page: 1,
+      };
+      if (newCategoryId) params.category = newCategoryId;
+      console.log("Request params for /phones/filter:", params); // Log params
+      const response = await axios.get(`${API_URL}/phones/filter`, { params });
+
+      if (response.data.success) {
+        setPhones(response.data.data);
+        setTotalPhones(response.data.pagination.total);
+      } else {
+        setError("Lỗi khi lọc theo danh mục: " + response.data.message);
+      }
     } catch (error) {
       console.error("Error filtering by category:", error);
-      setError("Lỗi khi lọc theo danh mục.");
+      setError(
+        "Lỗi khi lọc theo danh mục: " +
+          (error.response?.data?.message || error.message)
+      );
     } finally {
       setLoading(false);
     }

@@ -9,6 +9,7 @@ import {
 } from "react-icons/fa";
 import ProductRating from "../components/ProductRating";
 import ProductOftenBoughtTogether from "../components/ProductsOftenBoughtTogether";
+import RelatedProducts from "../components/RelatedProducts";
 
 const PolicyItem = ({ title, description, highlight, extra }) => {
   return (
@@ -593,7 +594,7 @@ const ProductMain = ({
           </div>
         </div> */}
         <ProductRating name={product.name} rating={product.rating} />
-        <ProductOftenBoughtTogether product={product} />
+        {/* <ProductOftenBoughtTogether product={product} /> */}
       </div>
 
       <div className="box_right">
@@ -655,6 +656,8 @@ const ProductMain = ({
           <span>(8:00 - 21:00)</span>
         </p>
       </div>
+      <RelatedProducts product={product} />
+      <ProductOftenBoughtTogether product={product} />
     </div>
   );
 };

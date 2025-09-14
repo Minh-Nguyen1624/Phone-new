@@ -66,41 +66,47 @@ const AccessoryBrand = ({
           </div>
           <div className="quick-link">
             {childCategories.length > 0 ? (
-              childCategories.slice(0, 20).map((cat) => (
-                <button
-                  key={cat._id}
-                  className={`category-button ${
-                    selectedFilter === cat.name.toLowerCase()
-                      ? "selected-filter"
-                      : ""
-                  }`}
-                  onClick={() => {
-                    console.log("Filtering by brand:", cat.name.toLowerCase());
-                    filterByBrand(cat.name.toLowerCase());
-                    handleClick(cat.name.toLowerCase());
-                  }}
-                  style={{
-                    backgroundColor:
+              childCategories.slice(0, 20).map((cat) => {
+                // console.log("cat", cat);
+                return (
+                  <button
+                    key={cat._id}
+                    className={`category-button ${
                       selectedFilter === cat.name.toLowerCase()
-                        ? "#007bff"
-                        : "#ffffff",
-                    color:
-                      selectedFilter === cat.name.toLowerCase()
-                        ? "#ffffff"
-                        : "#000000",
-                    margin: "0",
-                    height: "40px",
-                    padding: "5px 20px",
-                    border: "1px solid #ccc",
-                    borderRadius: "5px",
-                    cursor: "pointer",
-                    transition: "all 0.3s ease",
-                    width: "auto",
-                  }}
-                >
-                  {toCapitalize(cat.name)}
-                </button>
-              ))
+                        ? "selected-filter"
+                        : ""
+                    }`}
+                    onClick={() => {
+                      console.log(
+                        "Filtering by brand:",
+                        cat.name.toLowerCase()
+                      );
+                      filterByBrand(cat.name.toLowerCase());
+                      handleClick(cat.name.toLowerCase());
+                    }}
+                    style={{
+                      backgroundColor:
+                        selectedFilter === cat.name.toLowerCase()
+                          ? "#007bff"
+                          : "#ffffff",
+                      color:
+                        selectedFilter === cat.name.toLowerCase()
+                          ? "#ffffff"
+                          : "#000000",
+                      margin: "0",
+                      height: "40px",
+                      padding: "5px 20px",
+                      border: "1px solid #ccc",
+                      borderRadius: "5px",
+                      cursor: "pointer",
+                      transition: "all 0.3s ease",
+                      width: "auto",
+                    }}
+                  >
+                    {toCapitalize(cat.name)}
+                  </button>
+                );
+              })
             ) : (
               <p style={{ color: "#666" }}>
                 Không có thương hiệu nào để hiển thị.

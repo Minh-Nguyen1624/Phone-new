@@ -21,6 +21,7 @@ const getAllCategory = async (req, res) => {
     const categories = await Category.find(filter)
       .populate("parentCategory", "name slug imageUrl")
       .populate("discount", "code discountValue")
+      // .populate("accessoryFor", "name slug") // Thêm populate accessoryFor
       .select(
         "name slug description parentCategory discount imageUrl isActive specificationFields createAt updatedAt"
       );
@@ -42,6 +43,7 @@ const getCategoryById = async (req, res) => {
     const category = await Category.findById(id)
       .populate("parentCategory", "name slug imageUrl")
       .populate("discount", "code discountValue")
+      // .populate("accessoryFor", "name slug") // Thêm populate accessoryFor
       .select(
         "name slug description parentCategory discount imageUrl isActive specificationFields createAt updatedAt"
       );
@@ -59,7 +61,15 @@ const getCategoryById = async (req, res) => {
 
 const createCategory = async (req, res) => {
   try {
-    const { name, parentCategory, discount: discountId, imageUrl } = req.body;
+    // const { name, parentCategory, discount: discountId, imageUrl } = req.body;
+    const {
+      name,
+      parentCategory,
+      discount: discountId,
+      imageUrl,
+      specificationFields,
+      // accessoryFor,
+    } = req.body;
 
     if (parentCategory) {
       if (Array.isArray(parentCategory)) {
@@ -91,6 +101,33 @@ const createCategory = async (req, res) => {
       }
     }
 
+    // // Validate accessoryFor
+    // if (accessoryFor) {
+    //   if (!Array.isArray(accessoryFor)) {
+    //     return res.status(400).json({
+    //       success: false,
+    //       message: "accessoryFor must be an array of category IDs.",
+    //     });
+    //   }
+    //   const invalidIds = accessoryFor.filter(
+    //     (id) => !mongoose.Types.ObjectId.isValid(id)
+    //   );
+    //   if (invalidIds.length > 0) {
+    //     return res.status(400).json({
+    //       success: false,
+    //       message: "Invalid accessoryFor category ID(s).",
+    //     });
+    //   }
+    //   const existingAccessories = await Category.find({
+    //     _id: { $in: accessoryFor },
+    //   });
+    //   if (existingAccessories.length !== accessoryFor.length) {
+    //     return res.status(400).json({
+    //       success: false,
+    //       message: "One or more accessoryFor categories do not exist.",
+    //     });
+    //   }
+    // }
     // Kiểm tra tính hợp lệ của parentCategory nếu có
     // if (parentCategory && !mongoose.Types.ObjectId.isValid(parentCategory)) {
     //   return res
@@ -124,6 +161,8 @@ const createCategory = async (req, res) => {
       parentCategory,
       discount: discountId,
       imageUrl,
+      specificationFields,
+      // accessoryFor: accessoryFor || [], // Ensure accessoryFor is an array
     });
 
     res.status(201).json({
@@ -184,6 +223,26 @@ const addMultipleCategory = async (req, res) => {
           }
         }
 
+        // if (categoryData.accessoryFor) {
+        //   if (!Array.isArray(categoryData.accessoryFor)) {
+        //     throw new Error("accessoryFor must be an array of category IDs.");
+        //   }
+        //   const invalidIds = categoryData.accessoryFor.filter(
+        //     (id) => !mongoose.Types.ObjectId.isValid(id)
+        //   );
+        //   if (invalidIds.length > 0) {
+        //     throw new Error("Invalid accessoryFor category ID(s).");
+        //   }
+        //   const existingAccessories = await Category.find({
+        //     _id: { $in: categoryData.accessoryFor },
+        //   });
+        //   if (existingAccessories.length !== categoryData.accessoryFor.length) {
+        //     throw new Error(
+        //       "One or more accessoryFor categories do not exist."
+        //     );
+        //   }
+        // }
+
         // Xử lý discount: validate nếu có
         if (categoryData.discount) {
           const Discount = mongoose.model("Discount");
@@ -216,6 +275,8 @@ const addMultipleCategory = async (req, res) => {
           discount: categoryData.discount,
           // description: categoryData.description,
           imageUrl: categoryData.imageUrl,
+          specificationFields: categoryData.specificationFields,
+          // accessoryFor: categoryData.accessoryFor,
           isActive:
             categoryData.isActive !== undefined ? categoryData.isActive : true,
           createAt: categoryData.createAt || Date.now(),
@@ -260,6 +321,40 @@ const updateCategory = async (req, res) => {
         });
       }
     }
+
+    // // Validate accessoryFor
+    // if (updateData.accessoryFor) {
+    //   if (!Array.isArray(updateData.accessoryFor)) {
+    //     return res.status(400).json({
+    //       success: false,
+    //       message: "accessoryFor must be an array of category IDs.",
+    //     });
+    //   }
+    //   const invalidIds = updateData.accessoryFor.filter(
+    //     (id) => !mongoose.Types.ObjectId.isValid(id)
+    //   );
+    //   if (invalidIds.length > 0) {
+    //     return res.status(400).json({
+    //       success: false,
+    //       message: "Invalid accessoryFor category ID(s).",
+    //     });
+    //   }
+    //   const existingAccessories = await Category.find({
+    //     _id: { $in: updateData.accessoryFor },
+    //   });
+    //   if (existingAccessories.length !== updateData.accessoryFor.length) {
+    //     return res.status(400).json({
+    //       success: false,
+    //       message: "One or more accessoryFor categories do not exist.",
+    //     });
+    //   }
+    //   if (updateData.accessoryFor.some((id) => id.toString() === id)) {
+    //     return res.status(400).json({
+    //       success: false,
+    //       message: "A category cannot be its own accessory.",
+    //     });
+    //   }
+    // }
 
     // Kiểm tra tính hợp lệ của discount (nếu có)
     if (updateData.discount) {
@@ -381,6 +476,7 @@ const getCategoryBySlug = async (req, res) => {
     const category = await Category.findOne({ slug: categorySlug })
       .populate("parentCategory", "name slug")
       .populate("discount", "code discountValue");
+    // .populate("accessoryFor", "name slug"); // Thêm populate accessoryFor;
 
     if (!category) {
       return res.status(404).json({

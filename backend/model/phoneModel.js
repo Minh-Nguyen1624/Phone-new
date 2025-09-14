@@ -45,6 +45,37 @@ const phoneSchema = new mongoose.Schema({
     ref: "Category",
     // required: true,
   },
+  accessoryFor: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: "Category",
+    index: true,
+    default: [],
+    validate: [
+      {
+        validator: function (v) {
+          if (!v || !this.category) return true;
+          return !v.some((id) => id.toString() === this.category.toString());
+        },
+        message: "A product cannot be an accessory for its own category.",
+      },
+      {
+        validator: function (v) {
+          const uniqueIds = new Set(v.map((id) => id.toString()));
+          return uniqueIds.size === v.length;
+        },
+        message: "Duplicate category IDs are not allowed in accessoryFor.",
+      },
+      {
+        validator: async function (v) {
+          if (!v || v.length === 0) return true;
+          const Category = mongoose.model("Category");
+          const categories = await Category.find({ _id: { $in: v } });
+          return categories.length === v.length;
+        },
+        message: "One or more category IDs in accessoryFor do not exist.",
+      },
+    ],
+  },
   // category: [
   //   {
   //     type: mongoose.Schema.Types.ObjectId,
