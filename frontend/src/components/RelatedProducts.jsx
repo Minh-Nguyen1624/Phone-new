@@ -1,17 +1,18 @@
 // import React, { useState, useEffect, useRef } from "react";
-// import { useNavigate, useParams } from "react-router-dom";
+// import { useParams, useNavigate } from "react-router-dom";
 // import axios from "axios";
-// // import "../css/Accessory.css";
+// import "../css/Accessory.css";
 
 // const API_URL = "http://localhost:8080/api";
 
-// const RelatedProducts = ({ product = [] }) => {
+// const RelatedProducts = ({ product = null }) => {
 //   const [relatedProducts, setRelatedProducts] = useState([]);
 //   const [error, setError] = useState(null);
 //   const [loading, setLoading] = useState(true);
 //   const [currentIndex, setCurrentIndex] = useState(0);
 //   const itemsPerPage = 5;
 //   const animationRef = useRef(null);
+//   const trackRef = useRef(null);
 //   const navigate = useNavigate();
 
 //   const fetchRelatedProducts = async () => {
@@ -30,7 +31,7 @@
 //           },
 //         }
 //       );
-//       console.log("API Response:", response.data); // Debug response
+//       console.log("API Response:", response.data);
 //       if (response.data.success) {
 //         setRelatedProducts(response.data.data || []);
 //       } else {
@@ -50,6 +51,60 @@
 //       setLoading(false);
 //     }
 //   };
+
+//   const smoothScroll = (element, to, duration) => {
+//     if (!element) return;
+//     const start = element.scrollLeft;
+//     const change = to - start;
+//     let startTime = null;
+
+//     const animateScroll = (currentTime) => {
+//       if (!startTime) startTime = currentTime;
+//       const progress = currentTime - startTime;
+//       const easeInOut = (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
+
+//       const val = easeInOut(progress / duration) * change + start;
+//       element.scrollLeft = val;
+
+//       if (progress < duration) {
+//         animationRef.current = requestAnimationFrame(animateScroll);
+//       }
+//     };
+
+//     cancelAnimationFrame(animationRef.current);
+//     animationRef.current = requestAnimationFrame(animateScroll);
+//   };
+
+//   const handlePrev = () => {
+//     console.log("Prev clicked, currentIndex:", currentIndex);
+//     if (currentIndex > 0) {
+//       setCurrentIndex((prev) => prev - 1);
+//     }
+//   };
+
+//   const handleNext = () => {
+//     console.log("Next clicked, currentIndex:", currentIndex);
+//     const maxIndex = Math.max(
+//       0,
+//       Math.ceil(relatedProducts.length / itemsPerPage) - 1
+//     );
+//     if (currentIndex < maxIndex) {
+//       setCurrentIndex((prev) => prev + 1);
+//     }
+//   };
+
+//   useEffect(() => {
+//     if (trackRef.current && relatedProducts.length > 0) {
+//       console.log("Track Ref:", trackRef.current);
+//       const itemWidth = trackRef.current.children[0]?.offsetWidth || 234;
+//       const scrollPosition = currentIndex * itemWidth * itemsPerPage;
+//       smoothScroll(trackRef.current, scrollPosition, 600);
+//     }
+//   }, [currentIndex, relatedProducts]);
+
+//   useEffect(() => {
+//     return () => cancelAnimationFrame(animationRef.current);
+//   }, []);
 
 //   useEffect(() => {
 //     if (product?._id) {
@@ -74,52 +129,53 @@
 //     return <div className="related acc">Không có sản phẩm liên quan.</div>;
 
 //   return (
-//     <>
-//       <div className="related acc">
-//         <p className="related__ttl">
-//           <span>Sản phẩm mua cùng</span>
-//         </p>
-//         <div className="box-scroll p-slide">
-//           <div className="listproduct owl-carousel owl-loaded owl-drag">
-//             <div className="owl-stage-outer">
-//               <div
-//                 className="owl-stage"
-//                 style={{
-//                   transform: "translate3d(0px,0px,0px)",
-//                   transition: "all",
-//                   width: `${relatedProducts.length * 234}px`,
-//                 }}
-//               >
-//                 {relatedProducts.map((item, index) => (
+//     <div className="related acc" style={{ marginTop: 30 }}>
+//       <p className="related__ttl">
+//         <span>Sản phẩm liên quan</span>
+//       </p>
+//       <div className="box-scroll p-slide">
+//         <div className="listproduct owl-carousel owl-loaded owl-drag">
+//           <div className="owl-stage-outer">
+//             <div
+//               ref={trackRef}
+//               className="owl-stage"
+//               style={{
+//                 transform: "translate3d(0px,0px,0px)",
+//                 transition: "all 0.6s ease",
+//                 display: "flex",
+//                 width: `${
+//                   Math.ceil(relatedProducts.length / itemsPerPage) * 1170
+//                 }px`,
+//               }}
+//             >
+//               {relatedProducts.map((item, index) => {
+//                 // console.log("Item: ", item);
+//                 return (
 //                   <div
 //                     className="owl-item"
-//                     style={{ width: 234 }}
+//                     style={{ width: 234, flexShrink: 0 }}
 //                     key={item._id || index}
 //                   >
 //                     <div className="item">
-//                       <a href={`/product/${item._id}`} className="main-contain">
-//                         <div className="item-label"></div>
-//                         <div className="item-img item-img_9499">
+//                       <a
+//                         onClick={() => navigate(`/product/${item._id}`)}
+//                         className="main-contain"
+//                       >
+//                         {/* Hình ảnh sản phẩm */}
+//                         <div className="item-img">
 //                           <img
 //                             src={
 //                               item.image || "https://via.placeholder.com/150"
 //                             }
 //                             alt={item.name}
-//                             className="thumb ls-is-cached lazyloaded"
+//                             className="thumb"
 //                           />
 //                         </div>
-//                         <p className="result-label temp6">
-//                           <img
-//                             src={item.image || "https://via.placeholder.com/50"}
-//                             alt={item.name}
-//                             className="ls-is-cached lazyloaded"
-//                           />
-//                           <span>Mua trả chậm</span>
-//                         </p>
-//                         <h3>{item.name || "Tên sản phẩm"}</h3>
-//                         <p className="item-txt-online">
-//                           <span>Online giá rẻ quá</span>
-//                         </p>
+//                         {/* Tên sản phẩm */}
+//                         <h3 className="item-name">
+//                           {item.name || "Tên sản phẩm"}
+//                         </h3>
+//                         {/* Giá */}
 //                         <strong className="price">
 //                           {item.finalPrice?.toLocaleString() || "0"} VNĐ
 //                         </strong>
@@ -138,13 +194,7 @@
 //                           </span>
 //                         </div>
 //                       </a>
-//                       <div className="item-bottom">
-//                         <a
-//                           href="javascript:;"
-//                           className="shiping"
-//                           aria-label="shiping"
-//                         ></a>
-//                       </div>
+//                       {/* Đánh giá và số lượng đã bán */}
 //                       <div className="rating_Compare has_quantity">
 //                         <div className="vote-txt">
 //                           <i className="iconnewglobal-vote"></i>
@@ -152,45 +202,58 @@
 //                         </div>
 //                         <span>• Đã bán {item.reserved || "0"}</span>
 //                       </div>
+//                       {/* Danh mục hỗ trợ (accessoryFor) */}
+//                       {item.accessoryFor && item.accessoryFor.length > 0 && (
+//                         <div className="accessory-info">
+//                           {item.accessoryFor.map((acc, idx) => (
+//                             <span key={idx} className="accessory-tag">
+//                               {acc}
+//                             </span>
+//                           ))}
+//                         </div>
+//                       )}
 //                     </div>
 //                   </div>
-//                 ))}
-//               </div>
+//                 );
+//               })}
 //             </div>
 //           </div>
 //         </div>
-//         <div
-//           className="owl-nav"
+//       </div>
+
+//       <div
+//         className="owl-nav"
+//         style={{ position: "relative", bottom: "282px", zIndex: "1" }}
+//       >
+//         <button
+//           type="button"
+//           className="owl-prev"
+//           onClick={handlePrev}
+//           disabled={currentIndex === 0}
+//           style={{ cursor: currentIndex === 0 ? "not-allowed" : "pointer" }}
+//         >
+//           <span>‹</span>
+//         </button>
+//         <button
+//           type="button"
+//           className="owl-next"
+//           onClick={handleNext}
+//           disabled={
+//             currentIndex >=
+//             Math.max(0, Math.ceil(relatedProducts.length / itemsPerPage) - 1)
+//           }
 //           style={{
-//             position: "relative",
-//             bottom: "282px",
-//             zIndex: "1",
+//             cursor:
+//               currentIndex >=
+//               Math.max(0, Math.ceil(relatedProducts.length / itemsPerPage) - 1)
+//                 ? "not-allowed"
+//                 : "pointer",
 //           }}
 //         >
-//           <button
-//             type="button"
-//             aria-label="button"
-//             className="owl-prev"
-//             // onClick={handlePrev}
-//             // disabled={currentIndex === 0}
-//           >
-//             <span>‹</span>
-//           </button>
-//           <button
-//             type="button"
-//             aria-label="button"
-//             className="owl-next"
-//             // onClick={handleNext}
-//             // disabled={
-//             //   currentIndex >=
-//             //   Math.max(0, Math.ceil(accessories.length / itemsPerPage) - 1)
-//             // }
-//           >
-//             <span>›</span>
-//           </button>
-//         </div>
+//           <span>›</span>
+//         </button>
 //       </div>
-//     </>
+//     </div>
 //   );
 // };
 
@@ -199,6 +262,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import "../css/Accessory.css";
+import "../css/ProductsOftenBoughtTogether.css";
 
 const API_URL = "http://localhost:8080/api";
 
@@ -207,6 +272,9 @@ const RelatedProducts = ({ product = null }) => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
   const itemsPerPage = 5;
   const animationRef = useRef(null);
   const trackRef = useRef(null);
@@ -216,12 +284,9 @@ const RelatedProducts = ({ product = null }) => {
     try {
       setLoading(true);
       setError(null);
-
       if (!product?._id) {
         throw new Error("Không có product._id để fetch");
       }
-
-      console.log("Fetching related products for:", product._id);
       const response = await axios.get(
         `${API_URL}/phones/related/${product._id}`,
         {
@@ -230,15 +295,17 @@ const RelatedProducts = ({ product = null }) => {
           },
         }
       );
-
-      console.log("API Response:", response.data);
       if (response.data.success) {
         setRelatedProducts(response.data.data || []);
       } else {
         setError(response.data.message || "Không có sản phẩm liên quan");
       }
     } catch (error) {
-      console.error("API Error:", error.response?.data || error.message);
+      console.error(
+        "API Error:",
+        error.response?.status,
+        error.response?.data || error.message
+      );
       setError(
         error.response?.data?.message ||
           `Lỗi kết nối API (Mã: ${error.response?.status || "Unknown"})`
@@ -248,22 +315,25 @@ const RelatedProducts = ({ product = null }) => {
     }
   };
 
-  // Smooth scroll cho carousel
   const smoothScroll = (element, to, duration) => {
+    if (!element) {
+      console.warn("Element is null, cannot scroll");
+      return;
+    }
     const start = element.scrollLeft;
     const change = to - start;
     let startTime = null;
 
     const animateScroll = (currentTime) => {
       if (!startTime) startTime = currentTime;
-      const progress = currentTime - startTime;
+      const progress = Math.min(currentTime - startTime, duration);
       const easeInOut = (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
-
       const val = easeInOut(progress / duration) * change + start;
       element.scrollLeft = val;
-
       if (progress < duration) {
         animationRef.current = requestAnimationFrame(animateScroll);
+      } else {
+        console.log("Scroll completed to:", to);
       }
     };
 
@@ -278,18 +348,60 @@ const RelatedProducts = ({ product = null }) => {
   };
 
   const handleNext = () => {
-    if (currentIndex < Math.max(0, relatedProducts.length - itemsPerPage)) {
+    const maxIndex = Math.max(
+      0,
+      Math.ceil(relatedProducts.length / itemsPerPage) - 1
+    );
+    if (currentIndex < maxIndex) {
       setCurrentIndex((prev) => prev + 1);
     }
   };
 
-  useEffect(() => {
+  const handleMouseDown = (e) => {
     if (trackRef.current) {
-      const itemWidth = trackRef.current.children[0]?.offsetWidth || 0;
+      setIsDragging(true);
+      setStartX(e.pageX - trackRef.current.offsetLeft);
+      setScrollLeft(trackRef.current.scrollLeft);
+      trackRef.current.style.cursor = "grabbing";
+      trackRef.current.style.userSelect = "none";
+      e.preventDefault(); // Ngăn hành vi mặc định
+    }
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging || !trackRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - trackRef.current.offsetLeft;
+    const walk = (x - startX) * 1.5; // Điều chỉnh tốc độ kéo
+    trackRef.current.scrollLeft = scrollLeft - walk;
+    console.log("Dragging, scrollLeft:", trackRef.current.scrollLeft); // Debug
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    if (trackRef.current) {
+      trackRef.current.style.cursor = "grab";
+      trackRef.current.style.userSelect = "";
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+    if (trackRef.current) {
+      trackRef.current.style.cursor = "grab";
+      trackRef.current.style.userSelect = "";
+    }
+  };
+
+  useEffect(() => {
+    if (trackRef.current && relatedProducts.length > 0) {
+      const itemWidth = trackRef.current.children[0]?.offsetWidth || 234;
+      console.log("Item Width:", itemWidth); // Debug
       const scrollPosition = currentIndex * itemWidth * itemsPerPage;
+      console.log("Scroll Position:", scrollPosition); // Debug
       smoothScroll(trackRef.current, scrollPosition, 600);
     }
-  }, [currentIndex]);
+  }, [currentIndex, relatedProducts]);
 
   useEffect(() => {
     return () => cancelAnimationFrame(animationRef.current);
@@ -301,12 +413,9 @@ const RelatedProducts = ({ product = null }) => {
     } else {
       setRelatedProducts([]);
       setError("Không có sản phẩm để lấy dữ liệu liên quan");
+      console.log("No product._id provided:", product);
     }
   }, [product?._id]);
-
-  if (!product?._id) {
-    return <div className="no-products-message">Chưa có sản phẩm</div>;
-  }
 
   if (loading) return <div className="related acc">Đang tải...</div>;
   if (error)
@@ -319,26 +428,36 @@ const RelatedProducts = ({ product = null }) => {
     return <div className="related acc">Không có sản phẩm liên quan.</div>;
 
   return (
-    <div className="related acc">
+    <div className="related acc" style={{ marginTop: 30 }}>
       <p className="related__ttl">
-        <span>Sản phẩm mua cùng</span>
+        <span>Sản phẩm liên quan</span>
       </p>
       <div className="box-scroll p-slide">
         <div className="listproduct owl-carousel owl-loaded owl-drag">
-          <div className="owl-stage-outer">
+          <div
+            className="owl-stage-outer"
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseLeave}
+          >
             <div
               ref={trackRef}
               className="owl-stage"
               style={{
                 transform: "translate3d(0px,0px,0px)",
-                transition: "all",
-                width: `${relatedProducts.length * 234}px`,
+                transition: "all 0.6s ease",
+                display: "flex",
+                width: `${
+                  Math.ceil(relatedProducts.length / itemsPerPage) * 1170
+                }px`,
+                cursor: "grab",
               }}
             >
               {relatedProducts.map((item, index) => (
                 <div
                   className="owl-item"
-                  style={{ width: 234 }}
+                  style={{ width: 234, flexShrink: 0 }}
                   key={item._id || index}
                 >
                   <div className="item">
@@ -353,7 +472,9 @@ const RelatedProducts = ({ product = null }) => {
                           className="thumb"
                         />
                       </div>
-                      <h3>{item.name || "Tên sản phẩm"}</h3>
+                      <h3 className="item-name">
+                        {item.name || "Tên sản phẩm"}
+                      </h3>
                       <strong className="price">
                         {item.finalPrice?.toLocaleString() || "0"} VNĐ
                       </strong>
@@ -378,6 +499,15 @@ const RelatedProducts = ({ product = null }) => {
                       </div>
                       <span>• Đã bán {item.reserved || "0"}</span>
                     </div>
+                    {item.accessoryFor && item.accessoryFor.length > 0 && (
+                      <div className="accessory-info">
+                        {item.accessoryFor.map((acc, idx) => (
+                          <span key={idx} className="accessory-tag">
+                            {acc}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -385,7 +515,6 @@ const RelatedProducts = ({ product = null }) => {
           </div>
         </div>
       </div>
-
       <div
         className="owl-nav"
         style={{ position: "relative", bottom: "282px", zIndex: "1" }}
@@ -395,6 +524,7 @@ const RelatedProducts = ({ product = null }) => {
           className="owl-prev"
           onClick={handlePrev}
           disabled={currentIndex === 0}
+          style={{ cursor: currentIndex === 0 ? "not-allowed" : "pointer" }}
         >
           <span>‹</span>
         </button>
@@ -406,6 +536,13 @@ const RelatedProducts = ({ product = null }) => {
             currentIndex >=
             Math.max(0, Math.ceil(relatedProducts.length / itemsPerPage) - 1)
           }
+          style={{
+            cursor:
+              currentIndex >=
+              Math.max(0, Math.ceil(relatedProducts.length / itemsPerPage) - 1)
+                ? "not-allowed"
+                : "pointer",
+          }}
         >
           <span>›</span>
         </button>

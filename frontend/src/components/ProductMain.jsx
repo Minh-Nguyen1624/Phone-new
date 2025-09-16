@@ -10,6 +10,7 @@ import {
 import ProductRating from "../components/ProductRating";
 import ProductOftenBoughtTogether from "../components/ProductsOftenBoughtTogether";
 import RelatedProducts from "../components/RelatedProducts";
+import ErrorBoundary from "../components/ErrorBoundary";
 
 const PolicyItem = ({ title, description, highlight, extra }) => {
   return (
@@ -656,7 +657,14 @@ const ProductMain = ({
           <span>(8:00 - 21:00)</span>
         </p>
       </div>
+      {/* <ErrorBoundary>
+        <RelatedProducts product={product} />
+      </ErrorBoundary> */}
       <RelatedProducts product={product} />
+
+      {/* <ErrorBoundary>
+        <ProductOftenBoughtTogether product={product} />
+      </ErrorBoundary> */}
       <ProductOftenBoughtTogether product={product} />
     </div>
   );

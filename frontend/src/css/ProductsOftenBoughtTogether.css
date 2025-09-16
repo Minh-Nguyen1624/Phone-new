@@ -1,0 +1,27 @@
+/* Trong Accessory.css hoặc file CSS tương ứng */
+.related.acc .owl-stage {
+  display: flex;
+  width: auto; /* Để tự động tính dựa trên số item */
+  transition: all 0.6s ease; /* Đảm bảo transition mượt */
+  overflow-x: auto; /* Cho phép cuộn ngang */
+  -webkit-overflow-scrolling: touch; /* Hỗ trợ cuộn mượt trên mobile */
+}
+
+.related.acc .owl-item {
+  width: 234px;
+  flex-shrink: 0; /* Ngăn item co lại */
+  box-sizing: border-box; /* Đảm bảo padding/margin không ảnh hưởng width */
+}
+
+.related.acc .owl-stage-outer {
+  overflow: visible; /* Đảm bảo scroll không bị ẩn */
+  position: relative; /* Giữ nguyên vị trí */
+}
+
+/* Ẩn scrollbar nhưng vẫn cho phép cuộn */
+.related.acc .owl-stage-outer {
+  overflow-x: auto; /* Cho phép cuộn ngang */
+  overflow-y: hidden; /* Ẩn cuộn dọc */
+  -ms-overflow-style: none; /* IE và Edge */
+  /* scrollbar-width: none; Firefox */
+}
