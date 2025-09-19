@@ -510,12 +510,51 @@ phoneSchema.methods.getSoldQuantity = async function () {
   const soldQuantity = await Inventory.aggregate([
     { $match: { "products.phoneId": this._id } },
     { $unwind: "$history" },
-    { $match: { "history.action": "purchase" } },
-    { $group: { _id: null, totalSold: { $sum: "$history.quantityChanged" } } },
+    {
+      $match: {
+        $or: [{ "history.action": "purchase" }, { "history.action": "cancel" }],
+      },
+    },
+    {
+      //  $group: { _id: null, totalSold: { $sum: "$history.quantityChanged" } }
+      $group: {
+        _id: null,
+        totalSold: {
+          $sum: {
+            $cond: [
+              { $eq: ["$history.action", "purchase"] },
+              "$history.quantityChanged",
+              { $multiply: ["$history.quantityChanged", -1] }, // Trừ nếu cancel
+            ],
+          },
+        },
+      },
+    },
   ]).then((result) => result[0]?.totalSold || 0);
 
   return soldQuantity;
 };
+
+phoneSchema.methods.cancelPurchase = async function (quantity) {
+  const inventory = await Inventory.findOne({
+    warehouseLocation: this.warehouseLocation,
+  });
+  if (!inventory) throw new Error("Inventory not found");
+
+  const product = inventory.products.find(
+    (p) => p.phoneId.toString() === this._id.toString()
+  );
+  if (!product) throw new Error("Product not found in inventory");
+
+  product.stock += quantity; // Tăng lại stock
+  await inventory.addHistory("cancel", quantity, this._id); // Thêm history "cancel"
+  inventory.lastUpdated = Date.now();
+  await inventory.save();
+
+  this.stock = product.stock;
+  await this.save();
+};
+
 // 📌 Phương thức nhập thêm hàng vào kho
 phoneSchema.methods.restock = async function (quantity) {
   const inventory = await Inventory.findOne({

@@ -12,7 +12,8 @@ const ProductName = ({ name, product }) => (
     <div className="box-1">
       <h2>{name}</h2>
       <div className="box-2">
-        <span className="quantity-sale">Đã bán {product?.reserved}</span>
+        {/* <span className="quantity-sale">Đã bán {product?.reserved}</span> */}
+        <span className="quantity-sale">Đã bán {product?.sold ?? 0}</span>
         <div className="box-2_left">
           <div className="detail-rate">
             <p>

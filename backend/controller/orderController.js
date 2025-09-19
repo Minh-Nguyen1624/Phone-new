@@ -83,7 +83,15 @@ const getOrderById = async (req, res) => {
 };
 
 const addToOrder = async (req, res) => {
+  let session;
   try {
+    session = await mongoose.startSession();
+    if (!session) {
+      throw new Error("Failed to start MongoDB session");
+    }
+    session.startTransaction();
+    console.log("Starting transaction for user:", req.user?._id);
+
     const {
       items,
       shippingInfo,
@@ -169,76 +177,86 @@ const addToOrder = async (req, res) => {
     console.log("Assigned discount:", validatedDiscount);
 
     if (fromCart) {
-      const cart = await Cart.findOne({ user: userId });
-      if (!cart || cart.items.length === 0) {
-        return res.status(400).json({
-          success: false,
-          message: "Giỏ hàng trống hoặc không tồn tại.",
-        });
-      }
+      try {
+        const cart = await Cart.findOne({ user: userId }).session(session);
+        if (!cart || cart.items.length === 0) {
+          await session.abortTransaction();
+          return res.status(400).json({
+            success: false,
+            message: "Giỏ hàng trống hoặc không tồn tại.",
+          });
+        }
 
-      validatedDiscount = cart.discount || discount; // Sử dụng discount từ cart nếu có
-      console.log("Discount from cart:", cart.discount);
+        validatedDiscount = cart.discount || discount;
+        console.log("Discount from cart:", cart.discount);
 
-      const orderedPhoneIds = items.map((item) => item.phone);
-      cart.items = cart.items.filter(
-        (item) => !orderedPhoneIds.includes(item.phone.toString())
-      );
+        const orderedPhoneIds = items.map((item) => item.phone.toString());
+        console.log("Ordered phone IDs:", orderedPhoneIds);
 
-      if (cart.items.length === 0) {
-        await Cart.deleteOne({ user: userId });
-      } else {
-        await cart.save();
-      }
-    } else {
-      for (const item of items) {
-        const phone = await mongoose.connection.db.collection("phones").findOne(
-          { _id: new mongoose.Types.ObjectId(item.phone) },
-          {
-            projection: {
-              stock: 1,
-              price: 1,
-              name: 1,
-              finalPrice: 1,
-              image: 1,
-            },
+        for (const item of items) {
+          const itemPhoneStr = item.phone.toString();
+          console.log(
+            `Processing item phone: ${itemPhoneStr}, type: ${typeof item.phone}`
+          );
+          const cartItemIndex = cart.items.findIndex(
+            (i) => i.phone.toString() === itemPhoneStr
+          );
+          console.log(`Cart item index for ${itemPhoneStr}: ${cartItemIndex}`);
+          if (cartItemIndex >= 0) {
+            cart.items[cartItemIndex].quantity -= item.quantity;
+            console.log(
+              `Before update: ${
+                cart.items[cartItemIndex].quantity + item.quantity
+              }, After update: ${cart.items[cartItemIndex].quantity}`
+            );
+            if (cart.items[cartItemIndex].quantity <= 0) {
+              cart.items.splice(cartItemIndex, 1);
+              console.log(`Removed item ${itemPhoneStr} from cart`);
+            } else {
+              console.log(
+                `Updated quantity for ${itemPhoneStr}: ${cart.items[cartItemIndex].quantity}`
+              );
+            }
+          } else {
+            console.log(`Warning: Item ${itemPhoneStr} not found in cart`);
           }
+        }
+
+        console.log("Cart items after update:", cart.items);
+
+        cart.subTotal = cart.items.reduce(
+          (total, item) => total + item.price * item.quantity,
+          0
         );
-        if (!phone) {
-          return res
-            .status(404)
-            .json({ message: `Sản phẩm không tồn tại: ${item.phone}` });
+        if (cart.discount && cart.discount.discountValue) {
+          cart.discountAmount =
+            cart.subTotal * (cart.discount.discountValue / 100);
+          cart.totalCartPrice = cart.subTotal - cart.discountAmount;
+        } else {
+          cart.totalCartPrice = cart.subTotal;
         }
-        if (!Number.isInteger(item.quantity) || item.quantity <= 0) {
-          return res.status(400).json({
-            message: `Số lượng phải là số nguyên dương: ${item.quantity}`,
-          });
+
+        if (cart.items.length === 0) {
+          console.log(`Deleting cart for user ${userId} as it is empty`);
+          await Cart.deleteOne({ user: userId }).session(session);
+        } else {
+          const saveResult = await cart.save({ session });
+          console.log(`Cart save result for user ${userId}:`, saveResult);
+          if (!saveResult) {
+            throw new Error("Failed to save cart updates");
+          }
         }
-        if (typeof item.price !== "number" || item.price <= 0) {
-          return res
-            .status(400)
-            .json({ message: `Giá phải là số dương: ${item.price}` });
-        }
-        const phonePrice = phone.finalPrice || phone.price;
-        if (item.price !== phonePrice) {
-          return res.status(400).json({
-            message: `Giá không khớp với sản phẩm: ${phone.name} (giá hệ thống: ${phonePrice}, giá yêu cầu: ${item.price})`,
-          });
-        }
-        item.originalPrice =
-          item.originalPrice || phone.price || phone.finalPrice;
-        item.imageUrl =
-          item.imageUrl ||
-          phone.image ||
-          "https://default-image.com/default.jpg";
-        if (
-          !item.imageUrl ||
-          !/^https?:\/\/.*\.(jpg|jpeg|png|gif)$/.test(item.imageUrl)
-        ) {
-          return res.status(400).json({
-            message: `Invalid image URL for phone ${item.phone}: ${item.imageUrl}`,
-          });
-        }
+      } catch (error) {
+        console.error(
+          `Error processing cart for user ${userId}:`,
+          error.message
+        );
+        await session.abortTransaction();
+        return res.status(500).json({
+          success: false,
+          message: "Lỗi khi xử lý giỏ hàng.",
+          error: error.message,
+        });
       }
     }
 

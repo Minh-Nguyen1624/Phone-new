@@ -569,10 +569,14 @@ const getPhoneById = async (req, res) => {
       });
     }
 
+    // Lấy số lượng đã bán
+    const sold = await phone.getSoldQuantity();
+    console.log(`Sold quantity for phone ${phone._id}: ${sold}`);
+
     // const summary = await getReviewSummary(id);
     const summary = await getReviewSummary(phone);
     // const data = { ...phone, ...summary.data };
-    const data = { ...phone._doc, ...summary.data };
+    // const data = { ...phone._doc, ...summary.data };
 
     // Tính lại averageRating từ reviews để xác nhận (tùy chọn)
     const reviews = phone.reviews || [];
@@ -588,6 +592,13 @@ const getPhoneById = async (req, res) => {
         `Warning: Saved averageRating (${phone.averageRating}) differs from calculated (${calculatedAverageRating}) for phone ${phone._id}`
       );
     }
+
+    // Kết hợp dữ liệu
+    const data = {
+      ...phone._doc,
+      ...summary.data,
+      sold, // Thêm sold vào response
+    };
 
     res.status(200).json({
       success: true,

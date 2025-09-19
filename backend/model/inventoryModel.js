@@ -53,7 +53,15 @@ const inventorySchema = new mongoose.Schema(
         action: {
           type: String,
           required: true,
-          enum: ["add", "remove", "reserve", "unreserve", "update", "purchase"],
+          enum: [
+            "add",
+            "remove",
+            "reserve",
+            "unreserve",
+            "update",
+            "purchase",
+            "cancel",
+          ],
         },
         quantityChanged: { type: Number, required: true },
         newQuantity: { type: Number, required: true },
@@ -188,6 +196,11 @@ inventorySchema.methods.addHistory = async function (
   quantityChanged,
   phoneId
 ) {
+  const product = this.products.find(
+    (p) => p.phoneId.toString() === phoneId.toString()
+  );
+  if (!product)
+    throw new Error(`Product with phoneId ${phoneId} not found in inventory`);
   this.history.push({
     action,
     quantityChanged,
