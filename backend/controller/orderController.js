@@ -82,6 +82,266 @@ const getOrderById = async (req, res) => {
   }
 };
 
+// const addToOrder = async (req, res) => {
+//   let session;
+//   try {
+//     session = await mongoose.startSession();
+//     if (!session) {
+//       throw new Error("Failed to start MongoDB session");
+//     }
+//     session.startTransaction();
+//     console.log("Starting transaction for user:", req.user?._id);
+
+//     const {
+//       items,
+//       shippingInfo,
+//       paymentMethod,
+//       discount, // Sử dụng discount trực tiếp từ body
+//       deliveryOption,
+//       useLoyaltyPoints,
+//       specialRequests,
+//       fromCart = false,
+//     } = req.body;
+
+//     console.log("Req body: ", req.body);
+
+//     const loggedInUser = req.user;
+//     if (!loggedInUser) {
+//       return res
+//         .status(403)
+//         .json({ message: "Không có quyền truy cập. Vui lòng đăng nhập." });
+//     }
+
+//     const userId = loggedInUser._id.toString();
+
+//     if (
+//       !items ||
+//       items.length === 0 ||
+//       !shippingInfo ||
+//       !shippingInfo.address ||
+//       !paymentMethod
+//     ) {
+//       return res.status(400).json({ message: "Missing required fields." });
+//     }
+
+//     const user = await User.findById(userId).select("+loyaltyPoints");
+//     if (!user || !user.isActive) {
+//       return res.status(403).json({
+//         success: false,
+//         message: "Người dùng không tồn tại hoặc không hoạt động.",
+//       });
+//     }
+
+//     const address = await Address.findById(shippingInfo.address);
+//     if (!address) {
+//       return res.status(404).json({ message: "Địa chỉ không tồn tại." });
+//     }
+
+//     if (address.user.toString() !== userId) {
+//       return res
+//         .status(403)
+//         .json({ message: "Địa chỉ không thuộc về người dùng này." });
+//     }
+
+//     let validatedDiscount = discount; // Sử dụng discount trực tiếp
+//     console.log("Received discount from client:", discount);
+//     if (typeof discount === "undefined") {
+//       console.log("Warning: discount is undefined, setting to null");
+//       validatedDiscount = null;
+//     } else if (discount && typeof discount !== "string") {
+//       console.log("Warning: discount is not a string, converting to string");
+//       validatedDiscount = discount.toString();
+//     } else if (discount) {
+//       const Discount = mongoose.model("Discount");
+//       const discountDoc = await Discount.findById(discount);
+//       if (!discountDoc) {
+//         console.log(
+//           `Error: Discount ID ${discount} not found, setting to null`
+//         );
+//         return res
+//           .status(400)
+//           .json({ message: `Discount ID ${discount} không tồn tại.` });
+//       } else if (
+//         !discountDoc.isCurrentlyActive ||
+//         new Date(discountDoc.startDate) > new Date() ||
+//         (discountDoc.endDate && new Date(discountDoc.endDate) < new Date())
+//       ) {
+//         console.log(
+//           `Error: Discount ID ${discount} is not active, setting to null`
+//         );
+//         return res
+//           .status(400)
+//           .json({ message: `Discount ID ${discount} không hoạt động.` });
+//       }
+//     }
+//     console.log("Assigned discount:", validatedDiscount);
+
+//     if (fromCart) {
+//       try {
+//         const cart = await Cart.findOne({ user: userId }).session(session);
+//         if (!cart || cart.items.length === 0) {
+//           await session.abortTransaction();
+//           return res.status(400).json({
+//             success: false,
+//             message: "Giỏ hàng trống hoặc không tồn tại.",
+//           });
+//         }
+
+//         validatedDiscount = cart.discount || discount;
+//         console.log("Discount from cart:", cart.discount);
+
+//         const orderedPhoneIds = items.map((item) => item.phone.toString());
+//         console.log("Ordered phone IDs:", orderedPhoneIds);
+
+//         for (const item of items) {
+//           const itemPhoneStr = item.phone.toString();
+//           console.log(
+//             `Processing item phone: ${itemPhoneStr}, type: ${typeof item.phone}`
+//           );
+//           const cartItemIndex = cart.items.findIndex(
+//             (i) => i.phone.toString() === itemPhoneStr
+//           );
+//           console.log(`Cart item index for ${itemPhoneStr}: ${cartItemIndex}`);
+//           if (cartItemIndex >= 0) {
+//             cart.items[cartItemIndex].quantity -= item.quantity;
+//             console.log(
+//               `Before update: ${
+//                 cart.items[cartItemIndex].quantity + item.quantity
+//               }, After update: ${cart.items[cartItemIndex].quantity}`
+//             );
+//             if (cart.items[cartItemIndex].quantity <= 0) {
+//               cart.items.splice(cartItemIndex, 1);
+//               console.log(`Removed item ${itemPhoneStr} from cart`);
+//             } else {
+//               console.log(
+//                 `Updated quantity for ${itemPhoneStr}: ${cart.items[cartItemIndex].quantity}`
+//               );
+//             }
+//           } else {
+//             console.log(`Warning: Item ${itemPhoneStr} not found in cart`);
+//           }
+//         }
+
+//         console.log("Cart items after update:", cart.items);
+
+//         cart.subTotal = cart.items.reduce(
+//           (total, item) => total + item.price * item.quantity,
+//           0
+//         );
+//         if (cart.discount && cart.discount.discountValue) {
+//           cart.discountAmount =
+//             cart.subTotal * (cart.discount.discountValue / 100);
+//           cart.totalCartPrice = cart.subTotal - cart.discountAmount;
+//         } else {
+//           cart.totalCartPrice = cart.subTotal;
+//         }
+
+//         if (cart.items.length === 0) {
+//           console.log(`Deleting cart for user ${userId} as it is empty`);
+//           await Cart.deleteOne({ user: userId }).session(session);
+//         } else {
+//           const saveResult = await cart.save({ session });
+//           console.log(`Cart save result for user ${userId}:`, saveResult);
+//           if (!saveResult) {
+//             throw new Error("Failed to save cart updates");
+//           }
+//         }
+//       } catch (error) {
+//         console.error(
+//           `Error processing cart for user ${userId}:`,
+//           error.message
+//         );
+//         await session.abortTransaction();
+//         return res.status(500).json({
+//           success: false,
+//           message: "Lỗi khi xử lý giỏ hàng.",
+//           error: error.message,
+//         });
+//       }
+//     }
+
+//     let initialTotalCartPrice = items.reduce(
+//       (sum, item) => sum + item.price * item.quantity,
+//       0
+//     );
+
+//     if (useLoyaltyPoints) {
+//       if (user.loyaltyPoints <= 0) {
+//         return res
+//           .status(400)
+//           .json({ message: "Bạn không có đủ điểm thưởng để sử dụng." });
+//       }
+//       const pointsToUse = Math.min(user.loyaltyPoints, initialTotalCartPrice);
+//       if (pointsToUse > 0) {
+//         initialTotalCartPrice -= pointsToUse;
+//         user.loyaltyPoints -= pointsToUse;
+//         console.log(
+//           `Using ${pointsToUse} loyalty points, remaining: ${user.loyaltyPoints}`
+//         );
+//       } else {
+//         useLoyaltyPoints = false;
+//       }
+//       await user.save();
+//     }
+
+//     const shippingFee =
+//       shippingInfo.address && (deliveryOption || "standard") === "standard"
+//         ? 0
+//         : 30000;
+
+//     const order = new Order({
+//       user: userId,
+//       items: items.map((item) => ({
+//         phone: item.phone,
+//         quantity: item.quantity,
+//         price: item.price,
+//         originalPrice: item.originalPrice,
+//         imageUrl: item.imageUrl,
+//         currency: item.currency,
+//         isGift: item.isGift || false,
+//         customOption: item.customOption || {},
+//       })),
+//       shippingFee,
+//       deliveryOption: deliveryOption || "standard",
+//       useLoyaltyPoints: useLoyaltyPoints || false,
+//       specialRequests: specialRequests || {
+//         transferData: false,
+//         companyInvoice: false,
+//         otherRequest: "",
+//       },
+//       paymentMethod,
+//       shippingInfo: { address: address._id },
+//       discount: validatedDiscount, // Sử dụng discount đã validated
+//     });
+
+//     console.log("Order discount before save:", order.discount);
+//     console.log("Saving order...");
+//     const savedOrder = await order.save();
+//     console.log("Order saved successfully:", savedOrder._id);
+
+//     if (!Array.isArray(user.order)) {
+//       user.order = [];
+//     }
+//     user.order.push(savedOrder._id);
+//     await user.save();
+
+//     res
+//       .status(201)
+//       .json({ message: "Đơn hàng được tạo thành công.", order: savedOrder });
+//   } catch (error) {
+//     if (
+//       error.message.includes("Giá sản phẩm không khớp") ||
+//       error.message.includes("Sản phẩm không tồn tại") ||
+//       error.message.includes("Không đủ tồn kho") ||
+//       error.message.includes("Invalid image URL")
+//     ) {
+//       return res.status(400).json({ message: error.message });
+//     }
+//     return res
+//       .status(500)
+//       .json({ message: "Không thể tạo đơn hàng.", error: error.message });
+//   }
+// };
 const addToOrder = async (req, res) => {
   let session;
   try {
@@ -96,7 +356,7 @@ const addToOrder = async (req, res) => {
       items,
       shippingInfo,
       paymentMethod,
-      discount, // Sử dụng discount trực tiếp từ body
+      discount,
       deliveryOption,
       useLoyaltyPoints,
       specialRequests,
@@ -107,6 +367,7 @@ const addToOrder = async (req, res) => {
 
     const loggedInUser = req.user;
     if (!loggedInUser) {
+      await session.abortTransaction();
       return res
         .status(403)
         .json({ message: "Không có quyền truy cập. Vui lòng đăng nhập." });
@@ -121,30 +382,39 @@ const addToOrder = async (req, res) => {
       !shippingInfo.address ||
       !paymentMethod
     ) {
+      await session.abortTransaction();
       return res.status(400).json({ message: "Missing required fields." });
     }
 
-    const user = await User.findById(userId).select("+loyaltyPoints");
+    const user = await User.findById(userId)
+      .select("+loyaltyPoints")
+      .session(session);
     if (!user || !user.isActive) {
+      await session.abortTransaction();
       return res.status(403).json({
         success: false,
         message: "Người dùng không tồn tại hoặc không hoạt động.",
       });
     }
 
-    const address = await Address.findById(shippingInfo.address);
+    const address = await Address.findById(shippingInfo.address).session(
+      session
+    );
     if (!address) {
+      await session.abortTransaction();
       return res.status(404).json({ message: "Địa chỉ không tồn tại." });
     }
 
     if (address.user.toString() !== userId) {
+      await session.abortTransaction();
       return res
         .status(403)
         .json({ message: "Địa chỉ không thuộc về người dùng này." });
     }
 
-    let validatedDiscount = discount; // Sử dụng discount trực tiếp
+    let validatedDiscount = discount;
     console.log("Received discount from client:", discount);
+
     if (typeof discount === "undefined") {
       console.log("Warning: discount is undefined, setting to null");
       validatedDiscount = null;
@@ -153,11 +423,12 @@ const addToOrder = async (req, res) => {
       validatedDiscount = discount.toString();
     } else if (discount) {
       const Discount = mongoose.model("Discount");
-      const discountDoc = await Discount.findById(discount);
+      const discountDoc = await Discount.findById(discount).session(session);
       if (!discountDoc) {
         console.log(
           `Error: Discount ID ${discount} not found, setting to null`
         );
+        await session.abortTransaction();
         return res
           .status(400)
           .json({ message: `Discount ID ${discount} không tồn tại.` });
@@ -169,6 +440,7 @@ const addToOrder = async (req, res) => {
         console.log(
           `Error: Discount ID ${discount} is not active, setting to null`
         );
+        await session.abortTransaction();
         return res
           .status(400)
           .json({ message: `Discount ID ${discount} không hoạt động.` });
@@ -176,6 +448,7 @@ const addToOrder = async (req, res) => {
     }
     console.log("Assigned discount:", validatedDiscount);
 
+    // Xử lý giỏ hàng
     if (fromCart) {
       try {
         const cart = await Cart.findOne({ user: userId }).session(session);
@@ -190,61 +463,74 @@ const addToOrder = async (req, res) => {
         validatedDiscount = cart.discount || discount;
         console.log("Discount from cart:", cart.discount);
 
-        const orderedPhoneIds = items.map((item) => item.phone.toString());
-        console.log("Ordered phone IDs:", orderedPhoneIds);
+        // Tạo map để dễ dàng truy cập items từ order
+        const orderItemsMap = new Map();
+        items.forEach((item) => {
+          orderItemsMap.set(item.phone.toString(), item.quantity);
+        });
 
-        for (const item of items) {
-          const itemPhoneStr = item.phone.toString();
-          console.log(
-            `Processing item phone: ${itemPhoneStr}, type: ${typeof item.phone}`
-          );
-          const cartItemIndex = cart.items.findIndex(
-            (i) => i.phone.toString() === itemPhoneStr
-          );
-          console.log(`Cart item index for ${itemPhoneStr}: ${cartItemIndex}`);
-          if (cartItemIndex >= 0) {
-            cart.items[cartItemIndex].quantity -= item.quantity;
-            console.log(
-              `Before update: ${
-                cart.items[cartItemIndex].quantity + item.quantity
-              }, After update: ${cart.items[cartItemIndex].quantity}`
-            );
-            if (cart.items[cartItemIndex].quantity <= 0) {
-              cart.items.splice(cartItemIndex, 1);
-              console.log(`Removed item ${itemPhoneStr} from cart`);
-            } else {
+        console.log("Order items map:", orderItemsMap);
+
+        // Cập nhật giỏ hàng - loại bỏ các items đã được đặt hàng
+        const updatedCartItems = [];
+        let cartModified = false;
+
+        for (const cartItem of cart.items) {
+          const cartItemPhoneId = cartItem.phone.toString();
+          const orderedQuantity = orderItemsMap.get(cartItemPhoneId);
+
+          if (orderedQuantity) {
+            // Item này có trong đơn hàng
+            if (cartItem.quantity > orderedQuantity) {
+              // Giảm số lượng trong giỏ hàng
+              cartItem.quantity -= orderedQuantity;
+              updatedCartItems.push(cartItem);
+              cartModified = true;
               console.log(
-                `Updated quantity for ${itemPhoneStr}: ${cart.items[cartItemIndex].quantity}`
+                `Reduced quantity for ${cartItemPhoneId}: from ${
+                  cartItem.quantity + orderedQuantity
+                } to ${cartItem.quantity}`
               );
+            } else {
+              // Xóa item khỏi giỏ hàng vì đã đặt hết
+              cartModified = true;
+              console.log(`Removed item ${cartItemPhoneId} from cart`);
             }
           } else {
-            console.log(`Warning: Item ${itemPhoneStr} not found in cart`);
+            // Item không có trong đơn hàng, giữ nguyên
+            updatedCartItems.push(cartItem);
           }
         }
 
-        console.log("Cart items after update:", cart.items);
+        if (cartModified) {
+          cart.items = updatedCartItems;
 
-        cart.subTotal = cart.items.reduce(
-          (total, item) => total + item.price * item.quantity,
-          0
-        );
-        if (cart.discount && cart.discount.discountValue) {
-          cart.discountAmount =
-            cart.subTotal * (cart.discount.discountValue / 100);
-          cart.totalCartPrice = cart.subTotal - cart.discountAmount;
-        } else {
-          cart.totalCartPrice = cart.subTotal;
-        }
+          // Tính lại tổng tiền
+          cart.subTotal = cart.items.reduce(
+            (total, item) => total + item.price * item.quantity,
+            0
+          );
 
-        if (cart.items.length === 0) {
-          console.log(`Deleting cart for user ${userId} as it is empty`);
-          await Cart.deleteOne({ user: userId }).session(session);
-        } else {
-          const saveResult = await cart.save({ session });
-          console.log(`Cart save result for user ${userId}:`, saveResult);
-          if (!saveResult) {
-            throw new Error("Failed to save cart updates");
+          if (cart.discount && cart.discount.discountValue) {
+            cart.discountAmount =
+              cart.subTotal * (cart.discount.discountValue / 100);
+            cart.totalCartPrice = cart.subTotal - cart.discountAmount;
+          } else {
+            cart.totalCartPrice = cart.subTotal;
           }
+
+          if (cart.items.length === 0) {
+            console.log(`Deleting cart for user ${userId} as it is empty`);
+            await Cart.deleteOne({ user: userId }).session(session);
+          } else {
+            const saveResult = await cart.save({ session });
+            console.log(`Cart save result for user ${userId}:`, saveResult);
+            if (!saveResult) {
+              throw new Error("Failed to save cart updates");
+            }
+          }
+        } else {
+          console.log("No cart modifications needed");
         }
       } catch (error) {
         console.error(
@@ -265,8 +551,10 @@ const addToOrder = async (req, res) => {
       0
     );
 
-    if (useLoyaltyPoints) {
+    let useLoyaltyPointsFlag = useLoyaltyPoints; // Tạo biến tạm để tránh conflict
+    if (useLoyaltyPointsFlag) {
       if (user.loyaltyPoints <= 0) {
+        await session.abortTransaction();
         return res
           .status(400)
           .json({ message: "Bạn không có đủ điểm thưởng để sử dụng." });
@@ -279,9 +567,9 @@ const addToOrder = async (req, res) => {
           `Using ${pointsToUse} loyalty points, remaining: ${user.loyaltyPoints}`
         );
       } else {
-        useLoyaltyPoints = false;
+        useLoyaltyPointsFlag = false;
       }
-      await user.save();
+      await user.save({ session });
     }
 
     const shippingFee =
@@ -303,7 +591,7 @@ const addToOrder = async (req, res) => {
       })),
       shippingFee,
       deliveryOption: deliveryOption || "standard",
-      useLoyaltyPoints: useLoyaltyPoints || false,
+      useLoyaltyPoints: useLoyaltyPointsFlag || false,
       specialRequests: specialRequests || {
         transferData: false,
         companyInvoice: false,
@@ -311,24 +599,35 @@ const addToOrder = async (req, res) => {
       },
       paymentMethod,
       shippingInfo: { address: address._id },
-      discount: validatedDiscount, // Sử dụng discount đã validated
+      discount: validatedDiscount,
     });
 
     console.log("Order discount before save:", order.discount);
     console.log("Saving order...");
-    const savedOrder = await order.save();
+    const savedOrder = await order.save({ session });
     console.log("Order saved successfully:", savedOrder._id);
 
     if (!Array.isArray(user.order)) {
       user.order = [];
     }
     user.order.push(savedOrder._id);
-    await user.save();
+    await user.save({ session });
+
+    // COMMIT TRANSACTION - QUAN TRỌNG!
+    await session.commitTransaction();
+    console.log("Transaction committed successfully");
 
     res
       .status(201)
       .json({ message: "Đơn hàng được tạo thành công.", order: savedOrder });
   } catch (error) {
+    console.error("Error in addToOrder:", error);
+
+    // ABORT TRANSACTION KHI CÓ LỖI
+    if (session) {
+      await session.abortTransaction();
+    }
+
     if (
       error.message.includes("Giá sản phẩm không khớp") ||
       error.message.includes("Sản phẩm không tồn tại") ||
@@ -340,6 +639,11 @@ const addToOrder = async (req, res) => {
     return res
       .status(500)
       .json({ message: "Không thể tạo đơn hàng.", error: error.message });
+  } finally {
+    // LUÔN ĐÓNG SESSION
+    if (session) {
+      await session.endSession();
+    }
   }
 };
 

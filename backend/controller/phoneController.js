@@ -1256,742 +1256,968 @@ const getSoldQuantity = async (req, res) => {
 };
 
 // const getBoughtTogether = asyncHandler(async (req, res) => {
-
 //   try {
 //     const { phoneId } = req.params;
+//     console.log("=== START getBoughtTogether ===");
+//     console.log("📱 Requested product ID:", phoneId);
 
+//     // Kiểm tra ID hợp lệ
 //     if (!mongoose.Types.ObjectId.isValid(phoneId)) {
 //       return res.status(400).json({
 //         success: false,
-//         message: "Invalid phoneId",
+//         message: "Invalid product ID format",
 //       });
 //     }
 
-//     const currentPhone = await Phone.findById(phoneId)
-//       .select("category brand name slug accessoryFor")
+//     // ==================== XÁC ĐỊNH LOẠI SẢN PHẨM CHÍNH ====================
+//     let currentProduct = await Phone.findById(phoneId)
+//       .populate("category", "name")
+//       .populate("accessoryFor", "name")
+//       .select("category brand name price finalPrice accessoryFor")
 //       .lean();
 
-//     if (!currentPhone) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Phone not found",
-//       });
-//     }
+//     let productType = "phone";
+//     let ProductModel = Phone;
+//     let mainCategoryId = null;
 
-//     console.log("Current Phone:", currentPhone);
-//     const category = await Category.findById(currentPhone.category);
-//     const productType =
-//       category?.parentCategory?.name?.toLowerCase() ||
-//       category?.name?.toLowerCase() ||
-//       "Unknown";
-//     console.log("Product Type: ", productType);
+//     // Nếu không tìm thấy trong Phone, thử tìm trong Laptop
+//     if (!currentProduct) {
+//       console.log("🔍 Product not found in Phone, searching in Laptop...");
+//       currentProduct = await Laptop.findById(phoneId)
+//         .populate("category", "name")
+//         .populate("accessoryFor", "name")
+//         .select("category brand name price finalPrice accessoryFor")
+//         .lean();
 
-//     // Từ khóa phụ kiện
-//     let accessoryKeywords = [
-//       /tai nghe/i,
-//       /adapter usb/i,
-//       /20000mah/i,
-//       /túi chống sốc/i,
-//       /có dây/i,
-//       /ốp lưng/i,
-//       /case/i,
-//       /bao da/i,
-//       /cáp sạc/i,
-//       /cáp/i,
-//       /sạc/i,
-//       /headphone/i,
-//       /earphone/i,
-//       /cổng sạc/i,
-//       /miếng dán/i,
-//       /kính cường lực/i,
-//       /pin dự phòng/i,
-//       /dock/i,
-//       /stand/i,
-//       // /chuột/i,
-//       // /bàn phím/i,
-//       // /túi/i,
-//       // /camera/i,
-//       // /usb/i,
-//       /thẻ nhớ/i,
-//     ];
-
-//     if (productType.includes("laptop")) {
-//       accessoryKeywords.push([
-//         /bàn phím/i,
-//         /loa bluetooth/i,
-//         /chuột/i,
-//         /tay nghe/i,
-//         /túi chống sốc/i,
-//       ]);
-//     }
-
-//     // Lấy danh mục phụ kiện từ cơ sở dữ liệu
-//     const accessoryCategories = await Category.find({
-//       isActive: true,
-//       name: {
-//         $regex: accessoryKeywords.map((kw) => kw.source).join("|"),
-//         $options: "i",
-//       },
-//     }).select("_id");
-
-//     const accessoryCategoryIds = accessoryCategories.map((cat) => cat._id);
-
-//     console.log(
-//       "Found accessory categories:",
-//       accessoryCategoryIds.length,
-//       accessoryCategoryIds
-//     );
-
-//     // Tìm category cha (smartphone-accessories) dựa trên tên
-//     const smartphoneAccessory = await Category.findOne({
-//       name: "smartphone-accessories",
-//       parentCategory: null,
-//       isActive: true,
-//     }).select("_id");
-
-//     const smartphoneAccessoryId = smartphoneAccessory
-//       ? smartphoneAccessory._id
-//       : null;
-
-//     // Lấy tất cả category liên quan, bao gồm parentCategory của accessoryFor
-//     let allRelatedCategories = [currentPhone.category];
-//     if (smartphoneAccessoryId) {
-//       const childCategories = await Category.find({
-//         parentCategory: smartphoneAccessoryId,
-//         isActive: true,
-//       }).select("_id");
-//       allRelatedCategories = [
-//         ...allRelatedCategories,
-//         smartphoneAccessoryId,
-//         ...childCategories.map((cat) => cat._id),
-//       ];
-//     }
-
-//     // Mở rộng allRelatedCategories dựa trên parentCategory của accessoryFor
-//     if (currentPhone.accessoryFor && currentPhone.accessoryFor.length > 0) {
-//       const accessoryParentCategories = await Category.find({
-//         _id: { $in: currentPhone.accessoryFor },
-//         isActive: true,
-//       }).select("parentCategory");
-//       const parentIds = accessoryParentCategories
-//         .flatMap((cat) => cat.parentCategory)
-//         .filter(Boolean);
-//       allRelatedCategories = [
-//         ...new Set([...allRelatedCategories, ...parentIds]),
-//       ];
-//     }
-
-//     console.log("Expanded related categories:", allRelatedCategories);
-
-//     // Bước 1: Tìm phụ kiện có accessoryFor chứa category hoặc smartphone-accessories và con/cha của nó
-//     let accessories = [];
-//     if (allRelatedCategories.length > 0) {
-//       const validAccessoryFor = currentPhone.accessoryFor
-//         ? currentPhone.accessoryFor.filter(
-//             (catId) => !allRelatedCategories.some((c) => c.equals(catId))
-//           )
-//         : [];
-//       if (validAccessoryFor.length > 0 || allRelatedCategories.length > 0) {
-//         accessories = await Phone.find({
-//           _id: { $ne: phoneId },
-//           accessoryFor: {
-//             $in: [...validAccessoryFor, ...allRelatedCategories],
-//           },
-//         })
-//           .populate("category", "name slug")
-//           .populate("accessoryFor", "name slug")
-//           .sort({ reserved: -1, rating: -1 })
-//           .limit(20)
-//           .lean();
-
-//         console.log("Found accessories with accessoryFor:", accessories.length);
+//       if (currentProduct) {
+//         productType = "laptop";
+//         ProductModel = Laptop;
+//         mainCategoryId =
+//           currentProduct.category?._id || currentProduct.category;
+//         console.log("💻 Found product in Laptop collection");
 //       }
 //     }
 
-//     // Bước 2: Tìm sản phẩm thuộc danh mục phụ kiện
-//     if (accessories.length < 5 && smartphoneAccessoryId) {
-//       const categoryAccessories = await Phone.find({
-//         _id: { $ne: phoneId },
-//         category: { $in: [...accessoryCategoryIds, ...allRelatedCategories] },
-//       })
-//         .populate("category", "name slug")
-//         .populate("accessoryFor", "name slug")
-//         .sort({ reserved: -1, rating: -1 })
-//         .limit(5 - accessories.length)
-//         .lean();
-
-//       accessories = [...accessories, ...categoryAccessories];
-//       console.log("Found accessories by category:", categoryAccessories.length);
+//     if (!currentProduct) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Product not found in both Phone and Laptop collections",
+//       });
 //     }
 
-//     // Bước 3: Tìm sản phẩm có từ khóa phụ kiện trong tên
-//     if (accessories.length < 5) {
-//       const keywordAccessories = await Phone.find({
-//         _id: { $ne: phoneId },
-//         name: {
-//           $regex: accessoryKeywords.map((kw) => kw.source).join("|"),
-//           $options: "i",
-//         },
-//       })
-//         .populate("category", "name slug")
-//         .populate("accessoryFor", "name slug")
-//         .sort({ reserved: -1, rating: -1 })
-//         .limit(5 - accessories.length)
+//     console.log(
+//       `✅ Current Product: ${
+//         currentProduct.name
+//       } (${productType.toUpperCase()})`
+//     );
+//     console.log("📱 Category:", currentProduct.category?.name);
+//     console.log("🎯 Accessory For:", currentProduct.accessoryFor);
+
+//     // ==================== XÁC ĐỊNH LOẠI SẢN PHẨM ====================
+//     const isMainProduct =
+//       currentProduct.category &&
+//       (!currentProduct.accessoryFor ||
+//         currentProduct.accessoryFor.length === 0);
+//     const isAccessory =
+//       currentProduct.accessoryFor && currentProduct.accessoryFor.length > 0;
+
+//     console.log(
+//       `🔍 Product Type: ${
+//         isMainProduct
+//           ? productType.toUpperCase()
+//           : isAccessory
+//           ? "ACCESSORY"
+//           : "UNKNOWN"
+//       }`
+//     );
+
+//     // ==================== TẠO QUERY CHO SẢN PHẨM LIÊN QUAN ====================
+//     let relatedQuery = {
+//       _id: { $ne: new mongoose.Types.ObjectId(phoneId) },
+//     };
+
+//     // ID của các category (CẦN CẬP NHẬT THEO DATABASE THỰC TẾ)
+//     const SMARTPHONE_ACCESSORIES_CATEGORY_ID = "68c84930746ebe10973666a9";
+//     const LAPTOP_ACCESSORIES_CATEGORY_ID = "68c84930746ebe10973666b0";
+//     const LAPTOP_CATEGORY_ID = "68c84930746ebe10973666b1";
+
+//     const collectionName = productType === "laptop" ? "laptops" : "phones";
+//     const itemField = productType === "laptop" ? "laptop" : "phone";
+
+//     let accessories = [];
+
+//     // TH1: Sản phẩm là LAPTOP - tìm các laptop khác cùng category hoặc phụ kiện laptop
+//     if (isMainProduct && productType === "laptop") {
+//       console.log("💻 Finding related products for laptop");
+
+//       // Tìm các laptop khác cùng category
+//       if (mainCategoryId) {
+//         relatedQuery.category = mainCategoryId;
+//         console.log(
+//           "🎯 Looking for other laptops in same category:",
+//           mainCategoryId
+//         );
+//       }
+
+//       // Lấy các laptop cùng category
+//       const sameCategoryLaptops = await Laptop.find(relatedQuery)
+//         .select(
+//           "name price finalPrice image rating brand category specifications"
+//         )
+//         .sort({ rating: -1, createdAt: -1 })
+//         .limit(6)
 //         .lean();
 
-//       accessories = [...accessories, ...keywordAccessories];
 //       console.log(
-//         "Found accessories with keywords:",
-//         keywordAccessories.length
+//         "💻 Same category laptops found:",
+//         sameCategoryLaptops.length
 //       );
-//     }
 
-//     // Bước 4: Tìm sản phẩm cùng brand nhưng khác category
-//     if (accessories.length < 5) {
-//       const brandAccessories = await Phone.find({
-//         _id: { $ne: phoneId },
-//         brand: currentPhone.brand,
-//         category: { $nin: allRelatedCategories },
-//       })
-//         .populate("category", "name slug")
-//         .populate("accessoryFor", "name slug")
-//         .sort({ reserved: -1, rating: -1 })
-//         .limit(5 - accessories.length)
+//       sameCategoryLaptops.forEach((laptop) => {
+//         let relatedType = "Laptop cùng loại";
+//         const specs = laptop.specifications || {};
+
+//         // Xác định loại laptop dựa trên specifications
+//         if (specs.ram && parseInt(specs.ram) >= 16)
+//           relatedType = "Laptop hiệu năng cao";
+//         else if (specs.graphics && specs.graphics.includes("RTX"))
+//           relatedType = "Laptop gaming";
+//         else if (specs.weight && parseFloat(specs.weight) < 1.5)
+//           relatedType = "Laptop siêu nhẹ";
+
+//         accessories.push({
+//           ...laptop,
+//           accessoryType: relatedType,
+//           compatibilityScore: 85,
+//           fromHistory: false,
+//           purchaseScore: 0,
+//           isLaptop: true,
+//         });
+//       });
+
+//       // Lấy phụ kiện laptop nếu chưa đủ
+//       if (accessories.length < 8) {
+//         const remainingLimit = 8 - accessories.length;
+//         console.log(`🔍 Fetching ${remainingLimit} laptop accessories...`);
+
+//         const laptopAccessories = await Laptop.find({
+//           _id: { $ne: new mongoose.Types.ObjectId(phoneId) },
+//           accessoryFor: LAPTOP_ACCESSORIES_CATEGORY_ID,
+//         })
+//           .select(
+//             "name price finalPrice image rating brand category accessoryFor specifications"
+//           )
+//           .sort({ rating: -1, createdAt: -1 })
+//           .limit(remainingLimit)
+//           .lean();
+
+//         console.log("🎒 Laptop accessories found:", laptopAccessories.length);
+
+//         laptopAccessories.forEach((accessory) => {
+//           let accessoryType = "Phụ kiện laptop";
+//           const name = (accessory.name || "").toLowerCase();
+
+//           if (
+//             name.includes("sạc") ||
+//             name.includes("charger") ||
+//             name.includes("adapter")
+//           ) {
+//             accessoryType = "Sạc & Adapter";
+//           } else if (
+//             name.includes("túi") ||
+//             name.includes("case") ||
+//             name.includes("balo") ||
+//             name.includes("ba lô")
+//           ) {
+//             accessoryType = "Túi & Balo";
+//           } else if (name.includes("chuột") || name.includes("mouse")) {
+//             accessoryType = "Chuột";
+//           } else if (name.includes("bàn phím") || name.includes("keyboard")) {
+//             accessoryType = "Bàn phím";
+//           } else if (
+//             name.includes("ram") ||
+//             name.includes("ssd") ||
+//             name.includes("ổ cứng")
+//           ) {
+//             accessoryType = "Nâng cấp phần cứng";
+//           } else if (name.includes("dock") || name.includes("hub")) {
+//             accessoryType = "Dock & Hub";
+//           } else if (name.includes("màn hình") || name.includes("monitor")) {
+//             accessoryType = "Màn hình";
+//           }
+
+//           accessories.push({
+//             ...accessory,
+//             accessoryType,
+//             compatibilityScore: 90,
+//             fromHistory: false,
+//             purchaseScore: 0,
+//             isAccessory: true,
+//           });
+//         });
+//       }
+//     }
+//     // TH2: Sản phẩm là ĐIỆN THOẠI - tìm phụ kiện điện thoại
+//     else if (isMainProduct && productType === "phone") {
+//       console.log("📱 Finding accessories for phone");
+
+//       relatedQuery.accessoryFor = SMARTPHONE_ACCESSORIES_CATEGORY_ID;
+
+//       const phoneAccessories = await Phone.find(relatedQuery)
+//         .select(
+//           "name price finalPrice image rating brand category accessoryFor specifications"
+//         )
+//         .sort({ rating: -1, createdAt: -1 })
+//         .limit(8)
 //         .lean();
 
-//       accessories = [...accessories, ...brandAccessories];
-//       console.log("Found brand accessories:", brandAccessories.length);
+//       console.log("📱 Phone accessories found:", phoneAccessories.length);
+
+//       phoneAccessories.forEach((product) => {
+//         let accessoryType = "Phụ kiện điện thoại";
+//         const name = (product.name || "").toLowerCase();
+
+//         if (
+//           name.includes("sạc") ||
+//           name.includes("charger") ||
+//           name.includes("adapter")
+//         ) {
+//           accessoryType = "Sạc & Adapter";
+//         } else if (
+//           name.includes("cáp") ||
+//           name.includes("cable") ||
+//           name.includes("dây")
+//         ) {
+//           accessoryType = "Cáp & Dây";
+//         } else if (
+//           name.includes("tai nghe") ||
+//           name.includes("headphone") ||
+//           name.includes("earphone")
+//         ) {
+//           accessoryType = "Âm thanh";
+//         } else if (
+//           name.includes("ốp") ||
+//           name.includes("case") ||
+//           name.includes("bao da")
+//         ) {
+//           accessoryType = "Bảo vệ";
+//         } else if (name.includes("pin") || name.includes("power bank")) {
+//           accessoryType = "Pin dự phòng";
+//         }
+
+//         accessories.push({
+//           ...product,
+//           accessoryType,
+//           compatibilityScore: 100,
+//           fromHistory: false,
+//           purchaseScore: 0,
+//         });
+//       });
+//     }
+//     // TH3: Sản phẩm là PHỤ KIỆN - tìm sản phẩm chính
+//     else if (isAccessory) {
+//       console.log("🎯 Finding main products for accessory");
+
+//       if (
+//         currentProduct.accessoryFor &&
+//         currentProduct.accessoryFor.length > 0
+//       ) {
+//         const mainProductIds = currentProduct.accessoryFor.map(
+//           (acc) => acc._id || acc
+//         );
+
+//         const mainProducts = await ProductModel.find({
+//           category: { $in: mainProductIds },
+//         })
+//           .select("name price finalPrice image rating brand category")
+//           .limit(8)
+//           .lean();
+
+//         console.log(
+//           "🎯 Main products found for accessory:",
+//           mainProducts.length
+//         );
+
+//         mainProducts.forEach((product) => {
+//           accessories.push({
+//             ...product,
+//             accessoryType: "Sản phẩm chính",
+//             compatibilityScore: 95,
+//             fromHistory: false,
+//             purchaseScore: 0,
+//             isMainProduct: true,
+//           });
+//         });
+//       }
 //     }
 
-//     // Fallback: Lấy sản phẩm bất kỳ
+//     // ==================== THÊM DỮ LIỆU TỪ LỊCH SỬ MUA HÀNG ====================
+//     try {
+//       console.log("📊 Checking purchase history...");
+
+//       const purchaseHistory = await Order.aggregate([
+//         {
+//           $match: {
+//             [`items.${itemField}`]: new mongoose.Types.ObjectId(phoneId),
+//             orderStatus: { $in: ["delivered", "completed"] },
+//           },
+//         },
+//         { $unwind: "$items" },
+//         {
+//           $match: {
+//             [`items.${itemField}`]: {
+//               $ne: new mongoose.Types.ObjectId(phoneId),
+//             },
+//           },
+//         },
+//         {
+//           $lookup: {
+//             from: collectionName,
+//             localField: `items.${itemField}`,
+//             foreignField: "_id",
+//             as: "productInfo",
+//           },
+//         },
+//         { $unwind: "$productInfo" },
+//         {
+//           $group: {
+//             _id: `$items.${itemField}`,
+//             purchaseCount: { $sum: "$items.quantity" },
+//             productData: { $first: "$productInfo" },
+//           },
+//         },
+//         { $sort: { purchaseCount: -1 } },
+//         { $limit: 4 },
+//       ]);
+
+//       console.log("📊 Purchase history products:", purchaseHistory.length);
+
+//       if (purchaseHistory.length > 0) {
+//         purchaseHistory.forEach((item) => {
+//           const exists = accessories.some(
+//             (acc) => acc._id.toString() === item._id.toString()
+//           );
+//           if (!exists) {
+//             let accessoryType = "Sản phẩm thường mua cùng";
+//             if (productType === "laptop") {
+//               if (
+//                 item.productData.accessoryFor === LAPTOP_ACCESSORIES_CATEGORY_ID
+//               ) {
+//                 accessoryType = "Phụ kiện laptop";
+//               } else {
+//                 accessoryType = "Laptop liên quan";
+//               }
+//             }
+
+//             accessories.push({
+//               _id: item._id,
+//               name: item.productData.name,
+//               price: item.productData.price,
+//               finalPrice: item.productData.finalPrice,
+//               image: item.productData.image,
+//               rating: item.productData.rating,
+//               brand: item.productData.brand,
+//               category: item.productData.category,
+//               accessoryFor: item.productData.accessoryFor,
+//               accessoryType,
+//               fromHistory: true,
+//               purchaseScore: item.purchaseCount * 10,
+//               compatibilityScore: 95,
+//             });
+//           }
+//         });
+//       }
+//     } catch (historyError) {
+//       console.log("⚠️ No purchase history found:", historyError.message);
+//     }
+
+//     // ==================== FALLBACK: LẤY SẢN PHẨM PHỔ BIẾN ====================
 //     if (accessories.length === 0) {
-//       const anyProducts = await Phone.find({
-//         _id: { $ne: phoneId },
-//       })
-//         .populate("category", "name slug")
-//         .populate("accessoryFor", "name slug")
-//         .sort({ createdAt: -1 })
-//         .limit(20)
+//       console.log(`🔄 FALLBACK: Getting popular ${productType} products`);
+
+//       const fallbackQuery = {
+//         _id: { $ne: new mongoose.Types.ObjectId(phoneId) },
+//       };
+
+//       if (productType === "laptop") {
+//         // Lấy laptop phổ biến
+//         fallbackQuery.category = LAPTOP_CATEGORY_ID;
+//       } else {
+//         // Lấy phụ kiện điện thoại phổ biến
+//         fallbackQuery.accessoryFor = SMARTPHONE_ACCESSORIES_CATEGORY_ID;
+//       }
+
+//       const fallbackProducts = await ProductModel.find(fallbackQuery)
+//         .select("name price finalPrice image rating brand category")
+//         .sort({ rating: -1, soldCount: -1 })
+//         .limit(8)
 //         .lean();
 
-//       accessories = [...anyProducts];
-//       console.log("Found any products (fallback):", anyProducts.length);
+//       console.log(
+//         `🔄 Fallback ${productType} products found:`,
+//         fallbackProducts.length
+//       );
+
+//       fallbackProducts.forEach((product) => {
+//         let accessoryType =
+//           productType === "laptop" ? "Laptop phổ biến" : "Phụ kiện phổ biến";
+
+//         accessories.push({
+//           ...product,
+//           accessoryType,
+//           compatibilityScore: 80,
+//           fromHistory: false,
+//           purchaseScore: 0,
+//           isFallback: true,
+//         });
+//       });
 //     }
 
-//     // Giới hạn 5 sản phẩm
-//     // accessories = accessories.slice(0, 5);
+//     // ==================== SẮP XẾP VÀ GIỚI HẠN ====================
+//     accessories.sort((a, b) => {
+//       const scoreA =
+//         (a.purchaseScore || 0) + (a.compatibilityScore || 0) + (a.rating || 0);
+//       const scoreB =
+//         (b.purchaseScore || 0) + (b.compatibilityScore || 0) + (b.rating || 0);
+//       return scoreB - scoreA;
+//     });
 
-//     // Format dữ liệu
-//     const formattedAccessories = accessories
-//       .map((phone) => ({
-//         _id: phone._id,
-//         name: phone.name || "Unnamed Product",
-//         price: phone.price || 0,
-//         finalPrice: phone.finalPrice || phone.price || 0,
-//         image:
-//           phone.image ||
-//           phone.images?.[0]?.url ||
-//           "https://via.placeholder.com/100",
-//         category: phone.category?.name || "Unknown",
-//         brand: phone.brand || "Unknown",
-//         reserved: phone.reserved || 0,
-//         rating: phone.rating || 0,
-//         totalReviews: phone.totalReviews || 0,
-//         slug: phone.slug || slugify(phone.name),
-//         accessoryFor:
-//           phone.accessoryFor?.map((cat) => cat.name || cat._id.toString()) ||
-//           [],
-//       }))
-//       .slice(0, 20);
+//     accessories = accessories.slice(0, 8);
 
-//     res.status(200).json({
+//     console.log("✅ Final products count:", accessories.length);
+//     console.log(
+//       "📦 Products found:",
+//       accessories.map((a) => `${a.name} [${a.accessoryType}]`)
+//     );
+
+//     // ==================== FORMAT DỮ LIỆU TRẢ VỀ ====================
+//     const formattedAccessories = accessories.map((accessory, index) => {
+//       const discountPercent =
+//         accessory.price && accessory.finalPrice
+//           ? Math.round(
+//               ((accessory.price - accessory.finalPrice) / accessory.price) * 100
+//             )
+//           : 0;
+
+//       return {
+//         _id: accessory._id,
+//         name: accessory.name,
+//         price: accessory.price || 0,
+//         finalPrice: accessory.finalPrice || accessory.price || 0,
+//         image: accessory.image || "/images/placeholder.jpg",
+//         rating: accessory.rating || 0,
+//         brand: accessory.brand,
+//         category: accessory.category,
+//         accessoryType: accessory.accessoryType,
+//         discountPercent,
+//         fromHistory: accessory.fromHistory || false,
+//         isFallback: accessory.isFallback || false,
+//         compatibility: "high",
+//         priority: index + 1,
+//         isLaptop: accessory.isLaptop || false,
+//         isAccessory: accessory.isAccessory || false,
+//       };
+//     });
+
+//     return res.status(200).json({
 //       success: true,
-//       message: "Bought together products retrieved successfully",
+//       message:
+//         formattedAccessories.length > 0
+//           ? "Bought together products retrieved successfully"
+//           : "No related products found",
 //       data: formattedAccessories,
+//       metadata: {
+//         total: formattedAccessories.length,
+//         fromHistory: formattedAccessories.filter((a) => a.fromHistory).length,
+//         fromFallback: formattedAccessories.filter((a) => a.isFallback).length,
+//         laptopsCount: formattedAccessories.filter((a) => a.isLaptop).length,
+//         accessoriesCount: formattedAccessories.filter((a) => a.isAccessory)
+//           .length,
+//         productType: productType,
+//         currentProduct: currentProduct.name,
+//       },
 //     });
 //   } catch (error) {
-//     console.error("Error fetching bought together products:", error);
-//     res.status(500).json({
+//     console.error("❌ Error in getBoughtTogether:", error);
+//     return res.status(500).json({
 //       success: false,
 //       message: "Error fetching bought together products",
 //       error: error.message,
 //     });
 //   }
 // });
-
-// const getRelatedProducts = asyncHandler(async (req, res) => {
-//   try {
-//     const { phoneId } = req.params;
-
-//     if (!mongoose.Types.ObjectId.isValid(phoneId)) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Invalid phoneId",
-//       });
-//     }
-
-//     const currentPhone = await Phone.findById(phoneId)
-//       .select("category brand name slug accessoryFor")
-//       .lean();
-
-//     if (!currentPhone) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Phone not found",
-//       });
-//     }
-
-//     console.log("Current Phone:", currentPhone);
-
-//     // Từ khóa phụ kiện
-//     const accessoryKeywords = [
-//       /tai nghe/i,
-//       /adapter usb/i,
-//       /20000mah/i,
-//       /túi chống sốc/i,
-//       /có dây/i,
-//       /ốp lưng/i,
-//       /case/i,
-//       /bao da/i,
-//       /cáp sạc/i,
-//       /cáp/i,
-//       /sạc/i,
-//       /headphone/i,
-//       /earphone/i,
-//       /cổng sạc/i,
-//       /miếng dán/i,
-//       /kính cường lực/i,
-//       /pin dự phòng/i,
-//       /dock/i,
-//       /stand/i,
-//       /chuột/i,
-//       /bàn phím/i,
-//       /túi/i,
-//       /camera/i,
-//       /usb/i,
-//       /thẻ nhớ/i,
-//     ];
-
-//     // Lấy danh mục phụ kiện từ cơ sở dữ liệu
-//     const accessoryCategories = await Category.find({
-//       isActive: true,
-//       name: {
-//         $regex: accessoryKeywords.map((kw) => kw.source).join("|"),
-//         $options: "i",
-//       },
-//     }).select("_id");
-
-//     const accessoryCategoryIds = accessoryCategories.map((cat) => cat._id);
-
-//     console.log(
-//       "Found accessory categories:",
-//       accessoryCategoryIds.length,
-//       accessoryCategoryIds
-//     );
-
-//     // Tìm category cha (smartphone-accessories)
-//     const smartphoneAccessory = await Category.findOne({
-//       name: "smartphone-accessories",
-//       parentCategory: null,
-//       isActive: true,
-//     }).select("_id");
-
-//     const smartphoneAccessoryId = smartphoneAccessory
-//       ? smartphoneAccessory._id
-//       : null;
-
-//     // Lấy tất cả category liên quan
-//     let allRelatedCategories = [currentPhone.category];
-//     if (smartphoneAccessoryId) {
-//       const childCategories = await Category.find({
-//         parentCategory: smartphoneAccessoryId,
-//         isActive: true,
-//       }).select("_id");
-//       allRelatedCategories = [
-//         ...allRelatedCategories,
-//         smartphoneAccessoryId,
-//         ...childCategories.map((cat) => cat._id),
-//       ];
-//     }
-
-//     // Mở rộng allRelatedCategories dựa trên accessoryFor
-//     if (currentPhone.accessoryFor && currentPhone.accessoryFor.length > 0) {
-//       const accessoryParentCategories = await Category.find({
-//         _id: { $in: currentPhone.accessoryFor },
-//         isActive: true,
-//       }).select("parentCategory");
-//       const parentIds = accessoryParentCategories
-//         .flatMap((cat) => cat.parentCategory)
-//         .filter(Boolean);
-//       allRelatedCategories = [
-//         ...new Set([...allRelatedCategories, ...parentIds]),
-//       ];
-//     }
-
-//     console.log("Expanded related categories:", allRelatedCategories);
-
-//     // Bước 1: Tìm sản phẩm liên quan dựa trên accessoryFor hoặc category liên quan
-//     let relatedProducts = [];
-//     if (allRelatedCategories.length > 0) {
-//       relatedProducts = await Phone.find({
-//         _id: { $ne: phoneId },
-//         $or: [
-//           { accessoryFor: { $in: currentPhone.accessoryFor.map(String) } },
-//           { category: { $in: allRelatedCategories } },
-//         ],
-//       })
-//         .populate("category", "name slug")
-//         .populate("accessoryFor", "name slug")
-//         .sort({ rating: -1, reserved: -1 })
-//         .limit(20)
-//         .lean();
-
-//       console.log(
-//         "Found related products with initial query:",
-//         relatedProducts.length
-//       );
-//     }
-
-//     // Loại bỏ trùng lặp dựa trên _id
-//     relatedProducts = Array.from(
-//       new Set(relatedProducts.map((p) => p._id.toString()))
-//     ).map((id) => relatedProducts.find((p) => p._id.toString() === id));
-
-//     // Bước 2: Fallback với sản phẩm có từ khóa phụ kiện trong tên
-//     if (relatedProducts.length < 5) {
-//       const keywordProducts = await Phone.find({
-//         _id: { $ne: phoneId },
-//         name: {
-//           $regex: accessoryKeywords.map((kw) => kw.source).join("|"),
-//           $options: "i",
-//         },
-//         _id: { $nin: relatedProducts.map((p) => p._id) },
-//       })
-//         .populate("category", "name slug")
-//         .populate("accessoryFor", "name slug")
-//         .sort({ rating: -1, reserved: -1 })
-//         .limit(5 - relatedProducts.length)
-//         .lean();
-
-//       relatedProducts = [...relatedProducts, ...keywordProducts];
-//       console.log("Found keyword products:", keywordProducts.length);
-//     }
-
-//     // Bước 3: Fallback với sản phẩm cùng brand nhưng khác category
-//     if (relatedProducts.length < 5) {
-//       const brandProducts = await Phone.find({
-//         _id: { $ne: phoneId },
-//         brand: currentPhone.brand,
-//         category: { $nin: allRelatedCategories },
-//       })
-//         .populate("category", "name slug")
-//         .populate("accessoryFor", "name slug")
-//         .sort({ rating: -1, reserved: -1 })
-//         .limit(5 - relatedProducts.length)
-//         .lean();
-
-//       relatedProducts = [...relatedProducts, ...brandProducts];
-//       console.log("Found brand products:", brandProducts.length);
-//     }
-
-//     // Bước 4: Fallback với sản phẩm bất kỳ
-//     if (relatedProducts.length < 5) {
-//       const anyProducts = await Phone.find({
-//         _id: { $ne: phoneId },
-//         _id: { $nin: relatedProducts.map((p) => p._id) },
-//       })
-//         .populate("category", "name slug")
-//         .populate("accessoryFor", "name slug")
-//         .sort({ createdAt: -1 })
-//         .limit(5 - relatedProducts.length)
-//         .lean();
-
-//       relatedProducts = [...relatedProducts, ...anyProducts];
-//       console.log("Found any products (fallback):", anyProducts.length);
-//     }
-
-//     // Giới hạn 5 sản phẩm
-//     // relatedProducts = relatedProducts.slice(0, 5);
-
-//     // Format dữ liệu
-//     const formattedProducts = relatedProducts
-//       .map((phone) => ({
-//         _id: phone._id,
-//         name: phone.name || "Unnamed Product",
-//         price: phone.price || 0,
-//         finalPrice: phone.finalPrice || phone.price || 0,
-//         image:
-//           phone.image ||
-//           phone.images?.[0]?.url ||
-//           "https://via.placeholder.com/100",
-//         category: phone.category?.name || "Unknown",
-//         brand: phone.brand || "Unknown",
-//         reserved: phone.reserved || 0,
-//         rating: phone.rating || 0,
-//         totalReviews: phone.totalReviews || 0,
-//         slug: phone.slug || slugify(phone.name),
-//         accessoryFor:
-//           phone.accessoryFor?.map((cat) => cat.name || cat._id.toString()) ||
-//           [],
-//       }))
-//       .slice(0, 20);
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Related products retrieved successfully",
-//       data: formattedProducts,
-//     });
-//   } catch (error) {
-//     console.error("Error fetching related products:", error);
-//     res.status(500).json({
-//       success: false,
-//       message: "Error fetching related products",
-//       error: error.message,
-//     });
-//   }
-// });
-
-// Hàm slugify
-
 const getBoughtTogether = asyncHandler(async (req, res) => {
   try {
     const { phoneId } = req.params;
+    console.log("=== START getBoughtTogether ===");
+    console.log("📱 Requested product ID:", phoneId);
 
+    // Kiểm tra ID hợp lệ
     if (!mongoose.Types.ObjectId.isValid(phoneId)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid phoneId",
+        message: "Invalid product ID format",
       });
     }
 
-    const currentPhone = await Phone.findById(phoneId)
-      .select("category brand name slug accessoryFor")
+    // ==================== XÁC ĐỊNH LOẠI SẢN PHẨM CHÍNH ====================
+    let currentProduct = await Phone.findById(phoneId)
+      .populate("category", "name")
+      .populate("accessoryFor", "name")
+      .select("category brand name price finalPrice accessoryFor")
       .lean();
 
-    if (!currentPhone) {
-      return res.status(404).json({
-        success: false,
-        message: "Phone not found",
-      });
-    }
+    let productType = "phone";
+    let ProductModel = Phone;
+    let mainCategoryId = null;
 
-    console.log("Current Phone:", currentPhone);
+    // Nếu không tìm thấy trong Phone, thử tìm trong Laptop
+    if (!currentProduct) {
+      console.log("🔍 Product not found in Phone, searching in Laptop...");
+      currentProduct = await Laptop.findById(phoneId)
+        .populate("category", "name")
+        .populate("accessoryFor", "name")
+        .select("category brand name price finalPrice accessoryFor")
+        .lean();
 
-    // Từ khóa phụ kiện chung
-    const accessoryKeywords = [
-      /tai nghe/i,
-      /adapter usb/i,
-      /20000mah/i,
-      /túi chống sốc/i,
-      /có dây/i,
-      /ốp lưng/i,
-      /case/i,
-      /bao da/i,
-      /cáp sạc/i,
-      /cáp/i,
-      /sạc/i,
-      /headphone/i,
-      /earphone/i,
-      /cổng sạc/i,
-      /miếng dán/i,
-      /kính cường lực/i,
-      /pin dự phòng/i,
-      /dock/i,
-      /stand/i,
-      /chuột/i,
-      /bàn phím/i,
-      /túi/i,
-      /camera/i,
-      /usb/i,
-    ];
-
-    // Lấy danh mục phụ kiện từ cơ sở dữ liệu
-    const accessoryCategories = await Category.find({
-      isActive: true,
-      name: {
-        $regex: accessoryKeywords.map((kw) => kw.source).join("|"),
-        $options: "i",
-      },
-    }).select("_id");
-
-    const accessoryCategoryIds = accessoryCategories.map((cat) => cat._id);
-
-    console.log(
-      "Found accessory categories:",
-      accessoryCategoryIds.length,
-      accessoryCategoryIds
-    );
-
-    // Tìm category cha (smartphone-accessories) dựa trên tên
-    const smartphoneAccessory = await Category.findOne({
-      name: "smartphone-accessories",
-      parentCategory: null,
-      isActive: true,
-    }).select("_id");
-
-    const smartphoneAccessoryId = smartphoneAccessory
-      ? smartphoneAccessory._id
-      : null;
-
-    // Lấy tất cả category liên quan, bao gồm parentCategory của accessoryFor
-    let allRelatedCategories = [currentPhone.category];
-    if (smartphoneAccessoryId) {
-      const childCategories = await Category.find({
-        parentCategory: smartphoneAccessoryId,
-        isActive: true,
-      }).select("_id");
-      allRelatedCategories = [
-        ...allRelatedCategories,
-        smartphoneAccessoryId,
-        ...childCategories.map((cat) => cat._id),
-      ];
-    }
-
-    // Mở rộng allRelatedCategories dựa trên parentCategory của accessoryFor
-    if (currentPhone.accessoryFor && currentPhone.accessoryFor.length > 0) {
-      const accessoryParentCategories = await Category.find({
-        _id: { $in: currentPhone.accessoryFor },
-        isActive: true,
-      }).select("parentCategory");
-      const parentIds = accessoryParentCategories
-        .flatMap((cat) => cat.parentCategory)
-        .filter(Boolean);
-      allRelatedCategories = [
-        ...new Set([...allRelatedCategories, ...parentIds]),
-      ];
-    }
-
-    console.log("Expanded related categories:", allRelatedCategories);
-
-    // Bước 1: Tìm phụ kiện có accessoryFor chứa category hoặc smartphone-accessories và con/cha của nó
-    let accessories = [];
-    if (allRelatedCategories.length > 0) {
-      const validAccessoryFor = currentPhone.accessoryFor
-        ? currentPhone.accessoryFor.filter(
-            (catId) => !allRelatedCategories.some((c) => c.equals(catId))
-          )
-        : [];
-      if (validAccessoryFor.length > 0 || allRelatedCategories.length > 0) {
-        accessories = await Phone.find({
-          _id: { $ne: phoneId },
-          accessoryFor: {
-            $in: [...validAccessoryFor, ...allRelatedCategories],
-          },
-        })
-          .populate("category", "name slug")
-          .populate("accessoryFor", "name slug")
-          .sort({ reserved: -1, rating: -1 })
-          .limit(20)
-          .lean();
-
-        console.log("Found accessories with accessoryFor:", accessories.length);
+      if (currentProduct) {
+        productType = "laptop";
+        ProductModel = Laptop;
+        mainCategoryId =
+          currentProduct.category?._id || currentProduct.category;
+        console.log("💻 Found product in Laptop collection");
       }
     }
 
-    // Bước 2: Tìm sản phẩm thuộc danh mục phụ kiện
-    if (accessories.length < 5 && smartphoneAccessoryId) {
-      const categoryAccessories = await Phone.find({
-        _id: { $ne: phoneId },
-        category: { $in: [...accessoryCategoryIds, ...allRelatedCategories] },
-      })
-        .populate("category", "name slug")
-        .populate("accessoryFor", "name slug")
-        .sort({ reserved: -1, rating: -1 })
-        .limit(5 - accessories.length)
-        .lean();
-
-      accessories = [...accessories, ...categoryAccessories];
-      console.log("Found accessories by category:", categoryAccessories.length);
+    if (!currentProduct) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found in both Phone and Laptop collections",
+      });
     }
 
-    // Bước 3: Tìm sản phẩm có từ khóa phụ kiện trong tên
-    if (accessories.length < 5) {
-      const keywordAccessories = await Phone.find({
-        _id: { $ne: phoneId },
-        name: {
-          $regex: accessoryKeywords.map((kw) => kw.source).join("|"),
-          $options: "i",
+    console.log(
+      `✅ Current Product: ${
+        currentProduct.name
+      } (${productType.toUpperCase()})`
+    );
+    console.log("📱 Category:", currentProduct.category?.name);
+    console.log("🎯 Accessory For:", currentProduct.accessoryFor);
+
+    // ==================== XÁC ĐỊNH LOẠI SẢN PHẨM ====================
+    const isMainProduct =
+      currentProduct.category &&
+      (!currentProduct.accessoryFor ||
+        currentProduct.accessoryFor.length === 0);
+    const isAccessory =
+      currentProduct.accessoryFor && currentProduct.accessoryFor.length > 0;
+
+    console.log(
+      `🔍 Product Type: ${
+        isMainProduct
+          ? productType.toUpperCase()
+          : isAccessory
+          ? "ACCESSORY"
+          : "UNKNOWN"
+      }`
+    );
+
+    // ==================== LẤY CATEGORY ID CỦA SẢN PHẨM HIỆN TẠI ====================
+    const currentProductCategoryId =
+      currentProduct.category?._id?.toString() ||
+      currentProduct.category?.toString();
+    console.log("🎯 Current product category ID:", currentProductCategoryId);
+
+    let accessories = [];
+
+    // TH1: SẢN PHẨM LÀ SẢN PHẨM CHÍNH (điện thoại/laptop) - TÌM PHỤ KIỆN TƯƠNG THÍCH
+    if (isMainProduct) {
+      console.log(`🔍 Finding accessories for ${productType}`);
+
+      // QUAN TRỌNG: Tìm phụ kiện CÓ CHỨA category của sản phẩm hiện tại trong accessoryFor
+      // const compatibleAccessories = await ProductModel.find({
+      //   _id: { $ne: new mongoose.Types.ObjectId(phoneId) },
+      //   accessoryFor: { $in: [currentProductCategoryId] }, // PHỤ KIỆN CÓ CHỨA CATEGORY CỦA SẢN PHẨM HIỆN TẠI
+      // })
+      const compatibleAccessories = await ProductModel.find({
+        _id: { $ne: new mongoose.Types.ObjectId(phoneId) },
+        accessoryFor: {
+          $in: [new mongoose.Types.ObjectId(currentProductCategoryId)],
         },
       })
-        .populate("category", "name slug")
-        .populate("accessoryFor", "name slug")
-        .sort({ reserved: -1, rating: -1 })
-        .limit(5 - accessories.length)
-        .lean();
-
-      accessories = [...accessories, ...keywordAccessories];
-      console.log(
-        "Found accessories with keywords:",
-        keywordAccessories.length
-      );
-    }
-
-    // Bước 4: Tìm sản phẩm cùng brand nhưng khác category
-    if (accessories.length < 5) {
-      const brandAccessories = await Phone.find({
-        _id: { $ne: phoneId },
-        brand: currentPhone.brand,
-        category: { $nin: allRelatedCategories },
-      })
-        .populate("category", "name slug")
-        .populate("accessoryFor", "name slug")
-        .sort({ reserved: -1, rating: -1 })
-        .limit(5 - accessories.length)
-        .lean();
-
-      accessories = [...accessories, ...brandAccessories];
-      console.log("Found brand accessories:", brandAccessories.length);
-    }
-
-    // Fallback: Lấy sản phẩm bất kỳ
-    if (accessories.length === 0) {
-      const anyProducts = await Phone.find({
-        _id: { $ne: phoneId },
-      })
-        .populate("category", "name slug")
-        .populate("accessoryFor", "name slug")
-        .sort({ createdAt: -1 })
+        .select(
+          "name price finalPrice image rating brand category accessoryFor specifications"
+        )
+        .sort({ rating: -1, createdAt: -1 })
         .limit(20)
         .lean();
 
-      accessories = [...anyProducts];
-      console.log("Found any products (fallback):", anyProducts.length);
+      console.log(
+        `🎯 Compatible accessories found: ${compatibleAccessories.length}`
+      );
+
+      compatibleAccessories.forEach((accessory) => {
+        let accessoryType =
+          productType === "laptop" ? "Phụ kiện laptop" : "Phụ kiện điện thoại";
+        const name = (accessory.name || "").toLowerCase();
+
+        // Phân loại cho laptop
+        if (productType === "laptop") {
+          if (
+            name.includes("sạc") ||
+            name.includes("charger") ||
+            name.includes("adapter")
+          ) {
+            accessoryType = "Sạc & Adapter";
+          } else if (
+            name.includes("túi") ||
+            name.includes("case") ||
+            name.includes("balo") ||
+            name.includes("ba lô")
+          ) {
+            accessoryType = "Túi & Balo";
+          } else if (name.includes("chuột") || name.includes("mouse")) {
+            accessoryType = "Chuột";
+          } else if (name.includes("bàn phím") || name.includes("keyboard")) {
+            accessoryType = "Bàn phím";
+          } else if (
+            name.includes("ram") ||
+            name.includes("ssd") ||
+            name.includes("ổ cứng")
+          ) {
+            accessoryType = "Nâng cấp phần cứng";
+          } else if (name.includes("dock") || name.includes("hub")) {
+            accessoryType = "Dock & Hub";
+          } else if (name.includes("màn hình") || name.includes("monitor")) {
+            accessoryType = "Màn hình";
+          } else if (
+            name.includes("cáp") ||
+            name.includes("cable") ||
+            name.includes("usb") ||
+            name.includes("hdmi")
+          ) {
+            accessoryType = "Cáp & Kết nối";
+          }
+        }
+        // Phân loại cho điện thoại
+        else {
+          if (
+            name.includes("sạc") ||
+            name.includes("charger") ||
+            name.includes("adapter") ||
+            name.includes("pin")
+          ) {
+            accessoryType = "Sạc & Adapter";
+          } else if (
+            name.includes("cáp") ||
+            name.includes("cable") ||
+            name.includes("dây")
+          ) {
+            accessoryType = "Cáp & Dây";
+          } else if (
+            name.includes("tai nghe") ||
+            name.includes("headphone") ||
+            name.includes("earphone")
+          ) {
+            accessoryType = "Âm thanh";
+          } else if (
+            name.includes("ốp") ||
+            name.includes("case") ||
+            name.includes("bao da")
+          ) {
+            accessoryType = "Bảo vệ";
+          } else if (name.includes("pin") || name.includes("power bank")) {
+            accessoryType = "Pin dự phòng";
+          } else if (
+            name.includes("smartwatch") ||
+            name.includes("đồng hồ") ||
+            name.includes("watch")
+          ) {
+            accessoryType = "Đồng hồ thông minh";
+          } else if (
+            name.includes("thẻ nhớ") ||
+            name.includes("Thẻ nhớ") ||
+            name.includes("memory card") ||
+            name.includes("sd card") ||
+            name.includes("microsd") ||
+            name.includes("usb drive") ||
+            name.includes("flash drive") ||
+            name.includes("ổ cứng di động") ||
+            name.includes("external hard drive") ||
+            name.includes("ssd di động") ||
+            name.includes("portable ssd")
+          ) {
+            accessoryType = "Thẻ nhớ & Lưu trữ";
+          }
+        }
+
+        accessories.push({
+          ...accessory,
+          accessoryType,
+          compatibilityScore: 100, // Điểm cao vì được chỉ định tương thích
+          fromHistory: false,
+          purchaseScore: 0,
+          isAccessory: true,
+        });
+      });
+
+      // Nếu không đủ phụ kiện tương thích, thêm sản phẩm cùng loại
+      if (
+        accessories.length < 6 &&
+        productType === "laptop" &&
+        mainCategoryId
+      ) {
+        const remainingLimit = 6 - accessories.length;
+        console.log(`💻 Fetching ${remainingLimit} related laptops...`);
+
+        const relatedLaptops = await Laptop.find({
+          _id: { $ne: new mongoose.Types.ObjectId(phoneId) },
+          category: mainCategoryId,
+        })
+          .select(
+            "name price finalPrice image rating brand category specifications"
+          )
+          .sort({ rating: -1, createdAt: -1 })
+          .limit(remainingLimit)
+          .lean();
+
+        console.log("💻 Related laptops found:", relatedLaptops.length);
+
+        relatedLaptops.forEach((laptop) => {
+          let relatedType = "Laptop cùng loại";
+          const specs = laptop.specifications || {};
+
+          if (specs.ram && parseInt(specs.ram) >= 16)
+            relatedType = "Laptop hiệu năng cao";
+          else if (specs.graphics && specs.graphics.includes("RTX"))
+            relatedType = "Laptop gaming";
+          else if (specs.weight && parseFloat(specs.weight) < 1.5)
+            relatedType = "Laptop siêu nhẹ";
+
+          accessories.push({
+            ...laptop,
+            accessoryType: relatedType,
+            compatibilityScore: 85,
+            fromHistory: false,
+            purchaseScore: 0,
+            isLaptop: true,
+          });
+        });
+      }
+    }
+    // TH2: SẢN PHẨM LÀ PHỤ KIỆN - TÌM SẢN PHẨM CHÍNH TƯƠNG THÍCH
+    else if (isAccessory) {
+      console.log("🎯 Finding main products for accessory");
+
+      if (
+        currentProduct.accessoryFor &&
+        currentProduct.accessoryFor.length > 0
+      ) {
+        const compatibleCategoryIds = currentProduct.accessoryFor.map(
+          (acc) => acc._id?.toString() || acc.toString()
+        );
+        console.log(
+          "🎯 Compatible category IDs for this accessory:",
+          compatibleCategoryIds
+        );
+
+        const mainProducts = await ProductModel.find({
+          category: { $in: compatibleCategoryIds },
+        })
+          .select("name price finalPrice image rating brand category")
+          .limit(8)
+          .lean();
+
+        console.log("🎯 Compatible main products found:", mainProducts.length);
+
+        mainProducts.forEach((product) => {
+          accessories.push({
+            ...product,
+            accessoryType: "Sản phẩm chính tương thích",
+            compatibilityScore: 95,
+            fromHistory: false,
+            purchaseScore: 0,
+            isMainProduct: true,
+          });
+        });
+      }
     }
 
-    // Giới hạn 5 sản phẩm
-    // accessories = accessories.slice(0, 5);
+    // ==================== THÊM DỮ LIỆU TỪ LỊCH SỬ MUA HÀNG ====================
+    try {
+      console.log("📊 Checking purchase history...");
 
-    // Format dữ liệu
-    const formattedAccessories = accessories
-      .map((phone) => ({
-        _id: phone._id,
-        name: phone.name || "Unnamed Product",
-        price: phone.price || 0,
-        finalPrice: phone.finalPrice || phone.price || 0,
-        image:
-          phone.image ||
-          phone.images?.[0]?.url ||
-          "https://via.placeholder.com/100",
-        category: phone.category?.name || "Unknown",
-        brand: phone.brand || "Unknown",
-        reserved: phone.reserved || 0,
-        rating: phone.rating || 0,
-        totalReviews: phone.totalReviews || 0,
-        slug: phone.slug || slugify(phone.name),
-        accessoryFor:
-          phone.accessoryFor?.map((cat) => cat.name || cat._id.toString()) ||
-          [],
-      }))
-      .slice(0, 20);
+      const collectionName = productType === "laptop" ? "laptops" : "phones";
+      const itemField = productType === "laptop" ? "laptop" : "phone";
 
-    res.status(200).json({
+      const purchaseHistory = await Order.aggregate([
+        {
+          $match: {
+            [`items.${itemField}`]: new mongoose.Types.ObjectId(phoneId),
+            orderStatus: { $in: ["delivered", "completed"] },
+          },
+        },
+        { $unwind: "$items" },
+        {
+          $match: {
+            [`items.${itemField}`]: {
+              $ne: new mongoose.Types.ObjectId(phoneId),
+            },
+          },
+        },
+        {
+          $lookup: {
+            from: collectionName,
+            localField: `items.${itemField}`,
+            foreignField: "_id",
+            as: "productInfo",
+          },
+        },
+        { $unwind: "$productInfo" },
+        {
+          $group: {
+            _id: `$items.${itemField}`,
+            purchaseCount: { $sum: "$items.quantity" },
+            productData: { $first: "$productInfo" },
+          },
+        },
+        { $sort: { purchaseCount: -1 } },
+        { $limit: 4 },
+      ]);
+
+      console.log("📊 Purchase history products:", purchaseHistory.length);
+
+      if (purchaseHistory.length > 0) {
+        purchaseHistory.forEach((item) => {
+          const exists = accessories.some(
+            (acc) => acc._id.toString() === item._id.toString()
+          );
+          if (!exists) {
+            let accessoryType = "Sản phẩm thường mua cùng";
+
+            accessories.push({
+              _id: item._id,
+              name: item.productData.name,
+              price: item.productData.price,
+              finalPrice: item.productData.finalPrice,
+              image: item.productData.image,
+              rating: item.productData.rating,
+              brand: item.productData.brand,
+              category: item.productData.category,
+              accessoryFor: item.productData.accessoryFor,
+              accessoryType,
+              fromHistory: true,
+              purchaseScore: item.purchaseCount * 10,
+              compatibilityScore: 95,
+            });
+          }
+        });
+      }
+    } catch (historyError) {
+      console.log("⚠️ No purchase history found:", historyError.message);
+    }
+
+    // ==================== FALLBACK: LẤY SẢN PHẨM PHỔ BIẾN ====================
+    if (accessories.length === 0) {
+      console.log(`🔄 FALLBACK: Getting popular ${productType} products`);
+
+      const fallbackProducts = await ProductModel.find({
+        _id: { $ne: new mongoose.Types.ObjectId(phoneId) },
+      })
+        .select("name price finalPrice image rating brand category")
+        .sort({ rating: -1, soldCount: -1 })
+        .limit(8)
+        .lean();
+
+      console.log(
+        `🔄 Fallback ${productType} products found:`,
+        fallbackProducts.length
+      );
+
+      fallbackProducts.forEach((product) => {
+        let accessoryType =
+          productType === "laptop"
+            ? "Sản phẩm liên quan"
+            : "Sản phẩm liên quan";
+
+        accessories.push({
+          ...product,
+          accessoryType,
+          compatibilityScore: 60,
+          fromHistory: false,
+          purchaseScore: 0,
+          isFallback: true,
+        });
+      });
+    }
+
+    // ==================== SẮP XẾP VÀ GIỚI HẠN ====================
+    accessories.sort((a, b) => {
+      const scoreA =
+        (a.purchaseScore || 0) + (a.compatibilityScore || 0) + (a.rating || 0);
+      const scoreB =
+        (b.purchaseScore || 0) + (b.compatibilityScore || 0) + (b.rating || 0);
+      return scoreB - scoreA;
+    });
+
+    accessories = accessories.slice(0, 20);
+
+    console.log("✅ Final products count:", accessories.length);
+    console.log(
+      "📦 Products found:",
+      accessories.map((a) => `${a.name} [${a.accessoryType}]`)
+    );
+
+    // ==================== FORMAT DỮ LIỆU TRẢ VỀ ====================
+    const formattedAccessories = accessories.map((accessory, index) => {
+      const discountPercent =
+        accessory.price && accessory.finalPrice
+          ? Math.round(
+              ((accessory.price - accessory.finalPrice) / accessory.price) * 100
+            )
+          : 0;
+
+      return {
+        _id: accessory._id,
+        name: accessory.name,
+        price: accessory.price || 0,
+        finalPrice: accessory.finalPrice || accessory.price || 0,
+        image: accessory.image || "/images/placeholder.jpg",
+        rating: accessory.rating || 0,
+        brand: accessory.brand,
+        category: accessory.category,
+        accessoryType: accessory.accessoryType,
+        discountPercent,
+        fromHistory: accessory.fromHistory || false,
+        isFallback: accessory.isFallback || false,
+        compatibility: "high",
+        priority: index + 1,
+        isLaptop: accessory.isLaptop || false,
+        isAccessory: accessory.isAccessory || false,
+      };
+    });
+
+    return res.status(200).json({
       success: true,
-      message: "Bought together products retrieved successfully",
+      message:
+        formattedAccessories.length > 0
+          ? "Bought together products retrieved successfully"
+          : "No related products found",
       data: formattedAccessories,
+      metadata: {
+        total: formattedAccessories.length,
+        fromHistory: formattedAccessories.filter((a) => a.fromHistory).length,
+        fromFallback: formattedAccessories.filter((a) => a.isFallback).length,
+        laptopsCount: formattedAccessories.filter((a) => a.isLaptop).length,
+        accessoriesCount: formattedAccessories.filter((a) => a.isAccessory)
+          .length,
+        productType: productType,
+        currentProduct: currentProduct.name,
+      },
     });
   } catch (error) {
-    console.error("Error fetching bought together products:", error);
-    res.status(500).json({
+    console.error("❌ Error in getBoughtTogether:", error);
+    return res.status(500).json({
       success: false,
       message: "Error fetching bought together products",
       error: error.message,
@@ -2006,223 +2232,256 @@ const getRelatedProducts = asyncHandler(async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(phoneId)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid phoneId",
+        message: "Invalid product ID",
       });
     }
 
-    const currentPhone = await Phone.findById(phoneId)
-      .select("category brand name slug accessoryFor")
+    const currentProduct = await Phone.findById(phoneId)
+      .populate("category", "name")
+      .select("category brand name price finalPrice")
       .lean();
 
-    if (!currentPhone) {
+    if (!currentProduct) {
       return res.status(404).json({
         success: false,
-        message: "Phone not found",
+        message: "Product not found",
       });
     }
 
-    console.log("Current Phone:", currentPhone);
+    console.log("🔍 Current Product:", currentProduct.name);
 
-    // Từ khóa phụ kiện
-    const accessoryKeywords = [
-      /tai nghe/i,
-      /adapter usb/i,
-      /20000mah/i,
-      /túi chống sốc/i,
-      /có dây/i,
-      // /ốp lưng/i,
-      /case/i,
-      /bao da/i,
-      /cáp sạc/i,
-      /cáp/i,
-      /sạc/i,
-      /headphone/i,
-      /earphone/i,
-      /cổng sạc/i,
-      /miếng dán/i,
-      /kính cường lực/i,
-      /pin dự phòng/i,
-      /dock/i,
-      /stand/i,
-      /chuột/i,
-      /bàn phím/i,
-      /túi/i,
-      /camera/i,
-      /usb/i,
-      /thẻ nhớ/i,
-    ];
-
-    // Lấy danh mục phụ kiện từ cơ sở dữ liệu
-    const accessoryCategories = await Category.find({
-      isActive: true,
-      name: {
-        $regex: accessoryKeywords.map((kw) => kw.source).join("|"),
-        $options: "i",
-      },
-    }).select("_id");
-
-    const accessoryCategoryIds = accessoryCategories.map((cat) => cat._id);
-
-    console.log(
-      "Found accessory categories:",
-      accessoryCategoryIds.length,
-      accessoryCategoryIds
-    );
-
-    // Tìm category cha (smartphone-accessories)
-    const smartphoneAccessory = await Category.findOne({
-      name: "smartphone-accessories",
-      parentCategory: null,
-      isActive: true,
-    }).select("_id");
-
-    const smartphoneAccessoryId = smartphoneAccessory
-      ? smartphoneAccessory._id
-      : null;
-
-    // Lấy tất cả category liên quan
-    let allRelatedCategories = [currentPhone.category];
-    if (smartphoneAccessoryId) {
-      const childCategories = await Category.find({
-        parentCategory: smartphoneAccessoryId,
-        isActive: true,
-      }).select("_id");
-      allRelatedCategories = [
-        ...allRelatedCategories,
-        smartphoneAccessoryId,
-        ...childCategories.map((cat) => cat._id),
-      ];
-    }
-
-    // Mở rộng allRelatedCategories dựa trên accessoryFor
-    if (currentPhone.accessoryFor && currentPhone.accessoryFor.length > 0) {
-      const accessoryParentCategories = await Category.find({
-        _id: { $in: currentPhone.accessoryFor },
-        isActive: true,
-      }).select("parentCategory");
-      const parentIds = accessoryParentCategories
-        .flatMap((cat) => cat.parentCategory)
-        .filter(Boolean);
-      allRelatedCategories = [
-        ...new Set([...allRelatedCategories, ...parentIds]),
-      ];
-    }
-
-    console.log("Expanded related categories:", allRelatedCategories);
-
-    // Bước 1: Tìm sản phẩm liên quan dựa trên accessoryFor hoặc category liên quan
     let relatedProducts = [];
-    if (allRelatedCategories.length > 0) {
-      relatedProducts = await Phone.find({
+    const productMap = new Map();
+
+    // ==================== NGUỒN 1: SẢN PHẨM CÙNG MUA ====================
+    try {
+      const coPurchasedProducts = await Order.aggregate([
+        {
+          $match: {
+            "items.phone": new mongoose.Types.ObjectId(phoneId),
+            orderStatus: { $in: ["delivered", "completed"] },
+          },
+        },
+        { $unwind: "$items" },
+        {
+          $match: {
+            "items.phone": { $ne: new mongoose.Types.ObjectId(phoneId) },
+          },
+        },
+        {
+          $group: {
+            _id: "$items.phone",
+            orderCount: { $sum: 1 },
+            totalQuantity: { $sum: "$items.quantity" },
+          },
+        },
+        { $sort: { orderCount: -1, totalQuantity: -1 } },
+        { $limit: 5 },
+        {
+          $lookup: {
+            from: "phones",
+            localField: "_id",
+            foreignField: "_id",
+            as: "productInfo",
+          },
+        },
+        { $unwind: "$productInfo" },
+        {
+          $project: {
+            _id: 1,
+            name: "$productInfo.name",
+            price: "$productInfo.price",
+            finalPrice: "$productInfo.finalPrice",
+            image: "$productInfo.image",
+            rating: "$productInfo.rating",
+            reserved: "$productInfo.reserved",
+            brand: "$productInfo.brand",
+            category: "$productInfo.category",
+          },
+        },
+      ]);
+
+      coPurchasedProducts.forEach((product) => {
+        productMap.set(product._id.toString(), {
+          ...product,
+          score:
+            4.0 +
+            (product.rating || 0) * 0.3 +
+            Math.log((product.reserved || 0) + 1) * 0.2 +
+            0.5,
+          fromHistory: true,
+        });
+      });
+    } catch (error) {
+      console.log("⚠️ No purchase history found");
+    }
+
+    // ==================== NGUỒN 2: CÙNG BRAND VÀ CATEGORY ====================
+    if (currentProduct.category && currentProduct.brand) {
+      const sameBrandCategoryProducts = await Phone.find({
         _id: { $ne: phoneId },
+        category: currentProduct.category,
+        brand: currentProduct.brand,
+      })
+        .select("name price finalPrice image rating reserved brand category")
+        .sort({ rating: -1, reserved: -1 })
+        .limit(4)
+        .lean();
+
+      sameBrandCategoryProducts.forEach((product) => {
+        const existing = productMap.get(product._id.toString());
+        if (existing) {
+          existing.score += 1.5; // Thêm điểm nếu đã tồn tại
+        } else {
+          productMap.set(product._id.toString(), {
+            ...product,
+            score:
+              3.0 +
+              (product.rating || 0) * 0.3 +
+              Math.log((product.reserved || 0) + 1) * 0.2,
+          });
+        }
+      });
+    }
+
+    // ==================== NGUỒN 3: CÙNG CATEGORY, CÙNG PHÂN KHÚC GIÁ ====================
+    if (currentProduct.category) {
+      const currentPrice = currentProduct.finalPrice || currentProduct.price;
+      const priceRange = {
+        min: currentPrice * 0.6,
+        max: currentPrice * 1.4,
+      };
+
+      const sameCategoryPriceRangeProducts = await Phone.find({
+        _id: { $ne: phoneId },
+        category: currentProduct.category,
         $or: [
-          { accessoryFor: { $in: currentPhone.accessoryFor.map(String) } },
-          { category: { $in: allRelatedCategories } },
+          { finalPrice: { $gte: priceRange.min, $lte: priceRange.max } },
+          { price: { $gte: priceRange.min, $lte: priceRange.max } },
         ],
       })
-        .populate("category", "name slug")
-        .populate("accessoryFor", "name slug")
-        .sort({ rating: -1, reserved: -1 })
-        .limit(20)
+        .select("name price finalPrice image rating reserved brand category")
+        .sort({ rating: -1 })
+        .limit(4)
         .lean();
 
-      console.log(
-        "Found related products with initial query:",
-        relatedProducts.length
-      );
+      sameCategoryPriceRangeProducts.forEach((product) => {
+        const existing = productMap.get(product._id.toString());
+        if (existing) {
+          existing.score += 1.0;
+        } else {
+          productMap.set(product._id.toString(), {
+            ...product,
+            score:
+              2.0 +
+              (product.rating || 0) * 0.3 +
+              Math.log((product.reserved || 0) + 1) * 0.2,
+          });
+        }
+      });
     }
 
-    // Loại bỏ trùng lặp dựa trên _id
-    relatedProducts = Array.from(
-      new Set(relatedProducts.map((p) => p._id.toString()))
-    ).map((id) => relatedProducts.find((p) => p._id.toString() === id));
-
-    // Bước 2: Fallback với sản phẩm có từ khóa phụ kiện trong tên
-    if (relatedProducts.length < 5) {
-      const keywordProducts = await Phone.find({
+    // ==================== NGUỒN 4: CÙNG CATEGORY ====================
+    if (currentProduct.category) {
+      const sameCategoryProducts = await Phone.find({
         _id: { $ne: phoneId },
-        name: {
-          $regex: accessoryKeywords.map((kw) => kw.source).join("|"),
-          $options: "i",
-        },
-        _id: { $nin: relatedProducts.map((p) => p._id) },
+        category: currentProduct.category,
       })
-        .populate("category", "name slug")
-        .populate("accessoryFor", "name slug")
-        .sort({ rating: -1, reserved: -1 })
-        .limit(5 - relatedProducts.length)
+        .select("name price finalPrice image rating reserved brand category")
+        .sort({ rating: -1, createdAt: -1 })
+        .limit(6)
         .lean();
 
-      relatedProducts = [...relatedProducts, ...keywordProducts];
-      console.log("Found keyword products:", keywordProducts.length);
+      sameCategoryProducts.forEach((product) => {
+        const existing = productMap.get(product._id.toString());
+        if (!existing) {
+          productMap.set(product._id.toString(), {
+            ...product,
+            score:
+              1.0 +
+              (product.rating || 0) * 0.3 +
+              Math.log((product.reserved || 0) + 1) * 0.2,
+          });
+        }
+      });
     }
 
-    // Bước 3: Fallback với sản phẩm cùng brand nhưng khác category
-    if (relatedProducts.length < 5) {
-      const brandProducts = await Phone.find({
-        _id: { $ne: phoneId },
-        brand: currentPhone.brand,
-        category: { $nin: allRelatedCategories },
-      })
-        .populate("category", "name slug")
-        .populate("accessoryFor", "name slug")
-        .sort({ rating: -1, reserved: -1 })
-        .limit(5 - relatedProducts.length)
-        .lean();
-
-      relatedProducts = [...relatedProducts, ...brandProducts];
-      console.log("Found brand products:", brandProducts.length);
-    }
-
-    // Bước 4: Fallback với sản phẩm bất kỳ
-    if (relatedProducts.length < 5) {
-      const anyProducts = await Phone.find({
-        _id: { $ne: phoneId },
-        _id: { $nin: relatedProducts.map((p) => p._id) },
-      })
-        .populate("category", "name slug")
-        .populate("accessoryFor", "name slug")
-        .sort({ createdAt: -1 })
-        .limit(5 - relatedProducts.length)
-        .lean();
-
-      relatedProducts = [...relatedProducts, ...anyProducts];
-      console.log("Found any products (fallback):", anyProducts.length);
-    }
-
-    // Giới hạn 5 sản phẩm
-    // relatedProducts = relatedProducts.slice(0, 5);
-
-    // Format dữ liệu
-    const formattedProducts = relatedProducts
-      .map((phone) => ({
-        _id: phone._id,
-        name: phone.name || "Unnamed Product",
-        price: phone.price || 0,
-        finalPrice: phone.finalPrice || phone.price || 0,
-        image:
-          phone.image ||
-          phone.images?.[0]?.url ||
-          "https://via.placeholder.com/100",
-        category: phone.category?.name || "Unknown",
-        brand: phone.brand || "Unknown",
-        reserved: phone.reserved || 0,
-        rating: phone.rating || 0,
-        totalReviews: phone.totalReviews || 0,
-        slug: phone.slug || slugify(phone.name),
-        accessoryFor:
-          phone.accessoryFor?.map((cat) => cat.name || cat._id.toString()) ||
-          [],
-      }))
+    // ==================== CHUYỂN THÀNH MẢNG VÀ SẮP XẾP ====================
+    relatedProducts = Array.from(productMap.values())
+      .sort((a, b) => b.score - a.score)
       .slice(0, 20);
+
+    // ==================== FALLBACK: SẢN PHẨM PHỔ BIẾN ====================
+    if (relatedProducts.length < 4) {
+      const popularProducts = await Phone.find({
+        _id: { $ne: phoneId },
+        ...(currentProduct.category && { category: currentProduct.category }),
+      })
+        .select("name price finalPrice image rating reserved brand category")
+        .sort({ reserved: -1, rating: -1 })
+        .limit(8)
+        .lean();
+
+      const additionalProducts = popularProducts
+        .filter(
+          (p) =>
+            !relatedProducts.some(
+              (rp) => rp._id.toString() === p._id.toString()
+            )
+        )
+        .slice(0, 4 - relatedProducts.length);
+
+      relatedProducts = [...relatedProducts, ...additionalProducts];
+    }
+
+    // ==================== FORMAT DỮ LIỆU ====================
+    const formattedProducts = relatedProducts.map((product, index) => {
+      const discountPercent =
+        product.price && product.finalPrice
+          ? Math.round(
+              ((product.price - product.finalPrice) / product.price) * 100
+            )
+          : 0;
+
+      // Xác định lý do đề xuất
+      const reasons = [];
+      if (product.fromHistory) reasons.push("Frequently bought together");
+      if (product.brand === currentProduct.brand) reasons.push("Same brand");
+      if (
+        product.category?.toString() === currentProduct.category?.toString()
+      ) {
+        reasons.push("Same category");
+      }
+
+      return {
+        _id: product._id,
+        name: product.name,
+        price: product.price || 0,
+        finalPrice: product.finalPrice || product.price || 0,
+        image: product.image || "/images/placeholder.jpg",
+        rating: product.rating || 0,
+        reserved: product.reserved || 0,
+        brand: product.brand,
+        category: product.category,
+        discountPercent,
+        priority: index + 1,
+        matchReason:
+          reasons.length > 0 ? reasons.join(" • ") : "Popular product",
+      };
+    });
+
+    console.log("✅ Final related products:", formattedProducts.length);
 
     res.status(200).json({
       success: true,
       message: "Related products retrieved successfully",
       data: formattedProducts,
+      metadata: {
+        total: formattedProducts.length,
+      },
     });
   } catch (error) {
-    console.error("Error fetching related products:", error);
+    console.error("❌ Error fetching related products:", error);
     res.status(500).json({
       success: false,
       message: "Error fetching related products",
@@ -2230,15 +2489,6 @@ const getRelatedProducts = asyncHandler(async (req, res) => {
     });
   }
 });
-const slugify = (text) =>
-  text
-    .toString()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9-]/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
 
 module.exports = {
   getPhones,

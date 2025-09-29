@@ -272,7 +272,7 @@ const ProductOftenBoughtTogether = ({ product = null }) => {
       }
       console.log("Fetching related products for productId:", product._id);
       const response = await axios.get(
-        `${API_URL}/phones/bought/${product._id}`,
+        `${API_URL}/phones/${product._id}/bought-together`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token") || ""}`,

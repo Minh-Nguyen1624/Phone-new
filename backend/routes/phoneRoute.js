@@ -17,8 +17,8 @@ const {
   toggleLikePhone,
   purchasePhone,
   getSoldQuantity,
-  getRelatedProducts,
   getBoughtTogether,
+  getRelatedProducts,
 } = require("../controller/phoneController");
 const {
   authMiddleware,
@@ -97,6 +97,7 @@ router.get("/:id/sold", getSoldQuantity);
 
 router.get("/related/:phoneId", getRelatedProducts);
 
-router.get("/bought/:phoneId", getBoughtTogether);
+// router.get("/bought/:phoneId", getBoughtTogether);
+router.get("/:phoneId/bought-together", getBoughtTogether);
 
 module.exports = router;

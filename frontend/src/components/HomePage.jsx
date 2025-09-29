@@ -229,7 +229,7 @@ const HomePage = () => {
   const handlePageChange = (page) => {
     if (page > 0 && page <= totalPages) {
       setCurrentPage(page);
-      fetchData();
+      // fetchData();
     }
   };
 
